@@ -1,0 +1,48 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "MCIC Bioinformatics Tutorials"
+  repo-url: https://github.com/mcic-osu/XXX
+  site-url: XXX
+  page-navigation: true
+  back-to-top-navigation: true
+  navbar:
+    background: "#ba0c2f"
+    left:
+      - icon: house-door
+        href: index.qmd
+        text: " "
+
+    right:
+      - about.qmd
+    tools:
+      - icon: github
+        menu:
+          - text: Source Code
+            url:  https://github.com/jelmerp/pracs-sp24
+          - text: Report an Issue
+            url:  https://github.com/jelmerp/pracs-sp24/issues/new
+  page-footer:
+    background: "#a7b1b7"
+    left: "2024-2025, Jelmer Poelstra"
+    right:
+      - icon: github
+        href: https://github.com/jelmerp/pracs-sp24
+
+format:
+  html:
+    highlight-style: atom-one
+    theme: cosmo
+    css: styles.css
+    toc: true
+    number-sections: true
+    number-depth: 3
+    grid:
+      body-width: 900px
+
+execute:
+  freeze: auto
+  engine: knitr
+editor: source
