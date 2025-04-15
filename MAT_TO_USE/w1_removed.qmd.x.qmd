@@ -1,0 +1,277 @@
+---
+title: "Removed w1 exercises"
+---
+
+
+### 1.10.2 Hormone Levels in Baboons
+
+Gesquiere et al. (2011) studied hormone levels in the blood of baboons.
+Every individual was sampled several times.
+
+Write a script taking as input the file name and the ID of the individual,
+and returning the number of records for that ID.
+
+<details><summary>Show hints</summary>
+
+- You want to turn the solution of part 1 into a script; to do so, open a new
+  file and copy the code you've written.
+
+- In the script, you can use the first two so-called *positional parameters*,
+  `$1` and `$2`, to represent the file name and the `maleID`, respectively.
+  
+- `$1` and `$2` represent the first and the second argument passed to a script
+   like so: `bash myscript.sh arg1 arg2`.
+
+</details>
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### 1.10.3 Plant–Pollinator Networks
+
+Saavedra and Stouffer (2013) studied several plant–pollinator networks.
+These can be represented as rectangular matrices where the rows are pollinators,
+the columns plants, a 0 indicates the absence and 1 the presence of an interaction
+between the plant and the pollinator.
+
+The data of Saavedra and Stouffer (2013) can be found in the directory
+`CSB/unix/data/Saavedra2013`.
+
+Write a script that takes one of these files and determines the number of
+rows (pollinators) and columns (plants).
+Note that columns are separated by spaces and that there is a space at the
+end of each line. Your script should return:
+
+```sh
+bash netsize.sh ../data/Saavedra2013/n1.txt
+# Filename: ../data/Saavedra2013/n1.txt
+# Number of rows: 97
+# Number of columns: 80
+```
+
+<details><summary>Show hints</summary>
+
+To build the script, you need to combine several commands:
+
+- To find the number of rows, you can use `wc`.
+
+- To find the number of columns, take the first line, remove the spaces,
+  remove the line terminator `\n`, and count *characters*.
+
+</details>
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### 1.10.4 Data Explorer
+
+Buzzard et al. (2016) collected data on the growth of a forest in Costa Rica.
+In the file `Buzzard2015_data.csv` you will find a subset of their data,
+including taxonomic information, abundance, and biomass of trees.
+
+Write a script that, for a given CSV file and column number, prints:
+
+- The corresponding column name;
+- The number of distinct values in the column;
+- The minimum value;
+- The maximum value.
+
+For example, running the script as below should produce the following output:
+
+```sh
+bash explore.sh ../data/Buzzard2015_data.csv 7
+```
+```bash-out
+Column name:
+biomass
+Number of distinct values:
+285
+Minimum value:
+1.048466198
+Maximum value:
+14897.29471
+```
+
+<details><summary>Show hints</summary>
+
+1. You can select a given column from a `csv` file using the command `cut`.
+   Then:
+   - The column name is going to be in the first line (*header*); access it
+     with `head`.
+   - The number of distinct values can be found by counting the number of lines
+      when you have sorted them and removed duplicates (using a combination of
+      `tail`, `sort` and `uniq`).
+   - The minimum and maximum values can be found by combining `sort` and
+     `head` (or `tail`),
+   - To write the script, use the positional parameters `$1` and `$2` for the
+     file name and column number, respectively.
+
+</details>
+
+<br>
+
+### Solutions
+
+### 1.10.2 Hormone Levels in Baboons
+
+<details><summary>**2.** Write a script taking as input the file name and the ID of the individual, and returning the number of records for that ID.</summary>
+
+- In the script, we just need to incorporate the arguments given when calling the
+  script, using $1 for the file name and $2 for the individual ID, 
+  into the commands that we used above:
+  
+```sh
+cut -f 1 $1 | grep -c -w $2
+```
+
+- A slightly more verbose and readable example:
+```sh
+#!/bin/bash
+
+filename=$1
+ind_ID=$2
+echo "Counting the nr of occurrences of individual ${ind_ID} in file ${filename}:" 
+cut -f 1 ${filename} | grep -c -w ${ind_ID}
+```
+
+::: callout-note
+Variables are *assigned* using `name=value` (no dollar sign!),
+and *recalled* using `$name` or `${name}`.
+It is good practice to put curly braces around the variable name.
+We will talk more about bash variables in the next few weeks.
+:::
+
+- To run the script, assuming it is named `count_baboons.sh`:
+```sh
+bash count_baboons.sh ../data/Gesquiere2011_data.csv 27
+# 5
+```
+
+</details>
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### 1.10.3 Plant–Pollinator Networks
+
+<details><summary>Solution</summary><p>
+
+**Counting rows:**
+
+- Counting the number of rows amount to counting the number of lines.
+  This is easily done with `wc -l`. For example:
+  
+```sh
+wc -l ../data/Saavedra2013/n10.txt 
+# 14 ../data/Saavedra2013/n10.txt
+```
+
+- To avoid printing the file name, we can either use cat or input redirection:
+
+```sh
+cat ../data/Saavedra2013/n10.txt | wc -l
+wc -l < ../data/Saavedra2013/n10.txt 
+```
+
+**Counting rows:**
+
+- Counting the number of columns is more work.
+  First, we need only the first line:
+  
+```sh
+head -n 1 ../data/Saavedra2013/n10.txt
+# 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0
+```
+
+- Now we can remove all spaces and the line terminator using `tr`:
+
+```sh
+head -n 1 ../data/Saavedra2013/n10.txt | tr -d ' ' | tr -d '\n'
+# 01000001000000000100
+```
+
+- Finally, we can use `wc -c` to count the number of characters in the string:
+
+```sh
+head -n 1 ../data/Saavedra2013/n10.txt | tr -d ' ' | tr -d '\n' | wc -c
+# 20
+```
+
+**Final script:**
+
+```sh
+#!/bin/bash
+
+filename=$1
+
+echo "Filename:"
+echo ${filename}
+echo "Number of rows:"
+cat ${filename} | wc -l
+echo "Number of columns:"
+head -n 1 ${filename} | tr -d ' ' | tr -d '\n' | wc -c
+```
+
+- To run the script, assuming it is named `counter.sh`:
+
+```sh
+bash counter.sh ../data/Saavedra2013/n10.txt
+# 5
+```
+
+::: callout-note
+#### *We'll learn about a quicker and more general way to count columns in a few weeks.*
+:::
+</details>
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### 1.10.4 Data Explorer
+
+<details><summary>Solution</summary>
+
+- First, we need to extract the column name.
+  For example, for the Buzzard data file, and col 7:
+
+```sh
+cut -d ',' -f 7 ../data/Buzzard2015_data.csv | head -n 1
+# biomass
+```
+
+- Second, we need to obtain the number of distinct values.
+  We can sort the results (after removing the header), and use `uniq`:
+
+```sh
+cut -d ',' -f 7 ../data/Buzzard2015_data.csv | tail -n +2 | sort | uniq | wc -l
+# 285
+```
+
+- Third, to get the max/min value we can use the code above, sort using `-n`,
+  and either `head` (for min) or `tail` (for max) the result.
+
+```sh
+# Minimum:
+cut -d ',' -f 7 ../data/Buzzard2015_data.csv | tail -n +2 | sort -n | head -n 1
+# 1.048466198
+
+# Maximum:
+cut -d ',' -f 7 ../data/Buzzard2015_data.csv | tail -n +2 | sort -n | tail -n 1
+# 14897.29471
+```
+
+- Here is an example of what the script could look like:
+
+```sh
+#!/bin/bash
+
+filename=$1
+column_nr=$2
+
+echo "Column name"
+cut -d ',' -f ${column_nr} ${filename} | head -n 1
+echo "Number of distinct values:"
+cut -d ',' -f ${column_nr} ${filename} | tail -n +2 | sort | uniq | wc -l
+echo "Minimum value:"
+cut -d ',' -f ${column_nr} ${filename} | tail -n +2 | sort -n | head -n 1
+echo "Maximum value:"
+cut -d ',' -f ${column_nr} ${filename} | tail -n +2 | sort -n | tail -n 1
+```
+
+</details>

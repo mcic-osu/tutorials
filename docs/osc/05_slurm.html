@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jelmer Poelstra">
+<meta name="dcterms.date" content="2024-08-04">
+
+<title>Slurm batch jobs at OSC – MCIC Bioinformatics Tutorials</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-57476271c5f0467c372e20ff5d25630e.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-93a206ead970ce8646eacc93a2842d74.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">MCIC Bioinformatics Tutorials</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-shell" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Shell</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-shell">    
+        <li>
+    <a class="dropdown-item" href="../shell/01_shell1.html">
+ <span class="dropdown-text">Intro the Unix Shell</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/02_shellfiles.html">
+ <span class="dropdown-text">Managing files in the shell</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/03_scripts.html">
+ <span class="dropdown-text">Writing shell scripts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/04_cli-tools.html">
+ <span class="dropdown-text">Running CLI tools</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/05_bonus.html">
+ <span class="dropdown-text">Advanced shell</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-osc" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">OSC</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-osc">    
+        <li>
+    <a class="dropdown-item" href="../osc/01_osc1.html">
+ <span class="dropdown-text">Intro to OSC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/02_vscode.html">
+ <span class="dropdown-text">VS Code</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/03_osc2.html">
+ <span class="dropdown-text">More about OSC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/05_slurm.html">
+ <span class="dropdown-text">Slurm</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/06_ssh.html">
+ <span class="dropdown-text">SSH</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-git" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Git</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-git">    
+        <li>
+    <a class="dropdown-item" href="../git/02_git1.html">
+ <span class="dropdown-text">Git 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../git/03_git2.html">
+ <span class="dropdown-text">Git 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../git/04_git3.html">
+ <span class="dropdown-text">Git 3</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-r" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">R</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-r">    
+        <li>
+    <a class="dropdown-item" href="../r/r_data-structures.html">
+ <span class="dropdown-text">Data structures</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../r/r_dplyr.html">
+ <span class="dropdown-text">Data wrangling</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reproducibility" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reproducibility</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reproducibility">    
+        <li>
+    <a class="dropdown-item" href="../reprod/project-org.html">
+ <span class="dropdown-text">Project file organization</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reprod/markdown.html">
+ <span class="dropdown-text">Markdown</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-nextflow" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Nextflow</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-nextflow">    
+        <li>
+    <a class="dropdown-item" href="../nf-run/01_pipelines.html">
+ <span class="dropdown-text">Intro to pipelines</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../nf-run/02_nfcore.html">
+ <span class="dropdown-text">Running an nf-core pipeline</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-metabar" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Metabar</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-metabar">    
+        <li>
+    <a class="dropdown-item" href="../metabar/01_qc-trim.html">
+ <span class="dropdown-text">Read QC and trimming</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-rna-seq" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">RNA-Seq</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-rna-seq">    
+        <li>
+    <a class="dropdown-item" href="../rnaseq/01_data.html">
+ <span class="dropdown-text">Data files</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/02_nfc-rnaseq.html">
+ <span class="dropdown-text">The nf-core rnaseq pipeline</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/03_DE.html">
+ <span class="dropdown-text">Differential expression analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/04_fastqc.html">
+ <span class="dropdown-text">Read QC with FastQC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/05_trimgalore.html">
+ <span class="dropdown-text">Trimming reads with TrimGalore</span></a>
+  </li>  
+        <li class="dropdown-header">RNA-Seq</li>
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other">    
+        <li class="dropdown-header">BACTERIAL WGS</li>
+        <li>
+    <a class="dropdown-item" href="../bac/01_preprocess.html">
+ <span class="dropdown-text">Data preprocessing</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../bac/02_assembly.html">
+ <span class="dropdown-text">Genome assembly</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../bac/03_annotation.html">
+ <span class="dropdown-text">Genome annotation</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <div class="dropdown">
+      <a href="" title="" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label=""><i class="bi bi-github"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://github.com/mcic-osu/tutorials">
+            Source Code
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://mcic-osu.github.io/tutorials/issues/new">
+            Report an Issue
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#basics-of-slurm-batch-jobs" id="toc-basics-of-slurm-batch-jobs" class="nav-link" data-scroll-target="#basics-of-slurm-batch-jobs"><span class="header-section-number">1</span> Basics of Slurm batch jobs</a>
+  <ul class="collapse">
+  <li><a href="#the-sbatch-command" id="toc-the-sbatch-command" class="nav-link" data-scroll-target="#the-sbatch-command"><span class="header-section-number">1.1</span> The <code>sbatch</code> command</a></li>
+  <li><a href="#adding-sbatch-options-in-scripts" id="toc-adding-sbatch-options-in-scripts" class="nav-link" data-scroll-target="#adding-sbatch-options-in-scripts"><span class="header-section-number">1.2</span> Adding <code>sbatch</code> options in scripts</a></li>
+  <li><a href="#where-does-the-scripts-output-go" id="toc-where-does-the-scripts-output-go" class="nav-link" data-scroll-target="#where-does-the-scripts-output-go"><span class="header-section-number">1.3</span> Where does the script’s output go?</a></li>
+  </ul></li>
+  <li><a href="#monitoring-batch-jobs" id="toc-monitoring-batch-jobs" class="nav-link" data-scroll-target="#monitoring-batch-jobs"><span class="header-section-number">2</span> Monitoring batch jobs</a>
+  <ul class="collapse">
+  <li><a href="#a-sleepy-script-for-practice" id="toc-a-sleepy-script-for-practice" class="nav-link" data-scroll-target="#a-sleepy-script-for-practice"><span class="header-section-number">2.1</span> A sleepy script for practice</a></li>
+  <li><a href="#checking-the-jobs-status" id="toc-checking-the-jobs-status" class="nav-link" data-scroll-target="#checking-the-jobs-status"><span class="header-section-number">2.2</span> Checking the job’s status</a></li>
+  <li><a href="#cancelling-jobs" id="toc-cancelling-jobs" class="nav-link" data-scroll-target="#cancelling-jobs"><span class="header-section-number">2.3</span> Cancelling jobs</a></li>
+  </ul></li>
+  <li><a href="#common-slurm-options" id="toc-common-slurm-options" class="nav-link" data-scroll-target="#common-slurm-options"><span class="header-section-number">3</span> Common Slurm options</a>
+  <ul class="collapse">
+  <li><a href="#account-the-osc-project" id="toc-account-the-osc-project" class="nav-link" data-scroll-target="#account-the-osc-project"><span class="header-section-number">3.1</span> <code>--account</code>: The OSC project</a></li>
+  <li><a href="#time-time-limit-wall-time" id="toc-time-time-limit-wall-time" class="nav-link" data-scroll-target="#time-time-limit-wall-time"><span class="header-section-number">3.2</span> <code>--time</code>: Time limit (“wall time”)</a></li>
+  <li><a href="#cores-nodes-and-tasks" id="toc-cores-nodes-and-tasks" class="nav-link" data-scroll-target="#cores-nodes-and-tasks"><span class="header-section-number">3.3</span> Cores (&amp; nodes and tasks)</a></li>
+  <li><a href="#mem-ram-memory" id="toc-mem-ram-memory" class="nav-link" data-scroll-target="#mem-ram-memory"><span class="header-section-number">3.4</span> <code>--mem</code>: RAM memory</a></li>
+  <li><a href="#output-slurm-log-files" id="toc-output-slurm-log-files" class="nav-link" data-scroll-target="#output-slurm-log-files"><span class="header-section-number">3.5</span> <code>--output</code>: Slurm log files</a></li>
+  <li><a href="#mail-type-receive-emails" id="toc-mail-type-receive-emails" class="nav-link" data-scroll-target="#mail-type-receive-emails"><span class="header-section-number">3.6</span> <code>--mail-type</code>: Receive emails</a></li>
+  </ul></li>
+  <li><a href="#in-closing-making-sure-your-jobs-ran-successfully" id="toc-in-closing-making-sure-your-jobs-ran-successfully" class="nav-link" data-scroll-target="#in-closing-making-sure-your-jobs-ran-successfully"><span class="header-section-number">4</span> In closing: making sure your jobs ran successfully</a></li>
+  <li><a href="#self-study-material" id="toc-self-study-material" class="nav-link" data-scroll-target="#self-study-material"><span class="header-section-number">5</span> Self-study material</a>
+  <ul class="collapse">
+  <li><a href="#interactive-shell-jobs" id="toc-interactive-shell-jobs" class="nav-link" data-scroll-target="#interactive-shell-jobs"><span class="header-section-number">5.1</span> Interactive shell jobs</a></li>
+  <li><a href="#table-with-sbatch-options" id="toc-table-with-sbatch-options" class="nav-link" data-scroll-target="#table-with-sbatch-options"><span class="header-section-number">5.2</span> Table with <code>sbatch</code> options</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Slurm batch jobs at OSC</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Jelmer Poelstra </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 4, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<hr>
+<p><br></p>
+<section id="overview" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="overview">Overview</h3>
+<p>Automated scheduling software allows hundreds of people with different requirements to access supercomputer compute nodes effectively and fairly. OSC uses <strong>Slurm</strong> (Simple Linux Utility for Resource Management) for this.</p>
+<p>As you’ve learned, a reservation of resources on compute nodes is called a <strong>compute job</strong>. Here are the main ways to start a compute job at OSC:</p>
+<ol type="1">
+<li>“<strong>Interactive Apps</strong>” — Run programs with GUIs (e.g.&nbsp;VS Code or RStudio) directly on the OnDemand website.</li>
+<li><strong>Interactive shell jobs</strong> — Start an interactive shell on a compute node.</li>
+<li><strong>Batch (non-interactive) jobs</strong> — Run a script on a compute node without ever going to that node yourself.</li>
+</ol>
+<p>We’ve already worked a lot with the VS Code Interactive App, and the self-study material at the bottom of this page will cover interactive shell jobs. What we’ll focus on in this session are <strong>batch jobs</strong>.</p>
+<section id="setting-up" class="level4">
+<h4 class="anchored" data-anchor-id="setting-up">Setting up</h4>
+<p>Let’s get set up by:</p>
+<ul>
+<li><p>Moving the <code>garrigos_data</code> dir one level up, out of <code>week04</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># You should be in /fs/ess/PAS2700/users/$USER</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> week04/garrigos_data .</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>CSB  garrigos_data  week02  week03  week04</code></pre></li>
+<li><p>Creating a dir for this tutorial:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> week05/class_slurm/scripts</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> week05/class_slurm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>Copying two scripts which you’ll use again:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> /fs/ess/PAS2700/users/<span class="va">$USER</span>/week04/scripts/printname.sh scripts/</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> /fs/ess/PAS2700/users/<span class="va">$USER</span>/week04/scripts/fastqc.sh scripts/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+<p><br></p>
+</section>
+</section>
+<section id="basics-of-slurm-batch-jobs" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="basics-of-slurm-batch-jobs"><span class="header-section-number">1</span> Basics of Slurm batch jobs</h2>
+<p>When you request a batch job, you ask the Slurm scheduler to <strong>run a script “out of sight” on a compute node</strong>. While that script will run on a compute node, you stay in your current shell at your current node regardless of whether that is on a login or compute node. After submitting a batch job, it will continue running even if you log off from OSC and shut down your computer.</p>
+<hr style="height:1pt; visibility:hidden;">
+<section id="the-sbatch-command" class="level3" data-number="1.1">
+<h3 data-number="1.1" class="anchored" data-anchor-id="the-sbatch-command"><span class="header-section-number">1.1</span> The <code>sbatch</code> command</h3>
+<p>You can use Slurm’s <code>sbatch</code> command to submit a batch job. But first, recall that you can directly run a Bash script as follows:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/printname.sh Jane Doe</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>This script will print a first and a last name
+First name: Jane
+Last name: Doe</code></pre>
+<p>The above command ran the script on our current node. To instead submit the script to the Slurm queue, simply <strong>replace <code>bash</code> by <code>sbatch</code></strong>:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> scripts/printname.sh Jane Doe</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>srun: error: ERROR: Job invalid: Must specify account for job  
+srun: error: Unable to allocate resources: Unspecified error</code></pre>
+<p>However, as the above error message “<em>Must specify account for job</em>” tells us, you need to indicate which OSC Project (or as Slurm puts it, “account”) you want to use for this compute job. Use the <code>--account=</code> option to <code>sbatch</code> to do this:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> <span class="at">--account</span><span class="op">=</span>PAS2700 scripts/printname.sh Jane Doe</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Submitted batch job 12431935</code></pre>
+<p>This output line means your job was successfully submitted (no further output will be printed to your screen — more about that below). The job has a <strong>unique identifier</strong> among all compute jobs by all users at OSC, and we can use this number to monitor and manage it. Each of us will therefore see a different job number pop up.</p>
+<hr style="height:1pt; visibility:hidden;">
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<code>sbatch</code> options <em>and</em> script arguments
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>As you perhaps noticed in the command above, we can use <code>sbatch</code> options <em>and</em> script arguments in one command like so:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> <span class="pp">[</span><span class="ss">sbatch</span><span class="pp">-</span><span class="ss">options</span><span class="pp">]</span> myscript.sh <span class="pp">[</span><span class="ss">script</span><span class="pp">-</span><span class="ss">arguments</span><span class="pp">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>But, depending on the details of the script itself, all combinations of using <code>sbatch</code> options and script arguments are possible:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> scripts/printname.sh                             <span class="co"># No options/arguments for either</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> scripts/printname.sh Jane Doe                    <span class="co"># Script arguments but no sbatch option</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> <span class="at">--account</span><span class="op">=</span>PAS2700 scripts/printname.sh           <span class="co"># sbatch option but no script arguments</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> <span class="at">--account</span><span class="op">=</span>PAS2700 scripts/printname.sh Jane Doe  <span class="co"># Both sbatch option and script arguments</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>(Omitting the <code>--account</code> option is possible when we specify this option <em>inside the script</em>, as we’ll see below.)</p>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="adding-sbatch-options-in-scripts" class="level3" data-number="1.2">
+<h3 data-number="1.2" class="anchored" data-anchor-id="adding-sbatch-options-in-scripts"><span class="header-section-number">1.2</span> Adding <code>sbatch</code> options in scripts</h3>
+<p>The <code>--account=</code> option is just one of many options you can use when reserving a compute job, but is the only <em>required</em> one. Defaults exist for all other options, such as the amount of time (1 hour) and the number of cores (1 core).</p>
+<p>Instead of specifying <code>sbatch</code> options on the command-line when submitting the script, you can also <strong>add these options inside the script</strong>. This is a useful alternative because:</p>
+<ul>
+<li>You’ll often want to specify several options, which can lead to very long <code>sbatch</code> commands.</li>
+<li>It allows you to store a script’s typical Slurm options as part of the script, so you don’t have to remember them.</li>
+</ul>
+<p>These options are added in the script using another type of special comment line akin to the shebang (<code>#!/bin/bash</code>) line, marked by <code>#SBATCH</code>. Just like the shebang line, the <code>#SBATCH</code> line(s) should be at the top of the script. Let’s add one such line to the <code>printname.sh</code> script, such that the first few lines read:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --account=PAS2700</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>So, the equivalent of adding <code>--account=PAS2700</code> after <code>sbatch</code> on the command line is a line in your script that reads <code>#SBATCH --account=PAS2700</code>.</p>
+<p>After adding this to the script, you are now able to run the <code>sbatch</code> command without options (which failed earlier):</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> scripts/printname.sh Jane Doe</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Submitted batch job 12431942</code></pre>
+<p>After submitting a batch job, you <strong>immediately get your prompt back</strong>. The job will run outside of your immediate view, and you can continue doing other things in the shell while it does (or log off). This behavior allows you to submit many jobs at the same time, because you don’t have to wait for other jobs to finish, or even to start.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<code>sbatch</code> option precedence!
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Any <code>sbatch</code> option provided on the command line will override the equivalent option provided inside the script. This is sensible because it allows you to provide “defaults” inside the script, and change one or more of those when needed “on the go” on the command line.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Running a script with <code>#SBATCH</code> lines in non-Slurm contexts <em>(Click to expand)</em>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Because <code>#SBATCH</code> lines are special <em>comment</em> lines, they will simply be ignored (and not throw any errors) when you run a script with such lines in other contexts: for example, when not running it as a batch job at OSC, or even when running it on a computer without Slurm installed.</p>
+</div>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="where-does-the-scripts-output-go" class="level3" data-number="1.3">
+<h3 data-number="1.3" class="anchored" data-anchor-id="where-does-the-scripts-output-go"><span class="header-section-number">1.3</span> Where does the script’s output go?</h3>
+<p>Above, we saw that when you ran <code>printname.sh</code> directly with <code>bash</code>, its output was printed to the screen, whereas when you submitted it as a batch job, only <code>Submitted batch job &lt;job-number&gt;</code> was printed to screen. Where did your output go?</p>
+<p>The output ended up in a file called <code>slurm-&lt;job-number&gt;.out</code> (e.g., <code>slurm-12431942.out</code>; since each job number is unique to a given job, each file has a different number). We will call this type of file a <strong>Slurm log file</strong>.</p>
+<details>
+<summary>
+Any idea why we may not want batch job output printed to screen, even if it was possible? <em>(Click for the answer)</em>
+</summary>
+The power of submitting batch jobs is that you can submit many at once — e.g.&nbsp;one per sample, running the same script. If the output from all those scripts ends up on your screen, things become a big mess, and you have no lasting record of what happened.
+</details>
+<hr style="height:1pt; visibility:hidden;">
+<p>You should already have two of these Slurm log files if you ran all the above code:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>scripts slurm-12431935.out slurm-12431942.out</code></pre>
+<p>Let’s take a look at the contents of one of these:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># (Replace the number in the file name with whatever you got! - check with 'ls')</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> slurm-12431935.out</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>This script will print a first and a last name
+First name: Jane  
+Last name: Doe</code></pre>
+<p>This file contains the script’s output that was printed to screen when we ran it with <code>bash</code> — nothing more or less.</p>
+<section id="two-types-of-output-files" class="level4">
+<h4 class="anchored" data-anchor-id="two-types-of-output-files">Two types of output files</h4>
+<p>It’s important to realize the distinction between two broad types of output a script may have:</p>
+<ul>
+<li><p>Output that is <strong>printed to screen</strong> when you directly run a script (<code>bash myscript.sh</code>), and that ends up in the <strong>Slurm log file</strong> when you submit the script as a batch job. This includes output produced by <code>echo</code> statements, by any errors that may occur, and logging output by any program that we run in the script<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p></li>
+<li><p>Output of commands inside the script that is redirected to a file or that a program writes to an output file. This type of output <strong>will end up in the exact same files</strong> regardless of whether we run the script directly (with <code>bash</code>) or as a batch job (with <code>sbatch</code>).</p></li>
+</ul>
+<p>Our script above only had the first type of output, but typical scripts have both, and we’ll see examples of this below.</p>
+</section>
+<section id="cleaning-up-the-slurm-logs" class="level4">
+<h4 class="anchored" data-anchor-id="cleaning-up-the-slurm-logs">Cleaning up the Slurm logs</h4>
+<p>When using batch jobs, your working dir can easily become a confusing mess of anonymous-looking Slurm log files. Two strategies help to prevent this:</p>
+<ul>
+<li>Changing the default Slurm log file name to include a one- or two-word description of the job/script (see below).</li>
+<li>Cleaning up your Slurm log files, by:
+<ul>
+<li>Removing them when no longer needed — as is e.g.&nbsp;appropriate for our current Slurm log file.</li>
+<li>Moving them into a Results dir, which is often appropriate after you’ve run a bioinformatics tool, since the Slurm log file may contain some info you’d like to keep. For example, we may move any Slurm log files for jobs that ran FastQC to a dir <code>results/fastqc/logs</code>.</li>
+</ul></li>
+</ul>
+<div class="sourceCode" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># In this case, we'll simply remove the Slurm log files</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> slurm<span class="pp">*</span>out</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr style="height:1pt; visibility:hidden;">
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The working directory stays the same
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Batch jobs start in the directory that they were submitted from: that is, your working directory remains the same.</p>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+</section>
+</section>
+<section id="monitoring-batch-jobs" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="monitoring-batch-jobs"><span class="header-section-number">2</span> Monitoring batch jobs</h2>
+<p>When submitting batch jobs for your research, you’ll often have jobs that run for a while, and/or you’ll submit many jobs at once. In addition, longer-running jobs and that ask for many cores sometimes remain queued for a while before they start. It’s therefore important to know how you can monitor your batch jobs.</p>
+<section id="a-sleepy-script-for-practice" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="a-sleepy-script-for-practice"><span class="header-section-number">2.1</span> A sleepy script for practice</h3>
+<p>We’ll use another short shell script to practice monitoring and managing batch jobs. First create a new file:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">touch</span> scripts/sleep.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Open the file in the VS Code editor and copy the following into it:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --account=PAS2700</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"I will sleep for 30 seconds"</span> <span class="op">&gt;</span> sleep.txt</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sleep</span> 30s</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"I'm awake! Done with script sleep.sh"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr style="height:1pt; visibility:hidden;">
+<section id="exercise-batch-job-output-recap" class="level4 exercise">
+<h4 class="anchored" data-anchor-id="exercise-batch-job-output-recap"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> Exercise: Batch job output recap</h4>
+<p>Predict what would happen if you submit the <code>sleep.sh</code> script as a batch job using <code>sbatch scripts/sleep.sh</code>:</p>
+<ol type="1">
+<li>How many output files will this batch job produce?</li>
+<li>What will be in each of those files?</li>
+<li>In which directory will the file(s) appear?</li>
+<li>In terms of output, what would have been different if we had run the script directly, using the command <code>bash scripts/sleep.sh</code>?</li>
+</ol>
+<p>Then, test your predictions by running the script.</p>
+<details>
+<summary>
+Click for the solutions
+</summary>
+<ol type="1">
+<li><p>The job will produce 2 files:</p>
+<ul>
+<li><code>slurm-&lt;job-number&gt;.out</code>: The Slurm log file, containing output normally printed to screen.</li>
+<li><code>sleep.txt</code>: Containing output that was redirected to this file in the script.</li>
+</ul></li>
+<li><p>The those files will contain the following:</p>
+<ul>
+<li><code>slurm-&lt;job-number&gt;.out</code>: <em>I’m awake! Done with script sleep.sh</em></li>
+<li><code>sleep.txt</code>: <em>“I will sleep for 30 seconds”</em></li>
+</ul></li>
+<li><p>Both files will end up in your current working directory. Slurm log files always go to the directory from which you submitted the job. Slurm jobs also <em>run</em> from the directory from which you submitted your job, and since we redirected the output simply to <code>sleep.txt</code>, that file was created in our working directory.</p></li>
+<li><p>If we had run the script directly, <code>sleep.txt</code> would have also been created with the same content, but “<em>All done!</em>” would have been printed to screen.</p></li>
+</ol>
+<p>Run the script and check the outputs:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> scripts/sleep.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Submitted batch job 27935840</code></pre>
+<div class="sourceCode" id="cb25"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> sleep.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>I will sleep for 30 seconds</code></pre>
+<div class="sourceCode" id="cb27"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> slurm-27935840.out</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>I'm awake! Done with script sleep.sh</code></pre>
+</details>
+</section>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="checking-the-jobs-status" class="level3" data-number="2.2">
+<h3 data-number="2.2" class="anchored" data-anchor-id="checking-the-jobs-status"><span class="header-section-number">2.2</span> Checking the job’s status</h3>
+<p>After you submit a job, it may be initially be waiting to be allocated resources: i.e., it may be queued (“pending”). Then, the job will start running — you’ve seen all of this with the VS Code Interactive App job as well.</p>
+<p>Whereas Interactive App jobs will keep running until they’ve reached the end of the allocated time<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>, batch jobs will stop as soon as the script has finished. And if the script is still running when the job runs out of its allocated time, it will be killed (stopped) right away.</p>
+<section id="the-squeue-command" class="level4">
+<h4 class="anchored" data-anchor-id="the-squeue-command">The <code>squeue</code> command</h4>
+<p>You can check the status of your batch job using the <code>squeue</code> Slurm command:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="ex">squeue</span> <span class="at">-u</span> <span class="va">$USER</span> <span class="at">-l</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Thu Apr 4 15:47:51 2023
+        JOBID PARTITION     NAME     USER    STATE       TIME TIME_LIMI  NODES NODELIST(REASON)
+     23640814 condo-osu ondemand   jelmer  RUNNING       6:34   2:00:00      1 p0133</code></pre>
+<p>In the command above:</p>
+<ul>
+<li>You specify your username with the <strong><code>-u</code></strong> option (without this, you’d see <em>everyone’s</em> jobs!). In this example, I used the environment variable <code>$USER</code> to get your user name, just so that the very same code will work for everyone (you can also simply type your username if that’s shorter or easier).</li>
+<li>The option <strong><code>-l</code></strong> (lowercase L, not the number 1) will produce more verbose (“long”) output.</li>
+</ul>
+<p>In the output, after a line with the date and time, and a header line, you should see information about a single compute job, as shown above: this is the Interactive App job that runs VS Code. That’s not a “batch” job, but it <em>is</em> a compute job, and all compute jobs are listed.</p>
+<p>The following pieces of information about each job are listed:</p>
+<ul>
+<li><code>JOBID</code> — The job ID number</li>
+<li><code>PARTITION</code> — The type of queue</li>
+<li><code>NAME</code> — The name of the job</li>
+<li><code>USER</code> — The user name of the user who submitted the job</li>
+<li><code>STATE</code> — The job’s state, usually <code>PENDING</code> (queued) or <code>RUNNING</code>. Finished jobs do not appear on the list.</li>
+<li><code>TIME</code> — For how long the job has been running (here as minutes:seconds)</li>
+<li><code>TIME_LIMIT</code> — the amount of time you reserved for the job (here as hours:minutes:seconds)</li>
+<li><code>NODES</code> — The number of nodes reserved for the job</li>
+<li><code>NODELIST(REASON)</code> — When running: the ID of the node on which it is running. When pending: why it is pending.</li>
+</ul>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="squeue-example" class="level4">
+<h4 class="anchored" data-anchor-id="squeue-example"><code>squeue</code> example</h4>
+<p>Now, let’s see a batch job in the <code>squeue</code> listing. Start by submitting the <code>sleep.sh</code> script as a batch job:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> scripts/sleep.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Submitted batch job 12431945</code></pre>
+<p>If you’re quick enough, you may be able to catch the <code>STATE</code> as <code>PENDING</code> before the job starts:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="ex">squeue</span> <span class="at">-u</span> <span class="va">$USER</span> <span class="at">-l</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Thu Apr 4 15:48:26 2023
+         JOBID PARTITION     NAME     USER    STATE       TIME TIME_LIMI  NODES NODELIST(REASON)
+      12520046 serial-40 sleep.sh   jelmer  PENDING       0:00   1:00:00      1 (None)
+      23640814 condo-osu ondemand   jelmer  RUNNING       7:12   2:00:00      1 p0133</code></pre>
+<p>But soon enough it should say <code>RUNNING</code> in the <code>STATE</code> column:</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="ex">squeue</span> <span class="at">-u</span> <span class="va">$USER</span> <span class="at">-l</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Thu Apr 4 15:48:39 2023
+         JOBID PARTITION     NAME     USER    STATE       TIME TIME_LIMI  NODES NODELIST(REASON)
+      12520046 condo-osu sleep.sh   jelmer  RUNNING       0:12   1:00:00      1 p0133
+      23640814 condo-osu ondemand   jelmer  RUNNING       8:15   2:00:00      1 p0133</code></pre>
+<p>The script should finish after 30 seconds (because your command was <code>sleep 30s</code>), after which the job will immediately disappear from the <code>squeue</code> listing, because only pending and running jobs are shown:</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="ex">squeue</span> <span class="at">-u</span> <span class="va">$USER</span> <span class="at">-l</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Mon Aug 21 15:49:26 2023
+         JOBID PARTITION     NAME     USER    STATE       TIME TIME_LIMI  NODES NODELIST(REASON)
+      23640814 condo-osu ondemand   jelmer  RUNNING       9:02   2:00:00      1 p0133</code></pre>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="checking-the-output-files" class="level4">
+<h4 class="anchored" data-anchor-id="checking-the-output-files">Checking the output files</h4>
+<p>Whenever you’re running a script as a batch job, even if you’ve been monitoring it with <code>squeue</code>, you should also make sure it ran <em>successfully</em>. You typically do so by checking the expected output file(s). As mentioned above, you’ll usually have two types of output from a batch job:</p>
+<ul>
+<li>File(s) directly created by the command inside the script (here, <code>sleep.sh</code>).</li>
+<li>A Slurm log file with the script’s standard output and standard error (i.e.&nbsp;output that is normally printed to screen).</li>
+</ul>
+<p>And you saw in the exercise above that this was also the case for the output of our sleepy script:</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> sleep.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>I will sleep for 30 seconds</code></pre>
+<div class="sourceCode" id="cb41"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> slurm-12520046.out</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>I'm awake! Done with script sleep.sh</code></pre>
+<hr style="height:1pt; visibility:hidden;">
+<p>Let’s keep things tidy and remove the sleepy script outputs:</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># (Replace the number in the file name with whatever you got! - check with 'ls')</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> slurm<span class="pp">*</span>.out sleep.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr style="height:1pt; visibility:hidden;">
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+See output added to the Slurm log file in real time
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Text will be added to the Slurm log file in real time as the running script (or the program ran by the script) outputs it. However, the output that commands like <code>cat</code> and <code>less</code> print are static.</p>
+<p>Therefore, if you find yourself opening/printing the contents of the Slurm log file again and again to keep track of progress, then instead <strong>use <code>tail -f</code></strong>, which will “follow” the file and <em>will</em> print new text as it’s added to the Slurm log file:</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># See the last lines of the file, with new contents added in real time</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span> <span class="at">-f</span> slurm-12520046.out</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>To exit the <code>tail -f</code> livestream, press <kbd>Ctrl</kbd>+<kbd>C</kbd>.</p>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+</section>
+<section id="cancelling-jobs" class="level3" data-number="2.3">
+<h3 data-number="2.3" class="anchored" data-anchor-id="cancelling-jobs"><span class="header-section-number">2.3</span> Cancelling jobs</h3>
+<p>Sometimes, you want to cancel one or more jobs, because you realize you made a mistake in the script, or because you used the wrong input files as arguments. You can do so using <code>scancel</code>:</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [Example - DON'T run this: the second line would cancel your VS Code job]</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="ex">scancel</span> 2979968        <span class="co"># Cancel job number 2979968</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="ex">scancel</span> <span class="at">-u</span> <span class="va">$USER</span>       <span class="co"># Cancel all your running and queued jobs (careful with this!)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr style="height:1pt; visibility:hidden;">
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Additional job management commands and options <em>(Click to expand)</em>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><p>Use <code>squeue</code>’s <code>-t</code> option to restrict the type of jobs you want to show. For example, to only show running and not pending jobs:</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="ex">squeue</span> <span class="at">-u</span> <span class="va">$USER</span> <span class="at">-t</span> RUNNING</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>You can see more details about any running or finished job, including the amount of time it ran for:</p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="ex">scontrol</span> show job <span class="op">&lt;</span>jobID<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>UserId=jelmer(33227) GroupId=PAS0471(3773) MCS_label=N/A
+Priority=200005206 Nice=0 Account=pas2700 QOS=pitzer-default
+JobState=RUNNING Reason=None Dependency=(null)
+Requeue=1 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0
+RunTime=00:02:00 TimeLimit=01:00:00 TimeMin=N/A
+SubmitTime=2020-12-14T14:32:44 EligibleTime=2020-12-14T14:32:44
+AccrueTime=2020-12-14T14:32:44
+StartTime=2020-12-14T14:32:47 EndTime=2020-12-14T15:32:47 Deadline=N/A
+SuspendTime=None SecsPreSuspend=0 LastSchedEval=2020-12-14T14:32:47
+Partition=serial-40core AllocNode:Sid=pitzer-login01:57954
+[...]</code></pre></li>
+<li><p>Update directives for a job that has already been submitted (this can only be done <em>before</em> the job has started running):</p>
+<div class="sourceCode" id="cb49"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="ex">scontrol</span> update job=<span class="op">&lt;</span>jobID<span class="op">&gt;</span> timeLimit=5:00:00</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>Hold and release a pending (queued) job, e.g.&nbsp;when needing to update input file before it starts running:</p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="ex">scontrol</span> hold <span class="op">&lt;</span>jobID<span class="op">&gt;</span>       <span class="co"># Job won't start running until released</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="ex">scontrol</span> release <span class="op">&lt;</span>jobID<span class="op">&gt;</span>    <span class="co"># Job is free to start</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+</div>
+</div>
+</div>
+<p><br></p>
+</section>
+</section>
+<section id="common-slurm-options" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="common-slurm-options"><span class="header-section-number">3</span> Common Slurm options</h2>
+<p>Here, we’ll go through the most commonly used Slurm options. As pointed out above, each of these can either be:</p>
+<ul>
+<li>Passed on the command line: <code>sbatch --account=PAS2700 myscript.sh</code> <em>(has precedence over the next)</em></li>
+<li>Added at the top of the script you’re submitting: <code>#SBATCH --account=PAS2700</code>.</li>
+</ul>
+<p>Also, note that many Slurm options have a corresponding long (<code>--account=PAS2700</code>) and short format (<code>-A PAS2700</code>). For clarity, we’ll stick to long format options here.</p>
+<section id="account-the-osc-project" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="account-the-osc-project"><span class="header-section-number">3.1</span> <code>--account</code>: The OSC project</h3>
+<p>As seen above. When submitting a batch job, always specify the OSC project (“account”).</p>
+</section>
+<section id="time-time-limit-wall-time" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="time-time-limit-wall-time"><span class="header-section-number">3.2</span> <code>--time</code>: Time limit (“wall time”)</h3>
+<p>Use the <code>--time</code> option to specify the maximum amount of time your job will run for:</p>
+<ul>
+<li><p>Your job will be killed (stopped) as soon as it hits the specified time limit!</p></li>
+<li><p>Compare “Wall time” with “core hours”: if a job runs for 2 hour and used 8 cores, the wall time was 2 hours and the number of core hours was 2 x 8 = 16.</p></li>
+<li><p>The default time limit is 1 hour. Acceptable time formats include:</p>
+<ul>
+<li><code>minutes</code> (e.g.&nbsp;<code>60</code> =&gt; 60 minutes)</li>
+<li><code>hours:minutes:seconds</code> (e.g.&nbsp;<code>1:00:00</code> =&gt; 60 minutes)</li>
+<li><code>days-hours</code> (e.g.&nbsp;<code>2-12</code> =&gt; two-and-a-half days)</li>
+</ul></li>
+<li><p>For single-node jobs, up to 168 hours (7 days) can be requested. If that’s not enough, you can request access to the <code>longserial</code> queue for jobs of up to 336 hours (14 days).</p></li>
+<li><p>OSC bills you for the time your job actually used, not what you reserved. But jobs asking for more time may be queued longer before they start.</p></li>
+</ul>
+<p>An example, asking for 2 hours in the “minute-format”:</p>
+<div class="sourceCode" id="cb51"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --time=120</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Or for 12 hours in the “hour-format”:</p>
+<div class="sourceCode" id="cb52"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --time=12:00:00</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+When in doubt, reserve more time
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>It is common to be uncertain about how much time your job will take (i.e., how long it will take for your script to finish). Whenever this happens, ask for more, perhaps much more, time than what you think/guesstimate you will need. It is really annoying to have a job run out of time after several hours, while the increase in queueing time for jobs asking for more time is often quite minimal at OSC.</p>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+<section id="exercise-exceed-the-time-limit" class="level4 exercise">
+<h4 class="anchored" data-anchor-id="exercise-exceed-the-time-limit"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> Exercise: exceed the time limit</h4>
+<p>Modify the <code>sleep.sh</code> script to reserve only 1 minute for the job while making the script run for longer than that.</p>
+<p>If you succeed in exceeding the time limit, an error message will be printed. Where do you think this error message will be printed: to the screen, in the Slurm log file, or in <code>sleep.txt</code>? After waiting for the job to be killed after 60 seconds, check if you were correct and what the error message is.</p>
+<details>
+<summary>
+Click for the solution
+</summary>
+<p>This script would do the trick, where we request 1 minute of wall-time while we let the script sleep for 80 seconds:</p>
+<div class="sourceCode" id="cb53"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --account=PAS2700</span></span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --time=1</span></span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"I will sleep for 80 seconds"</span> <span class="op">&gt;</span> sleep.txt</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a><span class="fu">sleep</span> 80s</span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"I'm awake! Done with script sleep.sh"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Submit it as usual:</p>
+<div class="sourceCode" id="cb54"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> scripts/sleep.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Submitted batch job 23641567</code></pre>
+<p>This would result in the following type of error, which will be printed in the Slurm log file:</p>
+<pre class="bash-out-solo"><code>slurmstepd: error: *** JOB 23641567 ON p0133 CANCELLED AT 2024-04-04T14:55:24 DUE TO TIME LIMIT ***</code></pre>
+</details>
+</section>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="cores-nodes-and-tasks" class="level3" data-number="3.3">
+<h3 data-number="3.3" class="anchored" data-anchor-id="cores-nodes-and-tasks"><span class="header-section-number">3.3</span> Cores (&amp; nodes and tasks)</h3>
+<p>There are several options to specify the number of nodes (≈ computers), cores, or “tasks” (processes). These are separate but related options, and this is where things can get confusing! Some background:</p>
+<ul>
+<li>Note that Slurm mostly uses the terms “core” and “CPU” interchangeably<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>. More generally with bioinformatics tools, “thread” is also commonly used interchangeably with core/CPU<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>. Therefore, as also mentioned in the session on OSC, for our purposes, you can <strong>think of core, CPU, and thread as synonyms</strong> that refer to the sub-parts/components of a node that you can reserve and use separately.</li>
+</ul>
+<ul>
+<li><p>Running a program with multiple threads/cores/CPUs (“multi-threading”) is very common, and this can make the running time of such programs much shorter. While the specifics depend on the program, using 8-12 cores is often a sweet spot, whereas asking for even more cores can lead to rapidly <strong>diminishing returns</strong>.</p></li>
+<li><p>Running multiple processes (tasks) or needing multiple nodes in a single batch job is not common.</p></li>
+</ul>
+<p>In practice, my recommendations are to basically always:</p>
+<ul>
+<li><p>Specify the number of threads/cores/CPUs to Slurm with <strong><code>--cpus-per-task=n</code></strong> (the short notation is <code>-c</code>).</p></li>
+<li><p>Keep the number of tasks and nodes to their defaults of 1 (in which case the above <code>-c</code> option specifies the number of cores, period).</p></li>
+<li><p>Tell the program that you’re running about the number of available cores — most bioinformatics tools have an option like <code>--cores</code> or <code>--threads</code>. <strong>You should set this to the same value <code>n</code> as the <code>--cpus-per-task</code>.</strong></p></li>
+</ul>
+<p>An example, where we ask for 8 CPUs/cores/threads:</p>
+<div class="sourceCode" id="cb57"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --cpus-per-task=8</span></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a><span class="co"># And we tell a fictional program about that number of cores:</span></span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a><span class="ex">cool_program.py</span> <span class="at">--cores</span> 8 sampleA_R1.fastq.gz</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Rare cases: multiple nodes or tasks <em>(Click to expand)</em>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><p>You can specify the number of nodes with <code>--nodes</code> and the number of tasks with <code>--ntasks</code> and/or <code>--ntasks-per-node</code>; all have defaults of 1 (see the table below).</p></li>
+<li><p>Only ask for <strong>more than one node</strong> when a program is parallelized with e.g.&nbsp;“MPI”, which is rare in bioinformatics.</p></li>
+<li><p>For jobs with multiple processes (tasks), you can use <code>--ntasks=n</code> or <code>--ntasks-per-node=n</code> — this is also quite rare! However, note in practice, specifying the number of tasks <code>n</code> with one of these options is equivalent to using <code>--cpus-per-task=n</code>, in the sense that both ask for <code>n</code> cores that can subsequently be used by a program in your script. Therefore, some people use <code>tasks</code> as opposed to <code>cpus</code> for multi-threading, and you can see this usage in the OSC documentation too. Yes, this is confusing!</p></li>
+</ul>
+<p>Here is an overview of the options related to cores, tasks, and nodes:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 40%">
+<col style="width: 13%">
+<col style="width: 32%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Resource/use</th>
+<th>short</th>
+<th>long</th>
+<th style="text-align: center;">default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Nr. of cores/CPUs/threads (per task)</td>
+<td><code>-c 1</code></td>
+<td><code>--cpus-per-task=1</code></td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="even">
+<td>Nr. of “tasks” (processes)</td>
+<td><code>-n 1</code></td>
+<td><code>--ntasks=1</code></td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="odd">
+<td>Nr. of tasks per node</td>
+<td>-</td>
+<td><code>--ntasks-per-node=1</code></td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="even">
+<td>Nr. of nodes</td>
+<td><code>-N 1</code></td>
+<td><code>--nodes=1</code></td>
+<td style="text-align: center;">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="mem-ram-memory" class="level3" data-number="3.4">
+<h3 data-number="3.4" class="anchored" data-anchor-id="mem-ram-memory"><span class="header-section-number">3.4</span> <code>--mem</code>: RAM memory</h3>
+<p>Use the <code>--mem</code> option to specify the maximum amount of RAM (Random Access Memory) that your job can use:</p>
+<ul>
+<li><p>Each core on a node has 4 GB of memory “on it”, and therefore, the default amount of memory you will get is 4 GB is per reserved core. For example, if you specify <code>--cpus-per-task=4</code>, you will have 16 GB of memory. And the default number of cores is 1, so the default amount of memory is 4 GB.</p></li>
+<li><p>Because it is common to ask for multiple cores and due to the above-mentioned adjustment of the memory based on the number of cores, you will usually end up having enough memory automatically — therefore, it is common to omit the <code>--mem</code> option.</p></li>
+<li><p>The default <code>--mem</code> unit is MB (MegaBytes); append <code>G</code> for GB (i.e.&nbsp;<code>100</code> means 100 MB, <code>10G</code> means 10 GB).</p></li>
+<li><p>Like with the time limit, your job gets killed by Slurm when it hits the memory limit.</p></li>
+<li><p>The maximum amount of memory you can request on regular Pitzer compute nodes is 177 GB (and 117 GB on Owens). If you need more than that, you will need one of the specialized <code>largemem</code> or <code>hugemem</code> nodes — switching to such a node can happen automatically based on your requested amount, though with caveats: see <a href="https://www.osc.edu/resources/technical_support/supercomputers/pitzer/batch_limit_rules">this OSC page for details on Pitzer</a>, and <a href="https://www.osc.edu/resources/technical_support/supercomputers/owens/batch_limit_rules">this page for details on Owens</a>.</p></li>
+</ul>
+<p>For example, to request 20 GB of RAM:</p>
+<div class="sourceCode" id="cb58"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --mem=20G</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+It is not always clear what happened when your job ran out of memory <em>(Click to expand)</em>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Whereas you get a very clear Slurm error message when you hit the time limit (as seen in the exercise above), hitting the memory limit can result in a variety of errors.</p>
+<p>But look for keywords such as “Killed”, “Out of Memory” / “OOM”, and “Core Dumped”, as well as actual “dumped cores” in your working dir (large files with names like <code>core.&lt;number&gt;</code>, these can be deleted).</p>
+</div>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+<section id="exercise-adjusting-cores-and-memory" class="level4 exercise">
+<h4 class="anchored" data-anchor-id="exercise-adjusting-cores-and-memory"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> Exercise: Adjusting cores and memory</h4>
+<p>Think about submitting a shell script that runs a bioinformatics tool like FastQC as a batch job, in the following two scenarios:</p>
+<ol type="1">
+<li>The program has an option <code>--threads</code>, and you want to set that to 8. The program also says you’ll need 25 GB of memory. What <code>#SBATCH</code> options related to this will you use?</li>
+</ol>
+<details>
+<summary>
+Click for the solution
+</summary>
+<p>You should only need the following, since this will give you 8 * 4 = 32 GB of memory. There is no point in “downgrading” the amount of memory.</p>
+<div class="sourceCode" id="cb59"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --cpus-per-task=8</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<ol start="2" type="1">
+<li>The program has an option <code>--cores</code>, and you want to set that to 12. The program also says you’ll need 60 GB of memory. What <code>#SBATCH</code> options will you use?</li>
+</ol>
+<details>
+<summary>
+Click for the solution
+</summary>
+<p>Here, it will make sense to ask for <code>--mem</code> separately.</p>
+<div class="sourceCode" id="cb60"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --cpus-per-task=12</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --mem=60G</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+Alternatively, you could ask for 15 cores, but then instruct the program to use only 12. Or you could reason that since you’ll need 15 cores anyway due to the amount of memory you’ll need, you might as well instruct the program to use all 15, since this may well speed things up a little more.
+</details>
+</section>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="output-slurm-log-files" class="level3" data-number="3.5">
+<h3 data-number="3.5" class="anchored" data-anchor-id="output-slurm-log-files"><span class="header-section-number">3.5</span> <code>--output</code>: Slurm log files</h3>
+<p>As we saw above, by default, all output from a script that would normally be printed to screen will end up in a Slurm log file when we submit the script as a batch job. This file will be created in the directory from which you submitted the script, and will be called <code>slurm-&lt;job-number&gt;.out</code>, e.g.&nbsp;<code>slurm-12431942.out</code>.</p>
+<p>But it is possible to change the name of this file. For instance, it can be useful to include the <strong>name of the bioinformatics program</strong> that the script runs, so that it’s easier to recognize this file later. We can do this with the <code>--output</code> option, e.g.&nbsp;<code>--output=slurm-fastqc.out</code> if we were running FastQC.</p>
+<p>But you’ll generally want to keep the batch job number in the file name too<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>. Since we won’t know the batch job number in advance, we need a trick here — and that is to use <strong><code>%j</code></strong>, which represents the batch job number:</p>
+<div class="sourceCode" id="cb61"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --output=slurm-fastqc-%j.out</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The output streams <code>stdout</code> and <code>stderr</code>, and separating them <em>(Click to expand)</em>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>By default, two output streams from commands and programs called “standard output” (<code>stdout</code>) and “standard error” (<code>stderr</code>) are printed to screen. Without discussing this in detail, we have seen this several times: any regular output by a command is <code>stdout</code> and any error messages we’ve seen were <code>stderr</code>. Both of these streams by default also end up in the same Slurm log file, but it is possible to separate them into different files.</p>
+<p>Because <code>stderr</code>, as you might have guessed, often contains error messages, it could be useful to have those in a separate file. You can make that happen with the <code>--error</code> option, e.g.&nbsp;<code>--error=slurm-fastqc-%j.err</code>.</p>
+<p>However, reality is more messy: some programs print their main output not to a file but to standard out, and their logging output, errors and regular messages alike, to standard error. Yet other programs use <code>stdout</code> or <code>stderr</code> for <em>all</em> messages.</p>
+<p><strong>I therefore usually only specify <code>--output</code>,</strong> <strong>such that both streams end up in that file.</strong></p>
+</div>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="mail-type-receive-emails" class="level3" data-number="3.6">
+<h3 data-number="3.6" class="anchored" data-anchor-id="mail-type-receive-emails"><span class="header-section-number">3.6</span> <code>--mail-type</code>: Receive emails</h3>
+<p>You can use the <code>--mail-type</code> option to have Slurm email you for example when a job begins, completes or fails. You don’t have to specify your email address: you’ll be automatically emailed on the email address that is linked to your OSC account. I tend to use:</p>
+<ul>
+<li><strong><code>FAIL</code> for shorter-running jobs</strong> (roughly up to a few hours)<br>
+<code>FAIL</code> will email you upon job failure, e.g.&nbsp;when the scripts exits with an error or times out. This is especially useful when submitting many jobs with a loop: this way you know immediately whether any of the jobs failed.</li>
+<li><strong><code>END</code> and <code>FAIL</code> for longer-running jobs</strong><br>
+This is helpful because you don’t want to have to keep checking in on jobs that run for many hours.</li>
+</ul>
+<p>I would avoid having Slurm send you emails upon regular completion for shorter jobs, because you may get inundated with emails and then quickly start ignoring the emails altogether.</p>
+<div class="sourceCode" id="cb62"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --mail-type=</span><span class="re">END</span><span class="co">,FAIL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb63"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --mail-type=FAIL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Get warned when your job is close to its time limit <em>(Click to expand)</em>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>You may also find the values <code>TIME_LIMIT_90</code>, <code>TIME_LIMIT_80</code>, and <code>TIME_LIMIT_50</code> useful for very long-running jobs, which will warn you when the job is at 90/80/50% of the time limit. For example, it is possible to email OSC to ask for an extension on individual jobs. You shouldn’t do this often, but if you have a job that ran for 6 days and it looks like it may time out, this may well be worth it.</p>
+</div>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+<section id="exercise-submit-your-fastqc-script-as-a-batch-job" class="level4 exercise">
+<h4 class="anchored" data-anchor-id="exercise-submit-your-fastqc-script-as-a-batch-job"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> Exercise: Submit your FastQC script as a batch job</h4>
+<p>In <a href="../shell/03_scripts.html">this tutorial</a>, we created a shell script to run FastQC, and ran it as follows:</p>
+<div class="sourceCode" id="cb64"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="va">fastq_file</span><span class="op">=</span>../../garrigos_data/fastq/ERR10802863_R1.fastq.gz</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/fastqc.sh <span class="st">"</span><span class="va">$fastq_file</span><span class="st">"</span> results/fastqc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ol type="1">
+<li>Add an <code>#SBATCH</code> lines to the script to specify the OSC project <code>PAS2700</code>, and submit the modified script as a batch job with the same arguments as above.</li>
+</ol>
+<details>
+<summary>
+Solution (click here)
+</summary>
+<ul>
+<li><p>The top of your script should read as follows:</p>
+<div class="sourceCode" id="cb65"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --account=PAS2700</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>Submit the script as follows:</p>
+<div class="sourceCode" id="cb66"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="va">fastq_file</span><span class="op">=</span>../../garrigos_data/fastq/ERR10802863_R1.fastq.gz</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> scripts/fastqc.sh <span class="st">"</span><span class="va">$fastq_file</span><span class="st">"</span> results/fastqc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Submitted batch job 12431988</code></pre></li>
+</ul>
+</details>
+<ol start="2" type="1">
+<li><p>Monitor your job with <code>squeue</code>.</p></li>
+<li><p>When it has finished, check the Slurm log file in your working dir and the main FastQC output files in <code>results/fastqc</code>.</p></li>
+<li><p>Bonus — add these <code>#SBATCH</code> options, then resubmit:</p>
+<ul>
+<li>Let the Slurm log file include ‘fastqc’ in the file name as well as the job ID number.</li>
+<li>Let Slurm email you both when the job completes normally and when it fails. Check that you received the email.</li>
+</ul></li>
+</ol>
+<details>
+<summary>
+Solution (click here)
+</summary>
+<ul>
+<li><p>The top of your script should read as follows:</p>
+<div class="sourceCode" id="cb68"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --account=PAS2700</span></span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --output=slurm-fastqc-%j.out</span></span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a><span class="co">#SBATCH --mail-type=</span><span class="re">END</span><span class="co">,FAIL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+</details>
+</section>
+<p><br></p>
+</section>
+</section>
+<section id="in-closing-making-sure-your-jobs-ran-successfully" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="in-closing-making-sure-your-jobs-ran-successfully"><span class="header-section-number">4</span> In closing: making sure your jobs ran successfully</h2>
+<p>Here are some summarizing notes on the overall strategy to monitor your batch jobs:</p>
+<ul>
+<li><p>To see whether your job(s) have started, check the queue (with <code>squeue</code>) or check for Slurm log files (with <code>ls</code>).</p></li>
+<li><p>Once the jobs are no longer listed in the queue, they will have finished: either successfully or because of an error.</p></li>
+<li><p>When you’ve submitted many jobs that run the same script for different samples/files:</p>
+<ul>
+<li>Carefully read the full Slurm log file, and check other output files, for at least 1 one of the jobs.</li>
+<li>Check whether no jobs have failed: via email when using <code>--mail-type=END</code>, or by checking the <code>tail</code> of each log for “Done with script” messages<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>.</li>
+<li>Check that you have the expected number of output files and that no files have size zero (run <code>ls -lh</code>).</li>
+</ul></li>
+</ul>
+<p><br></p>
+</section>
+<section id="self-study-material" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="self-study-material"><span class="header-section-number">5</span> Self-study material</h2>
+<section id="slurm-environment-variables" class="level4">
+<h4 class="anchored" data-anchor-id="slurm-environment-variables">Slurm environment variables</h4>
+<p>Inside a shell script that will be submitted as a batch job, you can use a number of Slurm environment variables that will automatically be available, such as:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 24%">
+<col style="width: 51%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Corresponding option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>$SLURM_JOB_ID</code></td>
+<td><em>N/A</em></td>
+<td>Job ID assigned by Slurm</td>
+</tr>
+<tr class="even">
+<td><code>$SLURM_JOB_NAME</code></td>
+<td><code>--job-name</code></td>
+<td>Job name</td>
+</tr>
+<tr class="odd">
+<td><code>$SLURM_CPUS_PER_TASK</code></td>
+<td><code>-c</code> / <code>--cpus-per-task</code></td>
+<td>Number of CPUs (~ cores/threads) available</td>
+</tr>
+<tr class="even">
+<td><code>$SLURM_MEM_PER_NODE</code></td>
+<td><code>--mem</code></td>
+<td>Amount of memory available (per node)</td>
+</tr>
+<tr class="odd">
+<td><code>$TMPDIR</code></td>
+<td><em>N/A</em></td>
+<td>Path to the Compute storage available during the job</td>
+</tr>
+<tr class="even">
+<td><code>$SLURM_SUBMIT_DIR</code></td>
+<td><em>N/A</em></td>
+<td>Path to dir from which job was submitted.</td>
+</tr>
+</tbody>
+</table>
+<hr style="height:1pt; visibility:hidden;">
+<p>As an example of how these environment variables can be useful, the command below uses <code>$SLURM_CPUS_PER_TASK</code> in its call to the program STAR inside the script:</p>
+<div class="sourceCode" id="cb69"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="ex">STAR</span> <span class="at">--runThreadN</span> <span class="st">"</span><span class="va">$SLURM_CPUS_PER_TASK</span><span class="st">"</span> <span class="at">--genomeDir</span> ...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>With this strategy, you will automatically use the correct (requested) number of cores, and don’t risk having a mismatch. Also, if you need to change the number of cores, you’ll only have to modify it in one place: in the resource request to Slurm.</p>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="interactive-shell-jobs" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="interactive-shell-jobs"><span class="header-section-number">5.1</span> Interactive shell jobs</h3>
+<p>Interactive shell jobs will grant you interactive shell access on a compute node. We’ve been working in a shell in VS Code Server, which means that we already have interactive shell access on a compute node!</p>
+<p>However, we only have access to 1 core and 4 GB of memory in this VS Code shell, and there is no way of changing this. If you want an interactive shell job with more resources, you’ll have to start one with Slurm commands.</p>
+<p>A couple of different commands can be used to start an interactive shell job. I prefer the general <code>srun</code> command<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>, which we can use with <code>--pty /bin/bash</code> added to get an interactive Bash shell.</p>
+<div class="sourceCode" id="cb70"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="ex">srun</span> <span class="at">--account</span><span class="op">=</span>PAS2700 <span class="at">--pty</span> /bin/bash</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>srun: job 12431932 queued and waiting for resources  
+srun: job 12431932 has been allocated resources
+
+[...regular login info, such as quota, not shown...]
+
+[jelmer@p0133 PAS2700]$</code></pre>
+<p>There we go! First some Slurm scheduling info was printed to screen: initially, the job was queued, and then it was “allocated resources”: that is, computing resources such as a compute node were reserved for the job. After that:</p>
+<ul>
+<li><p>The job starts and because we’ve reserved an <em>interactive</em> shell job, a new Bash shell is initiated: for that reason, we get to see our regular login info once again.</p></li>
+<li><p>We have now moved to the <strong>compute node</strong> at which our interactive job is running, so you should have a different <code>p</code> number in your prompt.</p></li>
+</ul>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="table-with-sbatch-options" class="level3" data-number="5.2">
+<h3 data-number="5.2" class="anchored" data-anchor-id="table-with-sbatch-options"><span class="header-section-number">5.2</span> Table with <code>sbatch</code> options</h3>
+<p>First, here are the options we discussed above:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 35%">
+<col style="width: 17%">
+<col style="width: 31%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Resource/use</th>
+<th>short</th>
+<th>long</th>
+<th style="text-align: center;">default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Project to be billed</td>
+<td><code>-A PAS2700</code></td>
+<td><code>--account=PAS2700</code></td>
+<td style="text-align: center;"><em>N/A</em></td>
+</tr>
+<tr class="even">
+<td>Time limit</td>
+<td><code>-t 4:00:00</code></td>
+<td><code>--time=4:00:00</code></td>
+<td style="text-align: center;">1:00:00</td>
+</tr>
+<tr class="odd">
+<td>Nr of nodes</td>
+<td><code>-N 1</code></td>
+<td><code>--nodes=1</code></td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="even">
+<td>Nr of cores</td>
+<td><code>-c 1</code></td>
+<td><code>--cpus-per-task=1</code></td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="odd">
+<td>Nr of “tasks” (processes)</td>
+<td><code>-n 1</code></td>
+<td><code>--ntasks=1</code></td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="even">
+<td>Nr of tasks per node</td>
+<td>-</td>
+<td><code>--ntasks-per-node</code></td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="odd">
+<td>Memory limit per node</td>
+<td>-</td>
+<td><code>--mem=4G</code></td>
+<td style="text-align: center;"><em>(4G)</em></td>
+</tr>
+<tr class="even">
+<td>Log output file</td>
+<td><code>-o</code></td>
+<td><code>--output=slurm-fastqc-%j.out</code></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td>Error output (<em>stderr</em>)</td>
+<td><code>-e</code></td>
+<td><code>--error=slurm-fastqc-%j.err</code></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td>Get email when job starts, ends,<br>fails, or all of the above</td>
+<td>-</td>
+<td><code>--mail-type=START</code> <br> <code>--mail-type=END</code> <br> <code>--mail-type=FAIL</code> <br> <code>--mail-type=ALL</code></td>
+<td style="text-align: center;"></td>
+</tr>
+</tbody>
+</table>
+<hr style="height:1pt; visibility:hidden;">
+<p>And a couple of additional ones:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 47%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Resource/use</th>
+<th>option</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Job name (displayed in the queue)</td>
+<td><code>--job-name=fastqc</code></td>
+</tr>
+<tr class="even">
+<td>Partition (=queue type)</td>
+<td><code>--partition=longserial</code> <br> <code>--partition=hugemem</code></td>
+</tr>
+<tr class="odd">
+<td>Let job begin only after a specific time</td>
+<td><code>--begin=2024-04-05T12:00:00</code></td>
+</tr>
+<tr class="even">
+<td>Let job begin only after another job is done</td>
+<td><code>--dependency=afterany:123456</code></td>
+</tr>
+</tbody>
+</table>
+<p><br></p>
+
+
+</section>
+</section>
+
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p> This type of output is referred standard out (non-error output) and standard error — see the box in the <a href="#output-slurm-log-files">section on Slurm log files</a> for more<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Unless you actively “Delete” to job on the Ondemand website.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Even though technically, one CPU often contains multiple cores.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Even though technically, one core often contains multiple threads.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>For instance, we might be running the FastQC script multiple times, and otherwise those would all have the same name and be overwritten.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>The combination of using strict Bash settings (<code>set -euo pipefail</code>) and printing a line that marks the end of the script (<code>echo "Done with script"</code>) makes it easy to spot scripts that failed, because they won’t have that marker line at the end of the Slurm log file.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>Other options: <code>salloc</code> works almost identically to <code>srun</code>, whereas <code>sinteractive</code> is an OSC convenience wrapper but with more limited options.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/mcic-osu\.github\.io\/tutorials");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>2024-2025, Jelmer Poelstra</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/mcic-osu/tutorials">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -88,11 +88,167 @@ ul.task-list li input[type="checkbox"] {
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
-  <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> <i class="bi bi-house-door" role="img">
-</i> 
-<span class="menu-text"> </span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-shell" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Shell</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-shell">    
+        <li>
+    <a class="dropdown-item" href="./shell/01_shell1.html">
+ <span class="dropdown-text">Intro the Unix Shell</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./shell/02_shellfiles.html">
+ <span class="dropdown-text">Managing files in the shell</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./shell/03_scripts.html">
+ <span class="dropdown-text">Writing shell scripts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./shell/04_cli-tools.html">
+ <span class="dropdown-text">Running CLI tools</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./shell/05_bonus.html">
+ <span class="dropdown-text">Advanced shell</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-osc" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">OSC</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-osc">    
+        <li>
+    <a class="dropdown-item" href="./osc/01_osc1.html">
+ <span class="dropdown-text">Intro to OSC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./osc/02_vscode.html">
+ <span class="dropdown-text">VS Code</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./osc/03_osc2.html">
+ <span class="dropdown-text">More about OSC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./osc/05_slurm.html">
+ <span class="dropdown-text">Slurm</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./osc/06_ssh.html">
+ <span class="dropdown-text">SSH</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-git" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Git</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-git">    
+        <li>
+    <a class="dropdown-item" href="./git/02_git1.html">
+ <span class="dropdown-text">Git 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./git/03_git2.html">
+ <span class="dropdown-text">Git 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./git/04_git3.html">
+ <span class="dropdown-text">Git 3</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reproducibility" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reproducibility</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reproducibility">    
+        <li>
+    <a class="dropdown-item" href="./reprod/project-org.html">
+ <span class="dropdown-text">Project file organization</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./reprod/markdown.html">
+ <span class="dropdown-text">Markdown</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-nextflow" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Nextflow</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-nextflow">    
+        <li>
+    <a class="dropdown-item" href="./nf-run/01_pipelines.html">
+ <span class="dropdown-text">Intro to pipelines</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./nf-run/02_nfcore.html">
+ <span class="dropdown-text">Running an nf-core pipeline</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-metabar" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Metabar</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-metabar">    
+        <li>
+    <a class="dropdown-item" href="./metabar/01_qc-trim.html">
+ <span class="dropdown-text">Read QC and trimming</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-rna-seq" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">RNA-Seq</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-rna-seq">    
+        <li>
+    <a class="dropdown-item" href="./rnaseq/01_data.html">
+ <span class="dropdown-text">Data files</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./rnaseq/02_nfc-rnaseq.html">
+ <span class="dropdown-text">The nf-core rnaseq pipeline</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./rnaseq/03_DE.html">
+ <span class="dropdown-text">Differential expression analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./rnaseq/04_fastqc.html">
+ <span class="dropdown-text">Read QC with FastQC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./rnaseq/05_trimgalore.html">
+ <span class="dropdown-text">Trimming reads with TrimGalore</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other">    
+        <li class="dropdown-header">BACTERIAL WGS</li>
+        <li>
+    <a class="dropdown-item" href="./bac/01_preprocess.html">
+ <span class="dropdown-text">Data preprocessing</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./bac/02_assembly.html">
+ <span class="dropdown-text">Genome assembly</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./bac/03_annotation.html">
+ <span class="dropdown-text">Genome annotation</span></a>
+  </li>  
+    </ul>
+  </li>
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
@@ -106,12 +262,12 @@ ul.task-list li input[type="checkbox"] {
       <a href="" title="" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label=""><i class="bi bi-github"></i></a>
       <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
           <li>
-            <a class="dropdown-item quarto-navbar-tools-item" href="https://github.com/jelmerp/pracs-sp24">
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://github.com/mcic-osu/tutorials">
             Source Code
             </a>
           </li>
           <li>
-            <a class="dropdown-item quarto-navbar-tools-item" href="https://github.com/jelmerp/pracs-sp24/issues/new">
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://mcic-osu.github.io/tutorials/issues/new">
             Report an Issue
             </a>
           </li>
@@ -151,6 +307,7 @@ ul.task-list li input[type="checkbox"] {
 
 
 <p>Welcome to the MCIC bioinformatics tutorials website!</p>
+<p>Use the top navigation bars to browse through the available tutorials.</p>
 
 
 
@@ -245,7 +402,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp("XXX");
+      var filterRegex = new RegExp("https:\/\/mcic-osu\.github\.io\/tutorials");
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
@@ -584,7 +741,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/jelmerp/pracs-sp24">
+    <a class="nav-link" href="https://github.com/mcic-osu/tutorials">
       <i class="bi bi-github" role="img">
 </i> 
     </a>

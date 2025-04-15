@@ -1,1 +1,1 @@
-Sitemap: XXX/sitemap.xml
+Sitemap: https://mcic-osu.github.io/tutorials/sitemap.xml

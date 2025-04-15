@@ -4,32 +4,105 @@ project:
 
 website:
   title: "MCIC Bioinformatics Tutorials"
-  repo-url: https://github.com/mcic-osu/XXX
-  site-url: XXX
+  repo-url: https://github.com/mcic-osu/tutorials
+  site-url: https://mcic-osu.github.io/tutorials
   page-navigation: true
   back-to-top-navigation: true
   navbar:
     background: "#ba0c2f"
     left:
-      - icon: house-door
-        href: index.qmd
-        text: " "
-
+      - text: Shell
+        menu:
+          - text: "Intro the Unix Shell"
+            href: shell/01_shell1.qmd
+          - text: "Managing files in the shell"
+            href: shell/02_shellfiles.qmd
+          - text: "Writing shell scripts"
+            href: shell/03_scripts.qmd
+          - text: "Running CLI tools"
+            href: shell/04_cli-tools.qmd
+          - text: "Advanced shell"
+            href: shell/05_bonus.qmd
+      - text: OSC
+        menu:
+          - text: Intro to OSC
+            href: osc/01_osc1.qmd
+          - text: VS Code
+            href: osc/02_vscode.qmd
+          - text: More about OSC
+            href: osc/03_osc2.qmd
+          - text: Slurm
+            href: osc/05_slurm.qmd
+          - text: SSH
+            href: osc/06_ssh.qmd
+      - text: Git
+        menu:
+          - text: Git 1
+            href: git/02_git1.qmd
+          - text: Git 2
+            href: git/03_git2.qmd
+          - text: Git 3
+            href: git/04_git3.qmd
+      - text: R
+        menu:
+          - text: Data structures
+            href: r/r_data-structures.qmd
+          - text: Data wrangling
+            href: r/r_dplyr.qmd
+      - text: Reproducibility
+        menu:
+          - text: Project file organization
+            href: reprod/project-org.qmd
+          - text: Markdown
+            href: reprod/markdown.qmd
+      - text: Nextflow
+        menu:
+          - text: Intro to pipelines
+            href: nf-run/01_pipelines.qmd
+          - text: Running an nf-core pipeline
+            href: nf-run/02_nfcore.qmd
+      - text: Metabar
+        menu:
+          - text: Read QC and trimming
+            href: metabar/01_qc-trim.qmd
+      - text: RNA-Seq
+        menu:
+          - text: Data files
+            href: rnaseq/01_data.qmd
+          - text: The nf-core rnaseq pipeline
+            href: rnaseq/02_nfc-rnaseq.qmd
+          - text: Differential expression analysis
+            href: rnaseq/03_DE.qmd
+          - text: Read QC with FastQC
+            href: rnaseq/04_fastqc.qmd
+          - text: Trimming reads with TrimGalore
+            href: rnaseq/05_trimgalore.qmd
+          - text: RNA-Seq
+      - text: Other
+        menu:
+          - text: BACTERIAL WGS
+          - text: Data preprocessing
+            href: bac/01_preprocess.qmd
+          - text: Genome assembly
+            href: bac/02_assembly.qmd
+          - text: Genome annotation
+            href: bac/03_annotation.qmd
     right:
-      - about.qmd
+      - text: About
+        href: about.qmd
     tools:
       - icon: github
         menu:
           - text: Source Code
-            url:  https://github.com/jelmerp/pracs-sp24
+            url:  https://github.com/mcic-osu/tutorials
           - text: Report an Issue
-            url:  https://github.com/jelmerp/pracs-sp24/issues/new
+            url:  https://mcic-osu.github.io/tutorials/issues/new
   page-footer:
     background: "#a7b1b7"
     left: "2024-2025, Jelmer Poelstra"
     right:
       - icon: github
-        href: https://github.com/jelmerp/pracs-sp24
+        href: https://github.com/mcic-osu/tutorials
 
 format:
   html:

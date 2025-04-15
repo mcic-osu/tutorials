@@ -3,3 +3,5 @@ title: "MCIC Bioinformatics Tutorials"
 ---
 
 Welcome to the MCIC bioinformatics tutorials website!
+
+Use the top navigation bars to browse through the available tutorials.

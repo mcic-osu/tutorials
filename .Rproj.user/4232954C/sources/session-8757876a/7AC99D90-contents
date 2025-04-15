@@ -1,0 +1,232 @@
+---
+title: "VS Code"
+author: Jelmer Poelstra
+date: 2024-03-05
+editor_options: 
+  chunk_output_type: console
+---
+
+---------
+
+<br>
+
+## VS Code
+
+### Why VS Code?
+
+VS Code is basically a **fancy text editor**.
+Its full name is Visual Studio Code, and it's also called "Code Server" at OSC.
+
+To emphasize the additional functionality relative to basic text editors like Notepad and TextEdit,
+editors like VS Code are also referred to as "**IDEs**": *Integrated Development Environments*.
+The RStudio program is another good example of an IDE.
+Just like RStudio is an IDE for R, VS Code will be our IDE for shell code. 
+
+Some advantages of VS Code:
+
+- Works with all operating systems, is free, and open source.
+- Has an integrated terminal.
+- Very popular nowadays &ndash; lots of development going on including by users (*extensions*).
+- Available at OSC OnDemand (and also allows you to SSH-tunnel-in with your local installation). 
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Starting VS Code at OSC
+
+- Log in to OSC's OnDemand portal at <https://ondemand.osc.edu>.
+
+- In the blue top bar, select `Interactive Apps` and near the bottom, click `Code Server`.
+
+- Interactive Apps like VS Code and RStudio **run on compute nodes** (not login nodes).
+  Because compute nodes always need to be "reserved",
+  we have to fill out a form and specify the following details:
+  - The OSC "_Project_" that we want to bill for the compute node usage: `PAS2700`.
+  - The "_Number of hours_" we want to make a reservation for: `2`
+  - The "_Working Directory_" for the program:  your personal folder in `/fs/ess/PAS2700/users` (e.g. `/fs/ess/PAS2700/users/jelmer`)
+  - The "_Codeserver Version_": `4.8` (most recent)
+
+- Click `Launch`.
+
+- First, your job will be "*Queued*" — that is, waiting for the job scheduler to allocate compute node resources to it:
+
+![](img/ondemand_vscode_queued.png){fig-align="center" width="75%"}
+
+- Your job is typically granted resources within a few seconds (the card will then say "*Starting*"),
+  and should be ready for usage ("*Running*") in another couple of seconds:
+
+![](img/ondemand_vscode_running.png){fig-align="center" width="75%"}
+
+- Once it appears, click on the blue **Connect to VS Code** button to open VS Code in a new browser tab.
+
+- When VS Code opens, you may get these two pop-ups (and possibly some others) ---
+  click "Yes" (and check the box) and "Don't Show Again", respectively:
+
+::: columns
+::: {.column width="52%"}
+![](img/vscode-trust2.png){fig-align="center" width="90%"}
+:::
+
+::: {.column width="48%"}
+![](img/vscode-git.png){fig-align="center" width="90%"}
+:::
+:::
+
+- You'll also get a Welcome/Get Started page --- you don't have to go through
+  steps that may be suggested there.
+
+<br>
+
+### The VS Code User Interface
+
+![](img/vscode-welcome_ed.png){fig-align="center" width="80%"}
+
+#### Side bars
+
+The **Activity Bar** (narrow side bar) on the far left has:
+
+- A {{< fa bars >}} ("hamburger menu"), which has menu items like `File` that you often find in a top bar.
+
+- A {{< fa cog >}} (cog wheel icon) in the bottom, through which you can mainly access *settings*.
+
+- Icons to toggle **(wide/Primary) Side Bar** options:
+  - ***Explorer***: File browser & outline for the active file.
+  - ***Search***: To search recursively across all files in the active folder.
+  - ***Source Control***: To work with Git (*next week*).
+  - Debugger
+  - ***Extensions***: To install extensions (*up soon*).
+
+::: callout-note
+#### Toggle (hide/show) the side bars
+If you want to save some screen space while coding along in class,
+you may want to occasionally hide the side bars:
+
+- In {{< fa bars >}} > `View` > `Appearance` you can toggle both the `Activity Bar`
+  and the `Primary Side Bar`.
+- Or use keyboard shortcuts:
+  - <kbd>Ctrl/⌘</kbd>+<kbd>B</kbd> for the primary/wide side bar
+  - <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> for the activity/narrow side bar
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: exercise
+#### {{< fa user-edit >}} Exercise: Try a few color themes
+
+1.  Access the "Color Themes" option by clicking <i class="fa fa-cog"></i> =\> `Color Theme`.
+2.  Try out a few themes and see pick one you like!
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+#### Terminal (with a Unix shell)
+
+{{< fa user-edit >}} **Open a terminal** by clicking   {{< fa bars >}}   =\> `Terminal` =\> `New Terminal`.
+
+**Create a directory** for this week, e.g.:
+
+```sh
+# You should be in your personal dir in /fs/ess/PAS2700
+pwd
+```
+```bash-out
+/fs/ess/PAS2700/users/jelmer
+```
+
+```bash
+mkdir week02
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+#### Editor pane and `Welcome` document
+
+The main part of the VS Code is the **editor pane**.
+Here, we can open files like scripts and other types of text files, and images.
+(Whenever you open VS Code, an editor tab with a `Welcome` document is automatically opened.
+This provides some help and some shortcuts like to recently opened files and folders.)
+
+{{< fa user-edit >}} Let's create and save a new file:
+
+1. **Open a new file:** Click the hamburger menu <i class="fa fa-bars"></i>, then `File` > `New File`.
+2. **Save the file** (<kbd>Ctrl/⌘</kbd>+<kbd>S</kbd>),
+   inside the dir you just created, as a Markdown file, e.g. `markdown-intro.md`.
+   (Markdown files have the extension `.md`.)
+   
+<hr style="height:1pt; visibility:hidden;" />
+
+### A folder as a starting point
+
+Conveniently, VS Code takes a specific directory as a **starting point in all parts of the program**:
+
+-   In the file explorer in the side bar
+-   In the terminal
+-   When saving files in the editor pane.
+
+This is why your terminal was "already" located in `/fs/ess/PAS2700/users/$USER`.
+
+::: callout-tip
+#### _If you need to switch folders, click   {{< fa bars >}}   >   `File`   >   `Open Folder`._
+:::
+
+:::{.callout-note}
+## Taking off where you were
+
+When you reopen a folder you've had open before,
+VS Code will resume where you were before in that it will:
+
+- Re-open any files you had open in the editor pane
+- Re-open a terminal if you had one active
+
+This is quite convenient, especially when you start working on multiple projects
+and frequently switch between those.
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+#### Some tips and tricks
+
+-   **Resizing panes**\
+    You can resize panes (terminal, editor, side bar) by hovering your cursor over the borders and then dragging.
+
+-   **The Command Palette**\
+    To access all the menu options that are available in VS Code,
+    the so-called "Command Palette" can be handy,
+    especially if you know what you are looking for.
+    To access the Command Palette, click   <i class="fa fa-cog"></i>   and then
+    `Command Palette` (or press <kbd>F1</kbd> or <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>).
+    To use it, start typing something to look for an option.
+    
+-   **Keyboard shortcuts**\
+    For a single-page PDF overview of keyboard shortcuts for your operating system:
+    {{< fa bars >}}   =\>   `Help`   =\>   `Keyboard Shortcut Reference`.
+    (Or for direct links to these PDFs:
+    [Windows](https://code.visualstudio.com/shortcuts/keyboard-shortcuts-windows.pdf) /
+    [Mac](https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf) /
+    [Linux](https://code.visualstudio.com/shortcuts/keyboard-shortcuts-linux.pdf).)
+    A couple of useful keyboard shortcuts are highlighted below.
+
+::: {.callout-note collapse="true"}
+#### Specific useful keyboard shortcuts *(Click to expand)*
+
+Working with keyboard shortcuts for common operations can be a lot faster than using your mouse.
+Below are some useful ones for VS Code (for Mac, in some case, you'll have to replace <kbd>Ctrl</kbd> with <kbd>⌘</kbd>):
+
+-   *Open a terminal*: <kbd>Ctrl</kbd>+<kbd>\`</kbd> (backtick) or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>.
+-   *Toggle between the terminal and the editor pane*: <kbd>Ctrl</kbd>+<kbd>\`</kbd> and <kbd>Ctrl</kbd>+<kbd>1</kbd>.
+-   *Line actions*:
+    -   <kbd>Ctrl/⌘</kbd>+<kbd>X</kbd> / <kbd>C</kbd> will **cut/copy the entire line** where the cursor is, when nothing is selected (!)
+    -   <kbd>Ctrl/⌘</kbd>+<kbd>Shift</kbd>+<kbd>K</kbd> will **delete a line**
+    -   <kbd>Alt/Option</kbd>+<kbd>⬆</kbd>/<kbd>⬇</kbd> will **move lines** up or down.
+:::
+
+::: exercise
+#### <i class="fa fa-user-edit"></i> Exercise: Install two extensions
+
+Click the gear icon <i class="fa fa-cog"></i> and then `Extensions`,
+and search for and then install:
+
+- **shellcheck** (by *simonwong*) --- this will check our shell scripts later on!
+- **Rainbow CSV** (by *mechatroner*) --- make CSV/TSV files easier to view with column-based colors
+:::
+
+<br>

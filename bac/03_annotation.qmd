@@ -1,0 +1,336 @@
+---
+title: "Genome annotation"
+pagetitle: "Genome annotation"
+author: Jelmer Poelstra
+date: 2024-02-08
+execute: 
+  eval: false
+knitr:
+  opts_chunk:
+    out.width: "85%"
+    class-output: bash-out
+editor_options: 
+  chunk_output_type: console
+---
+
+<br>
+
+## Introduction {-}
+
+
+::: exercise
+#### {{< fa user-edit >}} **Setting up**
+
+You should have an active VS Code session with an open terminal.
+In that terminal, you should be be in your dir
+`/fs/scratch/PAS2250/cabana/$USER/bact/bact`.
+:::
+
+<br>
+
+## The GFF/GTF format
+
+The GTF and GFF formats are very similar tab-delimited **tabular** **files** that contain **genome annotations**, with:
+
+-   One row for each annotated "**genomic feature**" (gene, exon, etc.)
+-   One column for each piece of information about a feature, like its genomic coordinates
+
+See the sample below, with an added header line (*not normally present*) with column names:
+
+``` bash-out-solo
+seqname     source  feature start   end     score  strand  frame    attributes
+NC_000001   RefSeq  gene    11874   14409   .       +       .       gene_id "DDX11L1"; transcript_id ""; db_xref "GeneID:100287102"; db_xref "HGNC:HGNC:37102"; description "DEAD/H-box helicase 11 like 1 (pseudogene)"; gbkey "Gene"; gene "DDX11L1"; gene_biotype "transcribed_pseudogene"; pseudo "true"; 
+NC_000001   RefSeq  exon    11874   12227   .       +       .       gene_id "DDX11L1"; transcript_id "NR_046018.2"; db_xref "GeneID:100287102"; gene "DDX11L1"; product "DEAD/H-box helicase 11 like 1 (pseudogene)"; pseudo "true"; 
+```
+
+Some details on the more important/interesting columns:
+
+-   `seqname` — Name of the chromosome, scaffold, or contig
+-   `feature` — Name of the feature type, e.g. "gene", "exon", "intron", "CDS"
+-   `start` & `end` — Start & end position of the feature
+-   `strand` — Whether the feature is on the `+` (forward) or `-` (reverse) strand
+-   `attribute` — A semicolon-separated list of tag-value pairs with additional information
+
+<br>
+
+## Annotation with Prokka
+
+We will now annotate our genome assembly with the program Prokka
+([Seemann 2014](https://academic.oup.com/bioinformatics/article/30/14/2068/2390517),
+[documentation](https://github.com/tseemann/prokka)).
+
+Annotation consists of two main steps:
+
+1. **Structural annotation**: the identification of genes (and other genomic features)
+2. **Functional annotation**: the assigment of gene names and functions to genes based on homology with known genes
+
+Prokka will perform both of these steps for us,
+and its most important output files are a proteome (amino acid) FASTA file,
+and a GFF annotation file.
+
+::: callout-note
+#### Bakta
+A more recent bacterial annotation program, Bakta (
+[Schwenger et al. 2021](https://pubmed.ncbi.nlm.nih.gov/34739369/),
+[documentation](https://github.com/oschwengers/bakta))
+, is generally able to functionally
+annotate more genes. But it also takes much longer to run, so in the interest of time,
+we will run Prokka. Otherwise, Prokka and Bakta are similar.
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Running Prokka
+
+::: callout-important
+#### If you didn't do decontamination with Kraken2, please run this!
+If you didn't perform the decontamination step with Kraken2 on the previous page,
+you'll have to run the following to make sure your assembly is in the expected spot:
+
+```bash
+mkdir results/decontam
+cp results/spades/SM04/contigs.fasta results/decontam/SM04.fasta
+```
+
+_(That is, you're simply copying your original assembly to a new dir.)_
+:::
+
+Running Prokka is pretty simple:
+
+```bash
+source activate /fs/ess/PAS0471/jelmer/conda/prokka
+
+sbatch -A PAS2250 -t 15 -c 12 -o slurm-prokka.out --wrap="
+  prokka \
+    --outdir results/prokka \
+    --prefix SM04 \
+    --cpus 12 \
+    results/decontam/SM04.fasta
+"
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Prokka output
+
+Once its done after a couple of minutes,
+the end of your `slurm-prokka.out` file should look as follows:
+
+```bash
+tail slurm-prokka.out
+```
+```bash-out
+[14:58:39] results/prokka/SM04.fsa
+[14:58:39] results/prokka/SM04.tbl
+[14:58:39] results/prokka/SM04.gbk
+[14:58:39] results/prokka/SM04.tsv
+[14:58:39] Annotation finished successfully.
+[14:58:39] Walltime used: 2.42 minutes
+[14:58:39] If you use this result please cite the Prokka paper:
+[14:58:39] Seemann T (2014) Prokka: rapid prokaryotic genome annotation. Bioinformatics. 30(14):2068-9.
+[14:58:39] Type 'prokka --citation' for more details.
+[14:58:39] Share and enjoy!
+```
+
+Let's take a look at the files in the output dir:
+
+```bash
+ls -lh results/prokka
+```
+```bash-out
+total 59M
+-rw-r--r-- 1 jelmer PAS0471 1.8M Feb  6 14:58 SM04.err
+-rw-r--r-- 1 jelmer PAS0471 2.0M Feb  6 14:58 SM04.faa
+-rw-r--r-- 1 jelmer PAS0471 5.4M Feb  6 14:58 SM04.ffn
+-rw-r--r-- 1 jelmer PAS0471 5.8M Feb  6 14:56 SM04.fna
+-rw-r--r-- 1 jelmer PAS0471 5.8M Feb  6 14:58 SM04.fsa
+-rw-r--r-- 1 jelmer PAS0471  12M Feb  6 14:58 SM04.gbk
+-rw-r--r-- 1 jelmer PAS0471 7.1M Feb  6 14:58 SM04.gff
+-rw-r--r-- 1 jelmer PAS0471  62K Feb  6 14:58 SM04.log
+-rw-r--r-- 1 jelmer PAS0471  19M Feb  6 14:58 SM04.sqn
+-rw-r--r-- 1 jelmer PAS0471 960K Feb  6 14:58 SM04.tbl
+-rw-r--r-- 1 jelmer PAS0471 322K Feb  6 14:58 SM04.tsv
+-rw-r--r-- 1 jelmer PAS0471   95 Feb  6 14:58 SM04.txt
+```
+
+The `.faa` files contains the proteome:
+
+```bash
+less results/prokka/SM04.faa
+```
+```bash-out
+>LHECFIHF_00002 Pectate lyase L
+MRTILLTVLLVVAATAQATDYYVAPNGDDNAAGTKGAPLRTIMRAQQAAKAGDTVYFRGG
+VYTYTAGINRCATRTDTVNAITLNNSGSENKPIRYWAYPGETPVFDFSAMKDDCRVKGFN
+VTGSWLHLKGLEVKGVPQQPENHLNHESWGIWNSGSHNTFEQLNLHHNMGPGLFIQNGGY
+NLVLNTDSHHNYDPYTSNGAGQSADGFGAHIKAGHPGNVFRGCRAWANSDDGFDLINAFS
+PVTIESSWAWQQGYLPGTRTKLEAGNGNGIKAGGYGGKYVPDGVKHTVRNSVAFDNKSAG
+FYANHHTLALDFINNTAFSNGVNYNMAGIAPDGSLIPLGNLSNNIAYKGRLTVNTEGLDM
+AHNSWTLPTPITDADFEDVSDTGWDAPRQPDGSLPVLRSFHLRAGGRLAGMGAFH
+>LHECFIHF_00003 hypothetical protein
+MSQERYGIRRFALLNTAGYSLGLFPLENPLSVYGANNLGKSASINALQFPILARMSDMSF
+GKYSLEQSRRFYFASDTSYILVEVSLPHGPHVIGVVGRGPGGGFGHQFFAYAGELDLGHY
+QKNDTCLRQKELFSNLESQGLKAYELKPDELRRLLVGGHTSIPLDLTLIPLRSTSEQSLK
+[...output truncated...]
+```
+
+The `.gff` file is the main annotation file.
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Exploring the GFF file
+
+```bash
+less -S results/prokka/SM04.gff
+```
+
+Once you scroll past the header...
+
+```bash-out
+##gff-version 3
+##sequence-region NODE_1_length_1267796_cov_33.239498 1 1267796
+##sequence-region NODE_2_length_902255_cov_32.000245 1 902255
+##sequence-region NODE_3_length_697265_cov_34.901625 1 697265
+##sequence-region NODE_4_length_534491_cov_32.088021 1 534491
+```
+
+...you reach the main annotation table:
+
+```bash-out
+NODE_1_length_1267796_cov_33.239498	barrnap:0.9	rRNA	272	381	3.3e-13	+	.	ID=LHECFIHF_00001;locus_tag=LHECFIHF_00001;product=5S ribosomal RNA
+NODE_1_length_1267796_cov_33.239498	Prodigal:002006	CDS	518	1765	.	-	0	ID=LHECFIHF_00002;eC_number=4.2.2.2;Name=pelL;gene=pelL;inference=ab initio prediction:Prodigal:002006,similar to AA sequence:UniProtKB:P0C1A7;locus_tag=LHECFIHF_00002;product=Pectate lyase L
+NODE_1_length_1267796_cov_33.239498	Prodigal:002006	CDS	1939	4758	.	-	0	ID=LHECFIHF_00003;inference=ab initio prediction:Prodigal:002006;locus_tag=LHECFIHF_00003;product=hypothetical protein
+NODE_1_length_1267796_cov_33.239498	Prodigal:002006	CDS	4755	5462	.	-	0	ID=LHECFIHF_00004;inference=ab initio prediction:Prodigal:002006;locus_tag=LHECFIHF_00004;product=hypothetical protein
+NODE_1_length_1267796_cov_33.239498	Prodigal:002006	CDS	5452	6729	.	-	0	ID=LHECFIHF_00005;inference=ab initio prediction:Prodigal:002006;locus_tag=LHECFIHF_00005;product=hypothetical protein
+NODE_1_length_1267796_cov_33.239498	Prodigal:002006	CDS	6874	7680	.	+	0	ID=LHECFIHF_00006;inference=ab initio prediction:Prodigal:002006;locus_tag=LHECFIHF_00006;product=hypothetical protein
+NODE_1_length_1267796_cov_33.239498	Prodigal:002006	CDS	7673	8128	.	+	0	ID=LHECFIHF_00007;eC_number=2.3.1.266;Name=rimI;db_xref=COG:COG0456;gene=rimI;inference=ab initio prediction:Prodigal:002006,similar to AA sequence:UniProtKB:P0A944;locus_tag=LHECFIHF_00007;product=[Ribosomal protein S18]-alanine N-acetyltransferase
+NODE_1_length_1267796_cov_33.239498	Prodigal:002006	CDS	8138	8542	.	-	0	ID=LHECFIHF_00008;inference=ab initio prediction:Prodigal:002006;locus_tag=LHECFIHF_00008;product=hypothetical protein
+NODE_1_length_1267796_cov_33.239498	Prodigal:002006	CDS	8709	9347	.	+	0	ID=LHECFIHF_00009;eC_number=4.2.1.1;Name=can;db_xref=COG:COG0288;gene=can;inference=ab initio prediction:Prodigal:002006,similar to AA sequence:UniProtKB:P61517;locus_tag=LHECFIHF_00009;product=Carbonic anhydrase 2
+NODE_1_length_1267796_cov_33.239498	Prodigal:002006	CDS	9405	11069	.	-	0	ID=LHECFIHF_00010;inference=ab initio prediction:Prodigal:002006;locus_tag=LHECFIHF_00010;product=hypothetical protein
+```
+
+How many genes have been annotated?
+
+```bash
+awk '$3 == "CDS"' results/prokka/SM04.gff | wc -l
+```
+```bash-out
+5080
+```
+
+Genes with the name "**hypothetical protein**" were identified by the structural annotation,
+but were effectively not functionally annotated:
+we don't have any information about their function.
+
+How many "hypothetical proteins" are there?
+
+```bash
+grep -c "hypothetical protein" results/prokka/SM04.gff
+```
+```bash-out
+2071
+```
+
+<br>
+
+## Virulence gene identification with Abricate
+
+We will run the program Abricate to identity virulence genes using the Virulence
+Factor Database (`--db vcfdb`).
+
+```bash
+mkdir results/abricate
+
+abricate \
+  --db vfdb \
+  results/decontam/SM04.fasta \
+  > results/abricate/SM04.tab
+```
+```bash-out
+Using nucl database vfdb:  4366 sequences -  2024-Feb-6
+Processing: results/decontam/SM04.fasta
+Found 21 genes in results/decontam/SM04.fasta
+Tip: have a suggestion for abricate? Tell me at https://github.com/tseemann/abricate/issues
+Done.
+```
+
+Let's take a look at the output:
+
+```bash
+less -S results/abricate/SM04.tab
+```
+
+<details><summary>Click to show the expected output</summary>
+<br>
+```bash-out
+#FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
+results/decontam/SM04.fasta	NODE_12_length_123484_cov_34.382354	35324	36088	+	crc	1-765/780	===============	0/0	98.08	82.75	vfdb	NP_254019	(crc) catabolite repression control protein [Type IV pili (VF0082) - Adherence (VFC0001)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_1_length_1267796_cov_33.239498	207972	209374	-	algA	1-1403/1446	========/======	2/2	96.96	81.77	vfdb	NP_252241	(algA) phosphomannose isomerase / guanosine 5'-diphospho-D-mannose pyrophosphorylase [Alginate (VF0091) - Biofilm (VFC0271)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_1_length_1267796_cov_33.239498	211633	212916	-	algI	1-1284/1563	=============..	0/0	82.15	83.02	vfdb	NP_252238	(algI) alginate o-acetyltransferase AlgI [Alginate (VF0091) - Biofilm (VFC0271)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_1_length_1267796_cov_33.239498	221445	222830	-	alg8	100-1485/1485	.==============	0/0	93.33	80.23	vfdb	NP_252231	(alg8) alginate-c5-mannuronan-epimerase AlgG [Alginate (VF0091) - Biofilm (VFC0271)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_1_length_1267796_cov_33.239498	746910	747244	+	pilZ	22-356/357	===============	0/0	93.84	82.69	vfdb	NP_251650	(pilZ) type 4 fimbrial biogenesis protein PilZ [Type IV pili (VF0082) - Adherence (VFC0001)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_1_length_1267796_cov_33.239498	1097853	1098324	-	pvdS	43-514/564	.=======/=====.	2/4	83.33	82.91	vfdb	NP_251116	(pvdS) extracytoplasmic-function sigma-70 factor  [Pyoverdine (VF0094) - Nutritional/Metabolic factor (VFC0272)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_1_length_1267796_cov_33.239498	1112719	1114079	+	pvdH	7-1367/1410	========/======	4/4	96.38	80.78	vfdb	NP_251103	(pvdH) diaminobutyrate-2-oxoglutarate aminotransferase PvdH [Pyoverdine (VF0094) - Nutritional/Metabolic factor (VFC0272)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_1_length_1267796_cov_33.239498	1114207	1114409	+	mbtH-like	1-203/219	==============.	0/0	92.69	83.25	vfdb	NP_251102	(mbtH-like) MbtH-like protein from the pyoverdine cluster [Pyoverdine (VF0094) - Nutritional/Metabolic factor (VFC0272)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_3_length_697265_cov_34.901625	20055	20636	-	algU	1-582/582	===============	0/0	100.00	81.27	vfdb	NP_249453	(algU) alginate biosynthesis protein AlgZ/FimS [Alginate (VF0091) - Biofilm (VFC0271)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_3_length_697265_cov_34.901625	236211	237704	+	rpoN	1-1494/1494	========/======	6/12	99.60	82.20	vfdb	NP_253152	(rpoN) RNA polymerase factor sigma-54 [Type IV pili (VF0082) - Adherence (VFC0001)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_5_length_350317_cov_33.463137	244380	244745	-	pilH	1-366/366	===============	0/0	100.00	85.79	vfdb	NP_249100	(pilH) twitching motility protein PilH [Type IV pili (VF0082) - Adherence (VFC0001)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_5_length_350317_cov_33.463137	244819	245202	-	pilG	1-384/408	===============	0/0	94.12	82.55	vfdb	NP_249099	(pilG) twitching motility protein PilG [Type IV pili (VF0082) - Adherence (VFC0001)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_5_length_350317_cov_33.463137	253182	254216	-	pilT	1-1035/1035	========/======	2/2	99.90	83.88	vfdb	NP_249086	(pilT) twitching motility protein PilT [Type IV pili (VF0082) - Adherence (VFC0001)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_5_length_350317_cov_33.463137	346430	347476	-	pilM	19-1065/1065	========/======	4/4	98.12	80.17	vfdb	NP_253731	(pilM) type IV pilus inner membrane platform protein PilM [Type IV pili (VF0082) - Adherence (VFC0001)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_6_length_339735_cov_31.812540	47754	48509	+	flgG	10-762/786	========/======	2/3	95.80	80.82	vfdb	NP_249773	(flgG) flagellar basal-body rod protein FlgG [Flagella (VF0273) - Motility (VFC0204)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_6_length_339735_cov_31.812540	49404	50454	+	flgI	60-1110/1110	===============	0/0	94.68	82.21	vfdb	NP_249775	(flgI) flagellar P-ring protein precursor FlgI [Flagella (VF0273) - Motility (VFC0204)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_6_length_339735_cov_31.812540	74115	75108	+	fliG	22-1015/1017	===============	0/0	97.74	83.80	vfdb	NP_249793	(fliG) flagellar motor switch protein G [Flagella (VF0273) - Motility (VFC0204)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_6_length_339735_cov_31.812540	82920	83860	+	fliM	1-941/972	========/======	2/2	96.71	83.02	vfdb	NP_250134	(fliM) flagellar motor switch protein FliM [Flagella (VF0273) - Motility (VFC0204)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_6_length_339735_cov_31.812540	84903	85591	+	fliP	70-758/768	.=======/======	2/2	89.58	81.59	vfdb	NP_250137	(fliP) flagellar biosynthetic protein FliP [Flagella (VF0273) - Motility (VFC0204)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_6_length_339735_cov_31.812540	91625	92433	+	fleN	10-818/843	===============	0/0	95.97	82.82	vfdb	NP_250145	(fleN) flagellar synthesis regulator FleN [Flagella (VF0273) - Motility (VFC0204)] [Pseudomonas aeruginosa PAO1]	
+results/decontam/SM04.fasta	NODE_6_length_339735_cov_31.812540	101666	102120	+	PA1464	26-480/480	===============	0/0	94.79	84.18	vfdb	NP_250155	(PA1464) purine-binding chemotaxis protein [Flagella (VF0273) - Motility (VFC0204)] [Pseudomonas aeruginosa PAO1]	
+```
+
+</details>
+
+::: callout-note
+#### Additional Abricate databases
+
+You may also want to run Abricate with other virulence gene databases,
+such as the [BastionHub](https://academic.oup.com/nar/article/49/D1/D651/5934417),
+and [T3SEdb](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-S7-S4) databases.
+Additionally, you can search for antimicrobial resistance genes with Abricate using
+e.g. the ResFinder and CARD databases. 
+
+:::
+
+<br>
+
+## Bonus: Plasmid detection with MOB-suite
+
+We will run the `mob_recon` tool from the MOB-suite program
+([Robertson et al. 2018](https://pubmed.ncbi.nlm.nih.gov/30052170/),
+[documentation](https://github.com/phac-nml/mob-suite))
+to identity plasmids in our genomes.
+
+```bash
+mob_recon \
+    --infile results/decontam/SM04.fasta \
+    --outdir results/mobsuite
+```
+```bash-out
+2024-02-06 15:35:34,565 mob_suite.mob_recon INFO: MOB-recon version 3.1.4  [in /fs/ess/PAS0471/jelmer/conda/mobsuite/lib/python3.8/site-packages/mob_suite/mob_recon.py:980]
+2024-02-06 15:35:34,567 mob_suite.mob_recon INFO: SUCCESS: Found program blastn at /fs/ess/PAS0471/jelmer/conda/mobsuite/bin/blastn [in /fs/ess/PAS0471/jelmer/conda/mobsuite/lib/python3.8/site-packages/mob_suite/utils.py:592]
+2024-02-06 15:35:34,569 mob_suite.mob_recon INFO: SUCCESS: Found program makeblastdb at /fs/ess/PAS0471/jelmer/conda/mobsuite/bin/makeblastdb [in /fs/ess/PAS0471/jelmer/conda/mobsuite/lib/python3.8/site-packages/mob_suite/utils.py:592]
+2024-02-06 15:35:34,571 mob_suite.mob_recon INFO: SUCCESS: Found program tblastn at /fs/ess/PAS0471/jelmer/conda/mobsuite/bin/tblastn [in /fs/ess/PAS0471/jelmer/conda/mobsuite/lib/python3.8/site-packages/mob_suite/utils.py:592]
+# [...output truncated...]
+```
+
+Were any plasmids found?
+
+```bash
+cat results/mobsuites/mobtyper_results.txt
+```
+``` bash-out
+sample_id	num_contigs	size	gc	md5	rep_type(s)	rep_type_accession(s)	relaxase_type(s)	relaxase_type_accession(s)	mpf_type	mpf_type_accession(s)	orit_type(s)	orit_accession(s)	predicted_mobility	mash_nearest_neighbor	mash_neighbor_distance	mash_neighbor_identification	primary_cluster_id	secondary_cluster_id	predicted_host_range_overall_rank	predicted_host_range_overall_name	observed_host_range_ncbi_rank	observed_host_range_ncbi_name	reported_host_range_lit_rank	reported_host_range_lit_name	associated_pmid(s)
+SM04:AD116	1	48973	0.5424621730341208	fd0b4e82302b32b63f24c1d18a90d219	rep_cluster_283	001576__KY362368_00001	MOBP	CP007015_00034	MPF_T	NC_007275_00041,NZ_CM001987_00038,NC_007275_00033,NC_019328_00069,NC_007275_00028	MOBP	EU289287	conjugative	CP006257	0.0572108	Pseudomonas syringae pv. syringae HS191	AD116	-	genus	Pseudomonas	genus	Pseudomonas	-	-	-
+```
+
+<br>
+

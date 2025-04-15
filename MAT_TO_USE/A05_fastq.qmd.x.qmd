@@ -1,0 +1,858 @@
+---
+title: "FASTQ files"
+subtitle: "And: gzip-compressed files, `grep`, checking file integrity, and write-protecting files"
+pagetitle: "Genomic data files"
+highlight-style: github
+number-sections: true
+engine: knitr
+author: Jelmer Poelstra
+date: 2023-08-11
+---
+
+```{r knitr_options, echo=FALSE}
+knitr::opts_chunk$set(eval = FALSE,
+                      class.output = "bash-out")
+```
+
+-------
+
+<br>
+
+## Overview & setting up {-}
+
+Over the next two sessions,
+you'll be introduced to three very common types of genomic data files,
+all of which you should have _when you start_ your analysis of, for example,
+a reference-based RNAseq dataset.
+
+We'll talk about the following three types of genomic data file:
+
+- **FASTQ** files:
+  When you get your sequence data back, it will be in this format,
+  which contains one entry per read,
+  and has per-base quality scores along with the sequence itself.
+- **FASTA** files:
+  Simpler sequence files,
+  where each entry contains just a header and a DNA or protein sequence.
+  Your reference genome assembly will be in this format.
+- **GTF** (& **GFF**) files:
+  These contain annotations in a tabular format,
+  e.g. the start & stop position of each gene.
+
+**This session will focus on FASTQ files**,
+which you should already have in your practice directory
+(if not, see the instructions below).
+[_In the next session_](./A06_ref-files.qmd),
+we will download and explore reference genome FASTA and GFF files.
+
+You'll also learn a number of new shell concepts and commands,
+such as commands to work with gzip-compressed files and `grep` to search for text.
+
+The at-home reading below will cover how you can make important data read-only,
+and how you can check whether your data files were not accidentally modified
+upon transfer.
+
+#### Start VS Code and open your folder {-}
+
+As always, we'll be working in VS Code &mdash;
+if you don't already have a session open, see below how to do so.
+
+**Make sure to open your `/fs/ess/PAS0471/<user>/rnaseq_intro` dir**,
+either by using the `Open Folder` menu item,
+or by clicking on this dir when it appears in the `Welcome` tab.
+
+:::{.callout-tip collapse="true"}
+## Starting VS Code at OSC - with a Terminal (Click to expand)
+1. Log in to OSC's OnDemand portal at <https://ondemand.osc.edu>.
+
+2. In the blue top bar, select `Interactive Apps`
+   and then near the bottom of the dropdown menu, click `Code Server`.
+
+3. In the form that appears on a new page:
+   - Select an appropriate OSC project (here: `PAS0471`)
+   - For this session, select `/fs/ess/PAS0471` as the starting directory
+   - Make sure that `Number of hours` is at least `2`
+   - Click `Launch`.
+
+4. On the next page, once the top bar of the box has turned green
+   and says `Runnning`, click `Connect to VS Code`.
+
+<figure><p align="center"><img src=img/osc-code-launch_ed.png width="80%"></p></figure>
+
+5. Open a Terminal by clicking
+   &nbsp; {{< fa bars >}} &nbsp; => `Terminal` => `New Terminal`.
+   (Or use one of the keyboard shortcuts:
+   <kbd>Ctrl</kbd>+<kbd>\`</kbd> (backtick) or
+   <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>.)
+
+6. In the `Welcome` tab under `Recent`,
+   you should see your `/fs/ess/PAS0471/<user>/rnaseq_intro` dir listed:
+   click on that to open it.
+   Alternatively, use
+   &nbsp; {{< fa bars >}} &nbsp; => &nbsp; `File` &nbsp; => &nbsp; `Open Folder`
+   to open that dir in VS Code.
+:::
+
+:::{.callout-warning collapse="true"}
+#### Don't have your own dir with the data? (Click to expand)
+If you missed the last session, or deleted your `rnaseq_intro` dir entirely,
+run these commands to get a (fresh) copy of all files:
+
+```bash
+mkdir -p /fs/ess/PAS0471/$USER/rnaseq_intro
+cp -r /fs/ess/PAS0471/demo/202307_rnaseq /fs/ess/PAS0471/$USER/rnaseq_intro
+```
+
+And if you do have an `rnaseq_intro` dir,
+but you want to start over because you moved or removed some of the files
+while practicing, then delete the dir before your run the commands above:
+
+```bash
+rm -r /fs/ess/PAS0471/$USER/rnaseq_intro
+```
+
+You should have at least the following files in this dir:
+
+```{.bash-out}
+/fs/ess/PAS0471/demo/202307_rnaseq
+├── data
+│   └── fastq
+│       ├── ASPC1_A178V_R1.fastq.gz
+│       ├── ASPC1_A178V_R2.fastq.gz
+│       ├── ASPC1_G31V_R1.fastq.gz
+│       ├── ASPC1_G31V_R2.fastq.gz
+│       ├── Miapaca2_A178V_R1.fastq.gz
+│       ├── Miapaca2_A178V_R2.fastq.gz
+│       ├── Miapaca2_G31V_R1.fastq.gz
+│       └── Miapaca2_G31V_R2.fastq.gz
+├── metadata
+│   └── meta.tsv
+└── README.md
+```
+
+:::
+
+<br>
+
+## The FASTQ format
+
+FASTQ is a very common output format of high-throughput sequencing machines &mdash;
+at least from Illumina sequencing,
+you will almost always receive the sequences in this format.
+_Like most genomic data files, these are plain text files_,
+and each sequence that is read by the sequencer (i.e., each "read")
+forms **one FASTQ entry represented by four lines**.
+The lines contain, respectively:
+
+1. A **header** that starts with `@` and e.g. uniquely identifies the read
+2. The **sequence** itself
+3. A **`+`** (plus sign)
+4. One-character **quality scores** for each base in the sequence
+
+<figure><p align="center">
+<img src=img/fastq_header.png width="85%">
+<figcaption>One entry (read) in a FASTQ file covers 4 lines.
+<br>The header line is annotated, with some of the more useful components highlighted in red.
+<br>For viewing purposes, this read (at only 56 bp) is shorter than regular Illumina read lengths.</figcaption>
+</p></figure>
+
+The "Q" in FASTQ stands for "_quality_", to contrast this format with FASTA,
+a more basic and generic format that does not include base quality scores.
+FASTQ files have the extension `.fastq` or `.fq`,
+but they are very commonly gzip-compressed,
+in which case their name ends in `.fastq.gz` or `.fq.gz`.
+
+::: {.callout-note collapse="true"}
+#### Understanding FASTQ quality scores (Click to expand)
+
+The bottom line (starting with `JJJJ`) in the figure above contains a
+quality score for each base of the sequence in the second line.
+Specifically, the characters on that line correspond to a numeric Phred quality
+score (Q), which is defined as:
+
+>    **Q = -10 * log10(P)**
+
+In the equation above, P is the estimated probability that a base call is
+erroneous &mdash;
+see the table below for some specific probabilities and their rough qualitative
+interpretation for Illumina data:
+
+| Phred quality score   | Error probability   | Rough interpretation |
+|-----------|-----------|-----------| 
+| **10**    | 1 in 10      | terrible  |
+| **20**    | 1 in 100     | bad       |
+| **30**    | 1 in 1,000   | good      |
+| **40**    | 1 in 10,000  | excellent |
+
+With Illumina data, these Phred quality scores typically go up to 42
+(though newer platforms like NovaSeq used _binned_ quality scores).
+**This numeric quality score is represented in FASTQ files _not by the number itself_,**
+**but by a corresponding "ASCII character",**
+**which _allows for a single-character representation_ of each possible score.**
+
+As a consequence, each quality score character can conveniently correspond to 
+(i.e., line up with) a base in the sequence:
+e.g., the 30th base number in a DNA sequence line corresponds to the 30th quality
+score character two lines below that.
+  
+In practice, you almost never have to manually check the quality scores of bases
+in FASTQ files,
+but if you do want to know which character corresponds to which quality,
+[this Illumina webpage has a table](https://support.illumina.com/help/BaseSpace_OLH_009008/Content/Source/Informatics/BS/QualityScoreEncoding_swBS.htm)
+(though note that Q41 = `J` and Q42 = `K` are missing).
+
+:::
+
+----
+
+Illumina sequencing is by far the most common for RNAseq[^1],
+and can be done in two "modes": **_single-end_** and **_paired-end_**.
+With paired-end sequencing, each individual (c)DNA fragment is sequenced from two
+ends in opposite directions 
+(with the total size of the fragment &ndash;"insert size"&ndash;
+determining whether these two reads will overlap).
+The resulting two, "paired", reads for each fragment are inextricably linked,
+with the first called the **forward read** and the second called the
+**reverse read**.
+
+<figure><p align="center">
+<img src=img/forward-reverse-reads.png width="85%">
+<figcaption>How a DNA fragment prepared for paired-end Illumina sequencing will be sequenced. <br>In this example, the insert size is such that the forward and reverse reads do not overlap.</figcaption>
+</p></figure>
+
+Most commonly for paired-end data,
+forward and reverse reads are placed in separate files.
+As such, you'll usually have two files[^2] for each sample that was sequenced:
+
+- The file with **forward reads has `_R1`** (or sometimes `_1`) in its name,
+  e.g. `ASPC1_A178V_R1.fastq.gz`
+- The file with **reverse reads has `_R2`** (or sometimes `_2`) in its name,
+  e.g. `ASPC1_A178V_R2.fastq.gz`
+  (i.e., the file name should be identical to that for the forward read,
+  except for the read direction identifier).
+  
+Because the forward and reverse reads are so tightly linked,
+R1 and R2 files for one sample _should always contain the same number of reads_.
+(It is possible to end up with "orphan" reads,
+such as after one member of the pair is removed by quality filtering,
+but these are either discarded or saved in separate files.)
+
+[^1]: Though long-read technologies like Oxford Nanopore Technologies and especially
+      PacBio are picking up steam, since these can sequence transcripts _in full_.
+
+[^2]: In some cases, most often when you simply do a lot of sequencing for each
+      sample, you'll get more than one pair of files:
+      one pair for each "lane" of the sequencer on which the sample was sequenced.
+
+<br>
+
+## Working with compressed (FASTQ) files
+
+Let's start by reminding ourselves about our own FASTQ files &mdash;
+recall that this is a subset of the full dataset,
+with way fewer reads reads per file than the originals,
+and with files for only four of the samples: 
+
+```bash
+ls -lh data/fastq
+```
+```{.bash-out}
+total 38M
+-rw-r--r-- 1 jelmer PAS0471 4.1M Jul 27 11:53 ASPC1_A178V_R1.fastq.gz
+-rw-r--r-- 1 jelmer PAS0471 4.2M Jul 27 11:53 ASPC1_A178V_R2.fastq.gz
+-rw-r--r-- 1 jelmer PAS0471 4.1M Jul 27 11:53 ASPC1_G31V_R1.fastq.gz
+-rw-r--r-- 1 jelmer PAS0471 4.3M Jul 27 11:53 ASPC1_G31V_R2.fastq.gz
+-rw-r--r-- 1 jelmer PAS0471 5.1M Jul 27 11:53 Miapaca2_A178V_R1.fastq.gz
+-rw-r--r-- 1 jelmer PAS0471 5.3M Jul 27 11:53 Miapaca2_A178V_R2.fastq.gz
+-rw-r--r-- 1 jelmer PAS0471 5.1M Jul 27 11:53 Miapaca2_G31V_R1.fastq.gz
+-rw-r--r-- 1 jelmer PAS0471 5.3M Jul 27 11:53 Miapaca2_G31V_R2.fastq.gz
+```
+
+The FASTQ files all have a `.gz` extension
+(and should listed in red in your terminal),
+indicating they are "gzip-compressed".
+This is a common type of compression for large genomic files.
+
+Next, we'll take a peak inside one of these files.
+It's worth mentioning that during actual FASTQ file analysis (QC, trimming, alignment),
+you're at most very rarely interacting with the raw contents of the file,
+since bioinformatics programs take care of the details.
+While it is therefore possible to run your analysis while treating FASTQ 
+(and other genomic) files as "black boxes",
+_it is helpful to at least have a rough idea of what a FASTQ file looks like_,
+_and how you can get some quick stats on them using basic shell commands_.
+
+Let's consider our options to look inside one of these files.
+`cat` will print the contents of the entire file to screen,
+which doesn't sound like a good idea for such a large file.
+Other than `less`, perhaps `head` will work well here?
+We'll try to print 8 lines, which should show us two reads:
+
+```bash
+head -n 8 data/fastq/ASPC1_A178V_R1.fastq.gz
+```
+  
+<p align="left"><img src=img/head2.png width="80%"></p>
+
+Ouch, what was that?!
+What happened here is that we are directly seeing the contents of the
+_compressed_ file, which is simply not human-readable.
+Other shell commands,
+like those that count the number of lines (`wc -l`), or search for text
+(`grep`, see below),
+would also run into trouble with compressed files[^3].
+
+[^3]: And they would fail in a possibly worse way because you might overlook the
+      problem: `wc -l` _will_ return a count yet this is not the number of lines
+      for the uncompressed file,
+      whereas a text search with `grep` may "falsely" return nothing while that
+      text _is_ present in the uncompressed file.
+
+To get around all of this,
+we might be inclined to **uncompress** these files,
+which we could do with the **`gunzip` command**.
+However, uncompressed files take up several times as much disk storage space as
+compressed ones, and this can add up to a lot when we're talking about FASTQ files
+in particular.
+Fortunately, there are other approaches available.
+First of all, almost any bioinformatics tool will accept compressed FASTQ files.
+Additionally, the following commands and strategies should help you to do some
+basic exploration of your FASTQ files without uncompressing them.
+
+
+::: {.callout-note collapse="true"}
+#### Concatenating compressed files (Click to expand)
+
+Like with FASTA files,
+multiple FASTQ files can simply be concatenated to produce a valid,
+larger FASTQ file.
+
+It generally doesn't make sense to concatenate files from different samples,
+but a relatively common situation in which you might want to concatenate FASTQs
+is when you have multiple files for each sample,
+originating _from different Illumina "lanes"_.
+
+In the previous session,
+we saw that it is very easy to concatenate files in the shell using `cat`,
+even if there are many of them and/or the files are very large.
+
+Concatenating _compressed files_ is also really straightforward &mdash;
+the example below would concatenate two files from different Illumina lanes
+(`L001` and `L002`), separately for the forward and reverse reads: 
+
+```bash
+# Fictional example; note that we concatenate the R1 and R2 files separately
+cat sampleA_L001_R1.fastq.gz sampleA_L002_R1.fastq.gz > sampleA_R1.fastq.gz
+cat sampleA_L001_R2.fastq.gz sampleA_L002_R2.fastq.gz > sampleA_R2.fastq.gz
+```
+:::
+
+<br>
+
+### `less` / `zless`
+
+As you may recall from the previous session,
+we were actually able to directly view a compressed FASTQ file with `less`!
+`less` also has a `zless` counterpart that is explicitly meant to display
+gzip-compressed files, but at least at OSC, `less` itself will also work:
+
+```bash
+less data/fastq/ASPC1_A178V_R1.fastq.gz
+# (Recall, press 'q' to quit less)
+```
+
+::: {.callout-note}
+#### Avoid line-wrapping by `less`
+
+Depending on your zoom level and the length of reads in your FASTQ file,
+some lines may contain too many characters to fit on your screen.
+If that's the case, 
+`less` will by default "wrap" those lines onto the next line on your screen,
+so characters won't run off the screen on the right-hand side. 
+That may be useful when the file contains text you're trying to read in full,
+but it is often confusing for files like FASTQ as well as for tabular files.
+
+To turn off line-wrapping, call `less` with the `-S` option:
+
+```bash
+less -S data/fastq/ASPC1_A178V_R1.fastq.gz
+```
+:::
+
+<br>
+
+### `zcat`
+
+Like the `less`/`zless` pair,
+`cat` has a counterpart that will print the uncompressed contents of a compressed
+file: **`zcat`**.
+
+Of course, we just established that `cat`'s behavior of printing all the contents
+of a file isn't great for large FASTQ files.
+But `zcat` is nevertheless very useful for FASTQ files 
+when we combine it with the pipe, `|`.
+For example, we can pipe the output of `zcat` to the `head` command to view
+the first 8 lines (2 reads) as follows:
+
+```bash
+zcat data/fastq/ASPC1_A178V_R1.fastq.gz | head -n 8
+```
+```{.bash-out}
+@A00195:432:HC7JWDRX3:2:1241:25093:24627 1:N:0:CCGATCGT+GACTGTTT
+GAACTAACCAAAGTGTGCTGAACATTATTAGGCTCTCCAGACATGTCTAGTTTATACTGGTAAATGCATATCAATTGTAAATATAAAAATAAAATTTGCAT
++
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF:FFFFFFFFFFF:FFFFFFFFFFFFFFFF:FFFFFFFFFFFFFFFFF:F:F,F:FF
+@A00195:432:HC7JWDRX3:1:1232:30716:27226 1:N:0:CCGATCGT+GACTGTTT
+GTCCGGACCTTCTTGACGTAAGTGACATCTGGGTGGTGTTTGGGCGGCATGAGCAGCAGATGCAGCCGCTCATAGAACTGGATCCCGTTAAGGGAGGTGAC
++
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+```
+
+Along the same lines, we can count the number of lines in a FASTQ file like so:
+
+```bash
+zcat data/fastq/ASPC1_A178V_R1.fastq.gz | wc -l
+```
+```{.bash-out}
+400000
+```
+
+::: {.exercise}
+#### Your Turn: The number of reads in a FASTQ file {-}
+
+- Given the output of the command above, how many reads are in this FASTQ file?
+
+- What line count do you get when you run `wc -l` directly on the compressed file? 
+
+<details><summary>Solutions</summary>
+
+- There are 400,000 / 4 = 100,000 reads in this file
+
+- You'll get a line count of 15,358, quite a ways off from the 400,000 lines
+  in the uncompressed file! So, don't do this when you want to count lines/reads!
+
+```bash
+wc -l data/fastq/ASPC1_A178V_R1.fastq.gz 
+```
+```{.bash-out}
+15358 data/fastq/ASPC1_A178V_R1.fastq.gz
+```
+</details>
+:::
+
+::: {.exercise}
+#### Your Turn: Getting the read length (advanced) {-}
+
+What is the read length for these FASTQ files?
+Can you get the answer using the commands we have covered so far?
+
+_Two extra pieces of information:_
+
+- _`wc -c` will return the number of **characters** in its input._
+- _Nearly all reads in Illumina FASTQ files have the same length,_
+  _so you can examine the length of a single read to get your answer._
+
+<details><summary>Hints</summary>
+
+- Recall that the number of characters in e.g. the second (and the fourth) line
+  of a FASTQ file corresponds to the read length.
+
+- Think about how you might be able to use `head` and `tail`,
+  each with the `-n` option, and back-to-back,
+  to get a single, specific line from a file.
+
+- String all four commands together in a single line using the pipe `|`.
+
+</details>
+
+<details><summary>Solution</summary>
+
+```bash
+zcat data/fastq/ASPC1_A178V_R1.fastq.gz | head -n 2 | tail -n 1 | wc -c
+```
+```{.bash-out}
+102
+```
+
+You can extract any line from a text file by its line number `N` using
+`head -n N | tail -n 1`:
+the last line from `head`'s output will be the line of interest,
+which you can then isolate with `tail -n 1`. 
+
+One (annoying) little twist here is that `wc -c` will include the newline
+"character" in its count: as such, the read length is 102 - 1 = **101**.
+
+</details>
+:::
+
+<br>
+
+## Finding text with `grep` / `zgrep`
+
+**`grep` allows you to search a file for any text or text patterns.**
+By default, it will _return the entire line_ whenever it finds a match,
+and it is often set up (including at OSC) to highlight, within that line,
+the matching text in
+<span style="color:red"><b>bold red</b></span> in its output.
+
+For example,
+let's say we wanted to print the sequences in our FASTQ file that contain
+"ACCGATACG":
+
+```bash
+zcat data/fastq/ASPC1_A178V_R1.fastq.gz | grep "ACCGATACG"
+```
+
+<p align="left"><img src=img/grep_on_fastq.png width="98%"></p>  
+
+If we wanted to know _how many_ reads contain a certain sequence
+(e.g, the shorter and therefore more common "CCAGTA"),
+we can simply pipe `grep`'s output into `wc -l`:
+
+```bash
+zcat data/fastq/ASPC1_A178V_R1.fastq.gz | grep "CCAGTA" | wc -l
+```
+```{.bash-out}
+1118
+```
+
+`grep` has _many_ options &mdash; one of those is `-c`,
+which will directly _count_ matching lines instead of printing them
+(i.e., the command below is an alternative to the command above where we piped
+`grep`s output into `wc -l`):
+
+```bash
+zcat data/fastq/ASPC1_A178V_R1.fastq.gz | grep -c "CCAGTA"
+```
+```{.bash-out}
+1118
+```
+
+<br>
+
+`grep` even has a `zgrep` counterpart for gzip-compressed files,
+so the above can be further shortened by omitting `zcat` and passing the FASTQ
+file name as an argument to `zgrep`:
+
+```bash
+zgrep -c "CCAGTA" data/fastq/ASPC1_A178V_R1.fastq.gz
+```
+```{.bash-out}
+1118
+```
+
+We could also create a new FASTQ file whose sequences match our search by
+printing one line before each match (`-B1`) and two lines after it (`-A2`):
+
+```bash
+zgrep -B1 -A2 --no-group-separator "CCAGTA" data/fastq/ASPC1_A178V_R1.fastq.gz > CCAGTA.fastq 
+```
+
+Among many other options,
+`grep` can also search multiple files at once
+(simply pass multiple filenames as arguments like with other commands,
+e.g. using a glob pattern to select them),
+and it can even search directories recursively using the `-R` flag.
+
+<br>
+
+## At-home reading: raw data management {-}
+
+### Making your valuable data read-only {-}
+
+Your raw FASTQ data is extremely invaluable as it contains the result
+of your experiment and was produced by an expensive sequencing process.
+Even after you've produced "clean versions" of these files after quality and adapter
+trimming, or after you have generated your final gene count tables,
+you'll always want to keep these files around.
+For example,
+these are the foremost files you need to **make publicly available** 
+when you publish your results
+(they are typically deposited at the **[NCBI's SRA](https://www.ncbi.nlm.nih.gov/sra)**),
+they ensure that your results can be reproduced by yourself and others,
+and they allow for a modified re-analysis of the data after e.g. new methods or
+relevant data become available.
+
+You should therefore keep at least one copy of your FASTQ files in a Project dir
+(as opposed to a Scratch dir) at OSC &mdash;
+recall that these dirs are being backed up daily by OSC!
+You'll also want to keep at least one copy of the data outside of OSC.
+
+Even with those automatic back-ups and extra copies,
+it's still good practice to be careful with your copy of the data at OSC.
+In the previous session,
+we learned that file removal with (e.g.) `rm` is permanent and irreversible,
+and performing an accidental removal of some of your FASTQ files or the entire dir
+with a wrong command is not _that_ far-fetched.
+To make this much less likely to happen,
+**it's a good idea to "write-protect" your FASTQ files**
+(or, phrased differently, to make them "read-only").
+
+First, let's briefly recap and expand our knowledge of file permissions:
+
+- **Read permissions** allow you to read and copy files/dirs
+- **Write permissions** allow you to move, rename, modify, overwrite, or delete
+- _Execute permissions_ allow you to directly execute a file
+  (e.g. running a program, or a script as a command).
+
+These permissions can be most easily set for three different groups of people:
+
+- **Owner (or "user")** &mdash;
+  By default, this the person that created the file or dir.
+  After you have copied or downloaded some FASTQ files, for example,
+  you are the owner of these copies.
+- **Group** &mdash;
+  When you create a file in the PAS0471 project dir, its "group" will include
+  all members of the OSC project PAS0471.
+- **Other** &mdash;
+  In the example above,
+  anyone with access to OSC that is not a member of PAS0471.
+
+We can see what these permissions are for any file or dir by looking at the
+**first column of the output of `ls -l`**.
+Let's practice write-protection and its consequences with a dummy file &mdash;
+first, we create the dummy file and check the default permissions:
+
+```bash
+touch permission_test_file
+
+ls -l permission_test_file
+```
+```{.bash-out}
+# (Note, the very first dash below is about file _type_, not permissions:)
+ -rw-r--r-- 1 jelmer PAS0471 0 Aug  7 16:27 permission_test_file
+```
+
+<figure><p align="left"><img src=img/permissions.svg width="80%"></p></figure>
+
+The command to set (read/write/execute) permissions for these categories of people
+(user/group/others, or everyone together) is `chmod`.
+There are multiple ways of using this command,
+but a common one is along the lines of `chmod <who><operation><permission>`,
+with e.g.:
+
+- `chmod a-w` meaning _"all minus write"_: remove write-permissions for all
+- `chmod o+r` meaning _"others plus read"_: add read-permissions for others.
+
+To remove write-permission for everyone, including yourself, we will use:
+
+```bash
+chmod a-w permission_test_file
+
+ls -l permission_test_file
+```
+```{.bash-out}
+# (Notice that there is no longer a 'w' in the sequence below:)
+-r--r--r-- 1 jelmer PAS0471 0 Aug  7 16:27 permission_test_file
+```
+
+Now, let's see what happens when we try to remove this file:
+
+```bash
+rm permission_test_file
+```
+```{.bash-out}
+rm: remove write-protected regular empty file ‘permission_test_file’? n
+```
+
+Note that we can _still_ remove this file by answering `y`,
+but we will hopefully not act _that_ carelessly,
+and the question will make us reconsider and press `n`
+(also, if you made a mistake in a script that you run _non-interactively_,
+it will fail to remove write-protected files).
+
+Finally, let's actually write-protect our FASTQ files,
+and the reference genome files:
+
+```bash
+chmod a-w data/fastq/* data/ref/*
+```
+
+::: {.callout-warning collapse="true"}
+#### Access permissions for directories (Click to expand)
+One tricky aspects of file permissions is that to **list** a directory's content,
+or to **`cd` into it**, you need *execute* permissions for the dir
+(and not read permissions as you might have expected)!
+This is something to take into account when you want to grant others
+access to a directory at OSC.
+
+To set execute permissions *only for dirs* throughout a dir hierarchy:
+```sh
+chmod -R a+X my_large_dir       # Note the *uppercase* X
+```
+
+More intuitive is that when you don't have write-permissions for a dir,
+it's not just that you can't delete or modify any of the files in it,
+but you're also not able to create or copy your own files there.
+Therefore, if you want someone to obtain their own copy of one of your files,
+you'll typically have to get _them_ to run the `cp` command.
+:::
+
+<br>
+
+### Checking file integrity after transfer {-}
+
+When you receive your FASTQ files from a sequencing facility,
+a small text file will usually accompany your FASTQ files,
+and will have a name along the lines of
+`md5.txt`, `md5checksums.txt`, or `shasums.txt`.
+
+Such a file contains so-called **checksums**,
+a sort of digital fingerprints for your FASTQ files,
+which can be used to **check whether your copy of these files is completely intact**.
+Checksums are extremely compact summaries of files,
+computed so that even if just one character is changed in the data,
+the checksum will be different.
+
+For example, in the dir with the original FASTQ files for our focal project,
+the following `md5.txt` file is present:
+
+```bash
+ls -lh /fs/ess/PAS0471/jelmer/assist/2023-08_hy/data/fastq | head -n 6
+```
+```{.bash-out}
+total 48G
+-rw-r--r-- 1 jelmer PAS0471 3.4K Aug  9 16:33 md5.txt
+-rw-r--r-- 1 jelmer PAS0471 1.2G Aug  9 16:33 X10784_Cruz-MonserrateZ_ASPC1_vec_V1N_1_S25_R1_001.fastq.gz
+-rw-r--r-- 1 jelmer PAS0471 1.2G Aug  9 16:33 X10784_Cruz-MonserrateZ_ASPC1_vec_V1N_1_S25_R2_001.fastq.gz
+-rw-r--r-- 1 jelmer PAS0471 1.3G Aug  9 16:33 X10785_Cruz-MonserrateZ_ASPC1_RASD1_V1N_1_S26_R1_001.fastq.gz
+-rw-r--r-- 1 jelmer PAS0471 1.4G Aug  9 16:33 X10785_Cruz-MonserrateZ_ASPC1_RASD1_V1N_1_S26_R2_001.fastq.gz
+```
+
+::: {.callout-note}
+#### More on checksums
+Several algorithms and their associated shell commands can compute checksums.
+Like in our case, you'll most often see _md5_ checksums accompany
+genomic data files,
+which can be computed and checked with the `md5sum` command
+(the newer _SHA-1_ checksums can be computer and checked with the very
+similar `shasum` command).
+
+Checksums consist of _hexadecimal_ characters only: numbers and the letters a-f.
+
+We typically compute or check checksums for one or more _files_,
+but we can even do it for a _string of text_ &mdash;
+the example below demonstrates that the slightest change in a string
+(or file alike) will generate a completely different checksum:
+
+```bash
+echo "bioinformatics is fun" | md5sum
+```
+```{.bash-out}
+010b5ebf7e207330de0e3fb0ff17a85a  -
+```
+```bash
+echo "bioinformatic is fun" | md5sum
+```
+```{.bash-out}
+45cc2b76c02b973494954fd664fc0456  -
+```
+:::
+
+Let's take a look at our checksums &mdash;
+the file has one row per file and two columns,
+the first with the checksum and the second with the corresponding file name: 
+
+```bash
+head -n 4 /fs/ess/PAS0471/jelmer/assist/2023-08_hy/data/fastq/md5.txt
+```
+```{.bash-out}
+54224841f172e016245843d4a8dbd9fd        X10790_Cruz-MonserrateZ_Panc1_vec_V1N_1_S31_R2_001.fastq.gz
+cf22012ae8c223a309cff4b6182c7d62        X10790_Cruz-MonserrateZ_Panc1_vec_V1N_1_S31_R1_001.fastq.gz
+647a4a15c0d55e56dd347cf295723f22        X10797_Cruz-MonserrateZ_Miapaca2_RASD1_V1N_1_S38_R2_001.fastq.gz
+ce5d444f8f9d87d325dbe9bc09ef0470        X10797_Cruz-MonserrateZ_Miapaca2_RASD1_V1N_1_S38_R1_001.fastq.gz
+```
+
+This file was created by the folks at the sequencing facility,
+and now that we have the data at OSC and are ready to analyze it,
+we can check if they are still fully intact
+and didn't &ndash;for example&ndash; get incompletely transferred.
+
+I have done this check for the original files,
+but this takes a little while, and for a quick exercise,
+we can now do so with our subsampled FASTQ files.
+First, let's copy a file `md5.txt` from the `demo` directory,
+which has the checksums for the subsampled FASTQ files as I created them:
+
+```bash
+cp /fs/ess/PAS0471/demo/202307_rnaseq/data/fastq/md5sums.txt data/fastq/
+```
+
+To check whether the checksums for one or more files in a file correspond to
+those for the files,
+we can run `mdsum -c <mdsum-file>`,
+and should do so _while inside the dir with the files of interest_[^7].
+For example:
+
+[^7]: This technically depends on how the file names are shown in the text file
+      with the checksums:
+      if there are just file names without directories (or `./<filename>`, etc.),
+      you'll have to be in the dir with the files to run `md5sum -c`.
+      (This in turn depends on from where the checksums were _generated_:
+      if you generate them while in the dir with the focal files,
+      which is the only sensible way to do this, that's how they will be displayed.)
+
+```bash
+cd data/fastq
+md5sum -c md5sums.txt 
+```
+```{.bash-out}
+ASPC1_A178V_R1.fastq.gz: OK
+ASPC1_A178V_R2.fastq.gz: OK
+ASPC1_G31V_R1.fastq.gz: OK
+ASPC1_G31V_R2.fastq.gz: OK
+Miapaca2_A178V_R1.fastq.gz: OK
+Miapaca2_A178V_R2.fastq.gz: OK
+Miapaca2_G31V_R1.fastq.gz: OK
+Miapaca2_G31V_R2.fastq.gz: OK
+```
+
+If there were any differences,
+the `md5sum` command would clearly warn you about them,
+as you can see in the exercise below.
+
+::: {.callout-note collapse="true"}
+#### Making the checksum check fail (Click to expand)
+
+Let's compute a checksum for the `README.md` file and save it in a file:
+
+```bash
+# Assuming you went into data/fastq above;
+# you need to be in /fs/ess/PAS0471/$USER/rnaseq-intro
+cd ../..
+
+md5sum README.md > md5sum_for_README.txt
+
+cat md5sum_for_README.txt
+```
+```{.bash-out}
+d4c4a8df4870f68808553ac0f5484aa3  README.md
+```
+
+Now, let's add a line to our `README.md` that says where the reference genome
+files are:
+
+```bash
+# (You'll need single quotes like below, or the shell will interpret the backticks)
+echo 'Files for the GRCh38.p14 human genome are in the `data/ref` dir' >> README.md
+
+tail -n 3 README.md
+```
+```{.bash-out}
+and columns specifying the read direction, sample ID, cell line, and variant.
+
+Files for the GRCh38.p14 human genome are in the `data/ref` dir
+```
+
+Finally, let's check the checksum, and watch it fail:
+
+```bash
+md5sum -c md5sum_for_README.txt
+```
+```{.bash-out}
+README.md: FAILED
+md5sum: WARNING: 1 computed checksum did NOT match
+```
+:::
+
+<br>

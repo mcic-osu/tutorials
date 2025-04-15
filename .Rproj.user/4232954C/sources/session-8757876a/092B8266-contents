@@ -1,0 +1,736 @@
+---
+title: "Data frame manipulation with _dplyr_"
+author: "Software Carpentry / Jelmer Poelstra"
+date: 2025-02-11
+editor_options: 
+  chunk_output_type: console
+---
+
+-------
+
+<br>
+
+## Introduction
+
+### The _dplyr_ package and the tidyverse
+
+The [_dplyr_](https://cran.r-project.org/package=dplyr) package provides a number
+of very useful functions for **manipulating data frames**.
+
+In this session, we'll cover some of the most commonly used functions:
+
+- `select()` to pick columns (variables)
+- `filter()` to pick rows (observations)
+- `rename()` to change column names
+- `arrange()` to change the order of rows (i.e., to sort a data frame)
+- `mutate()` to modify values in columns and create new columns
+- `summarize()` to compute across-row summaries
+
+All these functions take a
+**data frame as the _input_, and output a new, modified data frame**.
+
+_dplyr_ belongs to a family of R packages designed for "dataframe-centric"
+data science called the ["tidyverse"](https://www.tidyverse.org).
+The other tidyverse package we'll cover in today's workshop is _ggplot2_ for making plots.
+
+### Setting up
+
+Let's start a new script for this session:
+
+1. _Open a new R script_ (Click the **`+`** symbol in toolbar at the top, then click `R Script`)^[
+   Or Click `File` => `New file` => `R Script`.].
+   
+2. _Save the script_ straight away as `data-structures.R` --
+   you can save it anywhere you like, though it is probably best to save it in a
+   folder specifically for this workshop.
+   
+3. If you want the section headers as comments in your script,
+   as in the script I am showing you now,
+   then copy-and-paste the following into your script:
+
+<details><summary>Section headers for your script _(Click to expand)_</summary>
+```{r}
+# 1 - Introduction -------------------------------------------------------------
+# 1.3 - Loading the tidyverse
+
+# 1.4 - The gapminder dataset
+
+# 2 - select() to pick columns (variables) -------------------------------------
+
+# 3 - rename() to change column names ------------------------------------------
+
+# 4 - The pipe |> --------------------------------------------------------------
+
+# 5 - filter() to pick rows (observations) -------------------------------------
+
+# Challenge 1
+# Write a single command (which can span multiple lines and include pipes) that
+# will produce a data frame that has lifeExp, country, and year for Africa but not
+# for other continents.
+# How many rows does your data frame have?
+
+# 6 - arrange() to sort data frames --------------------------------------------
+
+# 7 - mutate() to modify values in columns and create new columns --------------
+
+# Challenge 2
+# A: Use mutate() to create a new column called gdp_billion that has the absolute
+#    GDP (i.e., not relative to population size) and does so in units of billions
+#    (i.e., 2.3 would mean 2.3 billion).
+
+# B: (Bonus) Use mutate() to create a new column planet that has the value earth
+#    in every row. We didn’t cover this kind of scenario but go ahead and test 
+#    your intuition!
+  
+# 8 - summarize() to compute group-wise summary stats --------------------------
+
+# Challenge 3
+# Calculate the average life expectancy per country. Which has the longest average
+# life expectancy and which has the shortest average life expectancy?
+
+```
+
+</details>
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Loading the tidyverse
+
+All core tidyverse packages can be installed and loaded with a single command.
+Since you should already have _installed_ the tidyverse^[
+If not: run `install.packages("tidyverse")` now.
+], you only need to _load_ it, which you do as follows:
+
+```{r}
+library(tidyverse)
+```
+
+The output tells you which packages have been loaded as part of the tidyverse.
+
+::: {.callout-note collapse="true"}
+#### Learn more: Function name "conflicts" _(Click to expand)_
+Also printed above is a "Conflicts" section that may seem ominous.
+What this means is that two tidyverse functions, `filter()` and `lag()`,
+have the same names as two functions from the _stats_ package that were already
+in your R environment.
+
+(Those stats package functions are part of what is often referred to as "base R":
+core R functionality that is always available (loaded) when you start R.)
+
+Due to this function name conflict/collision, for example,
+the `filter()` function from _dplyr_ "masks" the `filter()` function from _stats_:
+that is, if you write a command with `filter()`, it will use the dplyr function
+and not the stats function.
+
+You _can_ still use a "masked" function, but you will need to preface it with its
+package name as follows: `stats::filter()`.
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### The `gapminder` data set
+
+In this session and the next one on data visualization,
+we will work with the `gapminder` data set.
+This data set is available in a package of the same name
+(while most packages are built around functions so as to extend R's functionality,
+others merely contain data sets).
+
+This package, too, you should have already installed^[
+If not: run `install.packages("gapminder")` now.
+], so you only need to load it right now:
+
+```{r}
+library(gapminder)
+```
+
+Let's take a look at the dataset:
+
+```{r}
+gapminder
+```
+
+We can also use the `View()` function to look at the data frame ---
+this will open a new tab in our editor pane with a spreadsheet-like look and feel:
+
+```{r, eval=FALSE}
+View(gapminder)
+# (Should display the dataset in an editor pane tab)
+```
+
+The `gapminder` data frame is a so-called
+**"tibble", which is the tidyverse variant of a data frame.**
+The main difference is the nicer default printing behavior of tibbles:
+e.g. the data types of columns are shown,
+and only a limited number of rows are printed.
+
+As for the dataset itself, note that each row contains some data
+for a single country in a specific year
+(across 5-year intervals between 1952 and 2007), with the following columns:
+
+- `country` (stored as a `factor`)
+- `continent` (stored as a `factor`)
+- `year` (stored as an `integer`)
+- `lifeExp` (stored as an `integer`): the **life expectancy** in years
+- `pop` (stored as an `integer`): the **population size**
+- `gdpPercap` (stored as a `double`): the **per-capita GDP**
+
+<br>
+
+## `select()` to pick columns (variables)
+
+To subset a data frame by keeping or removing certain columns,
+we can use the `select()` function.
+
+By default, this function will only **keep the columns that you specify**,
+which you typically do simply by listing those columns by name:
+
+```{r}
+select(.data = gapminder, year, country, gdpPercap)
+```
+
+In the command above, the first argument was the data frame,
+whereas the other arguments were the (unquoted!) names of columns we wanted to keep.
+
+The **order of the columns** in the output data frame is exactly as you list them in
+`select()`, and doesn't need to be the same as in the input data frame.
+In other words, `select()` is also one way to reorder columns.
+In the example above, we made `year` appear before `country`, for example.
+
+We can also **specify columns that should be removed**,
+by prefacing their name with a `!` (or a `-`):
+
+```{r}
+select(.data = gapminder, !continent)
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: {.callout-tip appearance='minimal'}
+There are also ways to e.g. select _ranges_ of columns,
+but that is beyond the scope of this short workshop.
+Check the `select()` help by typing `?select` to learn more.
+:::
+
+<br>
+
+## `rename()` to change column names
+
+The next _dplyr_ function is one of the simplest:
+`rename()` to change column names.
+
+The syntax to specify the new and old name within the function is `new_name = old_name`
+--- for example, we may want to rename the `gdpPercap` column:
+
+```{r}
+rename(.data = gapminder, gdp_per_capita = gdpPercap)
+```
+
+We can also rename multiple columns at once:
+
+```{r}
+rename(.data = gapminder, gdp_per_capita = gdpPercap, life_exp = lifeExp)
+```
+
+<br>
+
+## The pipe (`|>`)
+
+So far, our examples applied a single _dplyr_ function to a data frame,
+and simply printed the output (a new data frame) to screen.
+
+But in practice, it is common to use several functions in succession to "wrangle"
+a dataframe into the format we want.
+For example, if we want to first `select()` one or more columns,
+and then modify the output further by `rename()`-ing a column, we could:
+
+```{r}
+gapminder_sel <- select(.data = gapminder, year, country, gdpPercap)
+
+rename(.data = gapminder_sel, gdp_per_capita = gdpPercap)
+```
+
+For more elaborate editing, we could go on like we did above,
+successively assigning new data frames and moving on to the next step.
+
+But there is a nicer way of dong this,
+using so-called "piping" with a **pipe operator** (`|>`).
+Let's start by seeing a reformulation of the code above with pipes:
+
+```{r}
+gapminder |>
+  select(year, country, gdpPercap) |>
+  rename(gdp_per_capita = gdpPercap)
+```
+
+What happened here is that we took the `gapminder` data frame,
+pushed (or "piped") it into the `select()` function,
+whose output was in turn piped into the `rename()` function.
+
+You can think of the pipe as **"then"**:
+take `gapminder`, _then_ select, _then_ rename.
+Using pipes is slightly less typing and considerably more readable than using
+successive assignments like we did before.^[
+Using pipes is also faster and uses less computer memory.
+]
+
+When using pipes, we no longer specify the input data frame with the `.data`
+argument, because the input is "already" being piped into the function
+(by default, the input goes to the function's first argument).
+
+::: {.callout-tip appearance='minimal'}
+For code readability, it is good practice to always start a new line after a pipe `|>` 
+:::
+
+<br>
+
+## `filter()` to pick rows (observations)
+
+The `filter()` function keeps only those rows that satisfy one or more conditions.
+It is similar to Filter functionality in spreadsheets ---
+except that those only change what you _display_, while `filter()` will _remove_ rows.
+But if that sounds scary, recall what we mentioned earlier:
+
+> All these functions take a data frame as the _input_,
+> and output a new, modified data frame.
+
+:::{.callout-warning appearance="minimal"}
+Therefore, you would _only_ modify existing data if you would assign the output
+back to the input object, like in the example below with the `select()` function:
+
+```{r, eval=FALSE}
+cats <- cats |> select(name, coat)
+```
+:::
+
+Let's start with the following example,
+where we want to keep observations (remember, these are countries in a given year)
+with a life expectancy exceeding 80 years:
+
+```{r}
+gapminder |>
+  filter(lifeExp > 80)
+```
+
+So, we specify a _condition_ based on the values in at least one column
+to only **keep rows satisfying this condition**.
+
+These conditions don't have to be based on numeric comparisons -- for example:
+
+```{r}
+gapminder |>
+  filter(continent == "Europe")
+```
+
+:::callout-warning
+### Remember to use _two_ equals signs `==` to test for equality!
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+#### Filter based on multiple conditions
+
+It's also possible to filter based on multiple conditions -- for example:
+
+```{r}
+gapminder |>
+  filter(continent == "Asia", year == 2007, lifeExp > 80)
+```
+
+By default, multiple conditions are combined in an _AND_ fashion ---
+in other words, in a given row, _each_ condition needs to be met for that column
+to be kept.
+
+If you want to combine conditions in an _OR_ fashion,
+you should use a `|` as follows:
+
+```{r}
+gapminder |>
+  filter(lifeExp > 80 | gdpPercap > 10000)
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+#### Pipeline practice
+
+Finally, let's practice a bit more with "pipelines" that use multiple _dplyr_ verbs:
+
+```{r}
+gapminder |>
+  filter(continent == "Americas") |>
+  select(year, country, gdpPercap) |>
+  rename(gdp_per_capita = gdpPercap)
+```
+
+<br>
+
+:::exercise
+### {{< fa user-edit >}} Challenge 1 {-}
+
+Write a single command (which can span multiple lines and include pipes)
+that will produce a data frame that has `lifeExp`, `country`, and `year`
+for Africa but not for other continents. 
+How many rows does your data frame have?
+
+<details><summary>Click for the solution</summary>
+```{r}
+gapminder |>
+  filter(continent == "Africa") |>
+  select(year, country, lifeExp)
+```
+
+It has 624 rows.
+</details>
+:::
+
+<br>
+
+## `arrange()` to sort data frames
+
+The `arrange()` function is like sorting functionality in Excel:
+it changes the order of rows based on the values in one or more columns.
+
+For example, `gapminder` is currently sorted alphabetically by `country`
+and then by `year`, but we may instead want to sort by population size:
+
+```{r}
+gapminder |>
+  arrange(pop)
+```
+
+Sorting can be useful to see the observations with the smallest or largest values
+for a certain column: above we see that the country and year with the smallest
+population size is _Sao Tome and Principe_ in 1952.
+
+Default sorting is from small to large, but of course,
+we may also want to sort in the reverse order.
+You can do this using the `desc()` (descending, large-to-small) helper function:
+
+```{r}
+gapminder |>
+  arrange(desc(pop))
+```
+ 
+Finally, it is common to want to sort by multiple columns,
+where ties in the first column are broken by a second column (and so on) --
+to do so, simply list the columns in the appropriate order:
+
+```{r}
+gapminder |>
+  arrange(continent, country)
+```
+
+The above example sorts first by continent and _then_ by country.
+
+<br>
+
+## `mutate()` to modify values in columns and create new columns
+
+So far, we've focused on functions that "merely" subset and reorganize data frames.
+We've also seen how we can modify column names.
+But we haven't seen how we can _change the data_ or _compute derived data_
+in data frames.
+
+We can do this with the `mutate()` function.
+For example, say that we want to create a new column that has population sizes
+in millions rather than in individuals:
+
+```{r}
+gapminder |>
+  mutate(pop_million = pop / 10^6)
+```
+
+The code above created a new column called `pop_million` that is the result
+of dividing the values in the `pop` column by a million. 
+
+To modify a column rather than adding a new one,
+simply "assign back to the same name":
+
+```{r}
+gapminder |>
+  mutate(pop = pop / 10^6)
+```
+
+<br>
+
+:::exercise
+### {{< fa user-edit >}} Challenge 2 {-}
+
+**A:** Use `mutate()` to create a new column called `gdp_billion` that has the
+       **absolute** GDP (i.e., not relative to population size) and does so
+       in **units of billions** (i.e., `2.3` would mean 2.3 billion).
+
+<details><summary>Click for the solution</summary>
+
+```{r}
+gapminder |>
+    mutate(gdp_billion = gdpPercap * pop / 10^9)
+```
+</details>
+
+**B:** _(Bonus)_ Use `mutate()` to create a new column `planet` that has the value
+`earth` in every row. We didn't cover this kind of scenario, but go ahead and test
+your intuition!
+
+<details><summary>Click for the solution</summary>
+
+If you simply provide a value, this will be repeated in every row:
+
+```{r}
+gapminder |>
+  mutate(planet = "earth")
+```
+</details>
+:::
+
+<br>
+
+## `summarize()` to compute (groupwise) summary stats
+
+In combination with `group_by()`,
+the `summarize()` function can compute data summaries across groups of rows of a
+data frame.
+
+First, let's see what `summarize()` does when used by itself:
+
+```{r}
+gapminder |>
+  summarize(mean_gdpPercap = mean(gdpPercap),
+            mean_lifeExp = mean(lifeExp))
+```
+
+Above, we computed the mean for two columns, across **all** rows.
+This is already useful,
+but in combination with the helper function `group_by()`,
+`summarize()` becomes really powerful by allowing us to compute **groupwise** stats.
+
+For example, let's compute the mean GDP and mean life expectancy separately
+for each continent:
+
+```{r}
+gapminder |>
+  group_by(continent) |>
+  summarize(mean_gdpPercap = mean(gdpPercap),
+            mean_lifeExp = mean(lifeExp))
+```
+
+`group_by()` implicitly splits a data frame into groups of rows:
+here, one group for observations from each continent.
+After that, operations like in `summarize()` will happen separately for each group,
+which is how we ended up with per-continent means.
+
+Finally, another powerful feature is that we can _group by multiple variables_ --
+for example, by `year` _and_ `continent`:
+
+```{r}
+gapminder |>
+  group_by(continent, year) |>
+  summarize(mean_gdpPercap = mean(gdpPercap),
+            mean_lifeExp = mean(lifeExp))
+```
+
+<br>
+
+:::exercise
+### {{< fa user-edit >}} Challenge 3 {-}
+
+Calculate the average life expectancy per country.
+Which has the longest average life expectancy and which has the shortest
+average life expectancy?
+
+<details><summary>Click for the solution</summary>
+
+First, let's create a dataframe with the mean life expectancy by country:
+
+```{r}
+lifeExp_bycountry <- gapminder |>
+   group_by(country) |>
+   summarize(mean_lifeExp = mean(lifeExp))
+```
+
+Then, arrange that dataframe in two directions to see the countries with the
+longest and shortest life expectance --
+piping into `head()` as a bonus to only see the top n, here top 1:
+
+```{r}
+lifeExp_bycountry |>
+   arrange(mean_lifeExp) |>
+   head(n = 1)
+
+lifeExp_bycountry |>
+   arrange(desc(mean_lifeExp)) |>
+   head(n = 1)
+```
+</details>
+:::
+
+<br>
+
+------
+
+------
+
+<br>
+
+## Bonus material for self-study
+
+### Writing and reading tabular data to and from files
+
+When working with your own data in R,
+it is common to want to read data from files into your R environment,
+and write data that is in your R environment to files.
+
+While it's possible to have R interact with Excel spreadsheet files^[
+Using the [readxl](https://readxl.tidyverse.org/) package.
+This is installed as part of the tidyverse but is not a _core_ tidyverse package
+and therefore needs to be loaded separately.
+], keeping your data in **plain-text files** generally benefits reproducibility.
+Tabular plain text files can be stored using:
+
+- A _Tab_ as the column delimiter
+  (often called TSV files, and stored with a `.tsv` extension)
+- A _comma_ as the column delimiter
+  (often called CSV files, and stored with a `.csv` extension).
+
+We will use functions from the _readr_ package,
+which is part of the core tidyverse and therefore already loaded into your environment,
+to practice writing and reading data to and from TSV files.
+
+#### Writing files
+
+First, let's write the `gapminder` data frame to file using the `write_tsv()`
+function with arguments `x` for the R object and `file` for the file path:
+
+```{r}
+write_tsv(x = gapminder, file = "gapminder.tsv")
+```
+
+This will have written to a file called `gapminder.tsv` in your R working directory
+(you can see where that is at the top of the Console, or by running `getwd()`).
+
+::: callout-tip
+### Checking out the file
+
+In RStudio's **Files pane**,
+find your new file and click on it.
+That way, the file will open in the editor.
+:::
+
+::: {.callout-note collapse="true"}
+### Want to write to a different folder on your computer? _(Click to expand)_
+
+The `file` argument to `write_tsv()` takes a file _path_,
+meaning that you can specify any location on your computer for it it in addition
+to its name.
+
+For example, if you had a folder called `results` in your current working directory
+(directory is just another word for folder), you could put the file in there:
+
+```{r, eval=FALSE}
+write_tsv(x = gapminder, file = "results/gapminder.tsv")
+```
+
+Note that a forward slash `/` as a folder delimiter will work regardless of your
+operating system
+(even though Windows natively delimits folder by a backslash `\`).
+
+Finally, if you want to store the file in a totally different place than where
+you are now, note that you can also use so-called absolute (or "full") paths like:
+
+```{r, eval=FALSE}
+write_tsv(x = gapminder, file = "/Users/poelstra.1/Desktop/gapminder.tsv")
+```
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+#### Reading from files
+
+To practice reading data from a file,
+we'll use the `read_tsv()` function on the file we just created: 
+
+```{r}
+gapminder_reread <- read_tsv(file = "gapminder.tsv")
+```
+
+Note that the function is rather chatty by default,
+telling us how many rows and columns it read in, and what their data types are.
+Let's check the resulting object:
+
+```{r}
+gapminder_reread
+```
+
+This looks good!
+Do note that the column's data types are not identical to what they were
+(`year` and `pop` are saved as `double` rather than `integer`,
+and `country` and `continent` as `character` rather than `factor`).
+This is largely expected because that kind of metadata is not stored in a plain-text
+TSV, so `read_tsv()` will by default simply make best guesses as to the types.
+
+Alternatively, we could tell read_tsv what the column types should be using
+abbreviations (`f` for `factor`, `i` for `integer`, `d` for `double` ---
+run `?read_tsv` for more info):
+
+```{r}
+read_tsv(file = "gapminder.tsv", col_types = "ffidi")
+```
+
+::: {.callout-tip appearance='minimal'}
+To read and write CSV files instead, use `read_csv()` / `write_csv()` in the same way.
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### `count()` and `n()`
+
+A common operation is to count the number of observations for each group.
+The _dplyr_ package comes with two related functions that help with this.
+
+For instance, if we wanted to check the number of countries included in the
+dataset for the year 2002, we can use the `count()` function.
+It takes the name of one or more columns that contain the groups we are interested in,
+and we can optionally sort the results in descending order by adding `sort = TRUE`:
+
+```{r}
+gapminder |>
+    filter(year == 2002) |>
+    count(continent, sort = TRUE)
+```
+
+If we need to use the number of observations in calculations like by `summarize()`,
+the `n()` function is useful.
+It will return the total number of observations in the "_current group_"
+as applicable ---
+for instance,
+if we wanted to get the standard error of the life expectancy per continent:
+
+```{r}
+gapminder |>
+  group_by(continent) |>
+  summarize(se_life = sd(lifeExp) / sqrt(n()))
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Learn more
+
+This material was adapted from
+[this Carpentries lesson episode](https://swcarpentry.github.io/r-novice-gapminder/instructor/12-dplyr.html).
+
+In your journey to become a skilled data frame wrangler in R,
+here are some additional topics that are very useful but beyond the scope of this
+workshop:
+
+- Joining/merging -- combining multiple dataframes based on one or more shared
+  columns. This can be done with _dplyr_'s `join_*()` functions.
+
+- Pivoting/reshaping -- moving between 'wide' and 'long' data formats
+  with `pivot_wider()` and `pivot_longer()` -- this is covered in
+  [episode 13 of our focal Carpentries lesson](https://swcarpentry.github.io/r-novice-gapminder/instructor/13-tidyr.html).
+
+<br>
+
+```{r, include=FALSE, echo=FALSE}
+file.remove("gapminder.tsv")
+```

@@ -1,0 +1,276 @@
+---
+title: "Connecting to OSC through SSH"
+pagetitle: "PRACS24: Using SSH"
+number-sections: true
+author: Jelmer Poelstra
+date: 2024-04-12
+---
+
+-----
+
+<br>
+
+### Introduction {-}
+
+This page will first go through the basics of connecting to OSC with SSH,
+using the `ssh` command.
+If you use `ssh` frequently, or plan to do so,
+the two sections after that will show you two useful tricks:
+
+- [Avoid being prompted for your OSC password](#avoid-being-prompted-for-your-osc-password)
+- [Set up a shortcut for your SSH connection name](#use-a-shorter-name-for-your-ssh-connection).
+
+Finally, there is a section on 
+[SSH-tunneling a local VS Code installation to OSC](#set-up-your-local-vs-code-to-ssh-tunnel-into-osc)
+(this is incredibly useful!).
+
+::: {.callout-caution collapse="true"}
+#### SSH and Unix shells on Windows _(Click to expand)_
+If you have a Windows computer, you can't use SSH in a shell like on Mac or Linux,
+but you can instead use a GUI-based SSH client like [`PuTTY`](https://www.putty.org/).
+
+Alternatively, for an experience more similar to those one Unix-based operating
+systems, you can install one of the following,
+which will enable you to get a terminal program that runs a Unix shell:
+
+- [**Windows Subsystem for Linux (WSL)**](https://learn.microsoft.com/en-us/windows/wsl/install)
+  --- the more involved option, this will basically run a Linux Virtual Machine on your computer.
+- **Git for Windows**,
+  which comes with a Unix (Bash) shell &mdash; "Git Bash".
+  To install this, [download it from this page](https://git-scm.com/download/win) and 
+  install it using all the default settings for the installation, except:
+  - In "*Adjusting Your PATH Environment*", select "*Use Git from Git Bash Only*".
+  - In the prompt "*Configuring the Line Ending Conversions*",
+    choose "*Checkout as-is, commit as-is*".
+:::
+
+<br>
+
+## Basic SSH connection in a terminal
+
+To connect to OSC or other remote computers without using a web portal like
+OnDemand, you can use SSH.
+You can do so via the **`ssh` command** if you have a Linux or a Mac computer,
+since these two operating systems are both Unix-based and have built-in terminals
+with Unix shells.
+
+Here, I'll briefly demonstrate how to use the `ssh` command.
+On your own computer,
+open a terminal application and input the command `ssh <user>@<host>`, where:
+
+  - `<user>` should be replaced by your OSC username, and
+  - `<host>` should be replaced by the name of the computer you want to connect to:
+    - `pitzer.osc.edu` to connect to the Pitzer cluster
+    - `owens.osc.edu` to connect to the Owens cluster
+
+For example, if I (username `jelmer`) wanted to log in to the Pitzer cluster,
+I would use:
+
+```bash
+ssh jelmer@pitzer.osc.edu
+```
+
+``` {.bash-out}
+The authenticity of host 'pitzer.osc.edu' can't be established.
+RSA key fingerprint is 2a:b6:f6:8d:9d:c2:f8:2b:8c:c5:03:06:a0:f8:59:12.
+Are you sure you want to continue connecting (yes/no)?
+```
+
+If this is the first time you are connecting to Pitzer via SSH, 
+you’ll encounter a message similar to the one above.
+While the phrase _"The authenticity of host 'pitzer.osc.edu' can't be established."_
+sounds ominous, you will always get this warning when you attempt to connect to a
+remote computer for the first time, and you should type `yes` to proceed
+(you then won't see this message again).
+
+You should now be prompted for your password.
+Type it in carefully because no characters or even *s will appear on the screen,
+and then press <kbd>Enter</kbd>.
+
+```bash-out-solo
+jelmer@pitzer.osc.edu's password:
+``` 
+
+If you entered your password correctly,
+your shell is now connected to OSC rather than operating on your own computer.
+That is, you'll have shell access very much in the same way as when using the
+"Pitzer Shell Access" button on OSC OnDemand.
+(The key difference between SSH-ing in this way rather than using OnDemand
+is that the terminal is not running inside your browser, which can be convenient.)
+
+::: {.callout-tip}
+#### SSH shortcuts!
+If you use SSH a lot to connect to OSC,
+typing `ssh <username>@pitzer.osc.edu` every time and then providing your password
+can get pretty tedious.
+The next two sections will show you how to make this go faster.
+:::
+
+<br>
+
+## Avoid being prompted for your OSC password
+
+If you take the following steps, you will not be prompted for your OSC password
+every time you log in using SSH.
+Both steps should be done in a terminal *on your local machine*:
+
+1.  **Generate a public-private SSH key-pair:**
+
+    ``` {.bash}
+    ssh-keygen -t rsa
+    ```
+
+    You'll get some output and will then be asked several questions,
+    but in each case, you can just press <kbd>Enter</kbd> to select the default answer.
+
+2.  **Transfer the public key to OSC's Pitzer cluster:**
+
+::: {.panel-tabset}
+### Windows
+
+```bash
+cat ~/.ssh/id_rsa.pub | ssh <user>@pitzer.osc.edu 'mkdir -p .ssh && cat >> .ssh/authorized_keys'
+```
+
+### Mac
+```bash
+# Replace <user> by your username, e.g. "ssh-copy-id jelmer@pitzer.osc.edu"
+ssh-copy-id <user>@pitzer.osc.edu
+```
+:::
+
+All done! Test if it works by running:
+
+```bash
+# Try connecting to Pitzer (once again, replace '<user>' by your username):
+ssh <user>@pitzer.osc.edu
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: {.callout-tip}
+#### The same commands work for Owens, just replace `pitzer` with `owens` in the commands above.
+:::
+
+::: {.callout-note}
+#### Additional instructions: See this [Tecmint post](https://www.tecmint.com/ssh-passwordless-login-using-ssh-keygen-in-5-easy-steps/) in case you're struggling to get this to work.
+:::
+
+<br>
+
+## Use a shorter name for your SSH connection
+
+You can easily set up alternative ways of referring to you SSH connection (i.e., "aliases"),
+such as shortening `jelmer@pitzer.osc.edu` to `jp`,
+by saving these aliases in a text file `~/.ssh/config`, as shown below.
+
+These two steps should both be done *on your local machine*:
+
+1. **Create a file called `~/.ssh/config`:**
+
+   ```bash
+   touch ~/.ssh/config
+   ```
+
+2. **Open the file in a text editor and add your alias(es) in the following format:**
+
+   ```bash-out-solo
+   Host <arbitrary-alias-name>    
+      HostName <remote-address>
+      User <username>
+   ```
+
+   For instance, my file contains the following so as to connect to Pizer with
+   `jp` and to Owens with `jo`:
+
+   ```bash-out-solo
+   Host jp
+      HostName pitzer.osc.edu
+      User jelmer
+
+   Host jo
+      HostName owens.osc.edu
+      User jelmer
+  ```
+
+Now, you just need to use your, preferably very short, alias to log in ---
+and if you did the previous no-password setup,
+you won't even be prompted for your password!
+
+```bash
+ssh jp
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: callout-note
+#### These shortcuts also work with `scp` and `rsync`!
+For example:
+
+```bash
+rsync ~/scripts op:/fs/scratch/PAS0471
+```
+:::
+
+<br>
+
+## Set up your local VS Code to SSH tunnel into OSC
+
+If you want to use VS Code to write code, have a shell, and interact with files
+at OSC directly,
+you don't necessarily need to use the VS Code (Code Server) in OSC OnDemand.
+You can also make your local VS Code installation "**SSH tunnel**" into OSC.
+
+This is a more convenient way of working because it's quicker to start,
+will never run out of alotted time,
+and because you are not working inside a browser,
+you have more screen space and no keyboard shortcut interferences.
+
+The set-up is pretty simple
+(see also [these instructions](https://code.visualstudio.com/docs/remote/ssh) if you get stuck),
+and should also work on Windows:
+
+1. If necessary, install VS Code
+   (instructions for [Windows](https://code.visualstudio.com/docs/setup/windows) /
+   [Mac](https://code.visualstudio.com/docs/setup/mac) /
+   [Linux](https://code.visualstudio.com/docs/setup/linux))
+   on your computer, and open it.
+
+2. Install the VS Code ["Remote Development extension pack"](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack):
+   open the Extensions side bar (click the icon with the four squares in the far left),
+   and in that side bar, search for "_Remote Development extension pack_".
+   That extension should appear with an `Install` button next to it: click that.
+
+3. Open the Command Palette (<kbd>F1</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd><kbd>P</kbd>)
+   and start typing "_Remote SSH_".
+    
+   Then, select `Remote-SSH: Add New SSH Host…` and specify your SSH connection:
+   for Pitzer, this is `ssh <osc-username>@pitzer.osc.edu`, e.g. `ssh jelmer@pitzer.osc.edu`
+   (you'll have to do this separately for Owens if you want to be able to connect to both this way).
+
+   In the "Select SSH configuration file to update" dialog, just select the first (top) option that shows up.
+
+4. You'll get a "Host Added!" pop-up in the bottom-right of your screen:
+   in that pop-up, click `Connect`.
+
+5. If you did the [no-password setup described above](#avoid-being-prompted-for-your-osc-password)
+   (recommended!),
+   you shouldn't be prompted for a password and VS Code will connect to OSC!
+    
+   - If you're asked about the operating system of the host, **select Linux**,
+     which is the operating system of the OSC clusters.
+   - If you're asked whether you "Trust the Authors" of such-and-such directory,
+     click Yes.
+   - If there is a pop-up in the bottom-right asking you to update Git,
+     click No and check "Don't show again".
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: {.callout-warning}
+#### You are now on a login node!
+Just be aware that you'll now be on a Login node
+(and not on a Compute node like when you use VS Code through OnDemand),
+so avoid running analyses directly in the terminal, and so on. 
+:::
+
+<br> <br>

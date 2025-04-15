@@ -1,0 +1,107 @@
+(base) [zrw5436@midway3-login4 mswan]$ module load python/anaconda-2022.05
+(base) [zrw5436@midway3-login4 mswan]$ module load singularity/3.9.2
+(base) [zrw5436@midway3-login4 mswan]$ source activate bactopia-dev
+(bactopia-dev) [zrw5436@midway3-login4 mswan]$ bactopia --R1 /project/blekhman/mswan/rodent_isolates/Rodents-Swanson/13946_11318_189883_HGYH3AFX5_Mark_Swanson_MTS_6_9_ACTCTCGA_GATCGAGT_R1.fastq.gz \
+>          --R2 /project/blekhman/mswan/rodent_isolates/Rodents-Swanson/13946_11318_189883_HGYH3AFX5_Mark_Swanson_MTS_6_9_ACTCTCGA_GATCGAGT_R2.fastq.gz \
+>          --sample MTS73_6_9 \
+>          --outdir /project/blekhman/mswan/bactopia_output6 \
+>          --genome_size 2500000 \
+>          --run_checkm \
+>          -profile test,slurm \
+>          --slurm_queue "" \
+>          --slurm_opts="--account pi-blekhman"
+2023-07-19 17:35:02 INFO     2023-07-19 17:35:02:root:INFO - Checking if environment pre-builds are needed (this may take a while if building for the first time)           download.py:538
+N E X T F L O W  ~  version 23.04.1
+Launching `/home/zrw5436/.conda/envs/bactopia-dev/share/bactopia-3.0.0/main.nf` [fervent_gautier] DSL2 - revision: 0cd9f79ba7
+
+WARN: Found unexpected parameters:
+* --run_checkm: true
+- Ignore this warning: params.schema_ignore_params = "run_checkm" 
+
+
+
+---------------------------------------------
+   _                _              _             
+  | |__   __ _  ___| |_ ___  _ __ (_) __ _       
+  | '_ \ / _` |/ __| __/ _ \| '_ \| |/ _` |   
+  | |_) | (_| | (__| || (_) | |_) | | (_| |      
+  |_.__/ \__,_|\___|\__\___/| .__/|_|\__,_| 
+                            |_|                  
+  bactopia v3.0.0
+  Bactopia is a flexible pipeline for complete analysis of bacterial genomes 
+---------------------------------------------
+Core Nextflow options
+  runName          : fervent_gautier
+  containerEngine  : singularity
+  container        : quay.io/bactopia/bactopia:3.0.0
+  launchDir        : /project/blekhman/mswan
+  workDir          : /project/blekhman/mswan/work
+  projectDir       : /home/zrw5436/.conda/envs/bactopia-dev/share/bactopia-3.0.0
+  userName         : zrw5436
+  profile          : test,slurm
+  configFiles      : /home/zrw5436/.conda/envs/bactopia-dev/share/bactopia-3.0.0/nextflow.config
+
+Required Parameters
+  R1               : /project/blekhman/mswan/rodent_isolates/Rodents-Swanson/13946_11318_189883_HGYH3AFX5_Mark_Swanson_MTS_6_9_ACTCTCGA_GATCGAGT_R1.fastq.gz
+  R2               : /project/blekhman/mswan/rodent_isolates/Rodents-Swanson/13946_11318_189883_HGYH3AFX5_Mark_Swanson_MTS_6_9_ACTCTCGA_GATCGAGT_R2.fastq.gz
+  sample           : MTS73_6_9
+
+Dataset Parameters
+  genome_size      : 2500000
+
+QC Reads Parameters
+  use_porechop     : false
+  adapters         : /home/zrw5436/.conda/envs/bactopia-dev/share/bactopia-3.0.0/data/EMPTY_ADAPTERS
+  phix             : /home/zrw5436/.conda/envs/bactopia-dev/share/bactopia-3.0.0/data/EMPTY_PHIX
+
+Prokka Parameters
+  proteins         : /home/zrw5436/.conda/envs/bactopia-dev/share/bactopia-3.0.0/data/proteins.faa
+
+SLURM Profile (-profile slurm) Parameters
+  slurm_queue      : true
+  slurm_opts       : --account pi-blekhman
+
+Optional Parameters
+  outdir           : /project/blekhman/mswan/bactopia_output6
+
+Max Job Request Parameters
+  max_cpus         : 2
+  max_memory       : 6
+
+Nextflow Profile Parameters
+  condadir         : /home/zrw5436/.bactopia/conda
+  datasets_cache   : /home/zrw5436/.bactopia/datasets
+  singularity_cache: /home/zrw5436/.bactopia/singularity
+
+!! Only displaying parameters that differ from the pipeline defaults !!
+--------------------------------------------------------------------
+If you use bactopia for your analysis please cite:
+
+* Bactopia
+  https://doi.org/10.1128/mSystems.00190-20
+
+* The nf-core framework
+  https://doi.org/10.1038/s41587-020-0439-x
+
+* Software dependencies
+  https://bactopia.github.io/acknowledgements/
+--------------------------------------------------------------------
+[skipped  ] process > BACTOPIA:DATASETS                         [100%] 1 of 1, stored: 1 ✔
+[f7/05e1a7] process > BACTOPIA:GATHER:GATHER_MODULE (MTS73_6_9) [ 75%] 3 of 4, failed: 3, retries: 3
+[-        ] process > BACTOPIA:GATHER:CSVTK_CONCAT              -
+[-        ] process > BACTOPIA:QC:QC_MODULE                     -
+[-        ] process > BACTOPIA:ASSEMBLER:ASSEMBLER_MODULE       -
+[-        ] process > BACTOPIA:ASSEMBLER:CSVTK_CONCAT           -
+[-        ] process > BACTOPIA:SKETCHER:SKETCHER_MODULE         -
+[-        ] process > BACTOPIA:ANNOTATOR:PROKKA_MODULE          -
+[-        ] process > BACTOPIA:AMRFINDERPLUS:AMRFINDERPLUS_RUN  -
+[-        ] process > BACTOPIA:AMRFINDERPLUS:GENES_CONCAT       -
+[-        ] process > BACTOPIA:AMRFINDERPLUS:PROTEINS_CONCAT    -
+[-        ] process > BACTOPIA:MLST:MLST_MODULE                 -
+[-        ] process > BACTOPIA:MLST:CSVTK_CONCAT                -
+[-        ] process > BACTOPIA:DUMPSOFTWAREVERSIONS             -
+[skipping] Stored process > BACTOPIA:DATASETS
+[ca/dd7cbd] NOTE: Error submitting process 'BACTOPIA:GATHER:GATHER_MODULE (MTS73_6_9)' for execution -- Execution is retried (1)
+[1c/74d3bd] NOTE: Error submitting process 'BACTOPIA:GATHER:GATHER_MODULE (MTS73_6_9)' for execution -- Execution is retried (2)
+[f7/05e1a7] NOTE: Error submitting process 'BACTOPIA:GATHER:GATHER_MODULE (MTS73_6_9)' for execution -- Execution is retried (3)
+

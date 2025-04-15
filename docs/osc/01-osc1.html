@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jelmer Poelstra">
+<meta name="dcterms.date" content="2024-02-27">
+
+<title>OSC Intro – MCIC Bioinformatics Tutorials</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-57476271c5f0467c372e20ff5d25630e.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-93a206ead970ce8646eacc93a2842d74.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">MCIC Bioinformatics Tutorials</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> <i class="bi bi-house-door" role="img">
+</i> 
+<span class="menu-text"> </span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About this website</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <div class="dropdown">
+      <a href="" title="" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label=""><i class="bi bi-github"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://github.com/mcic-osu/tutorials">
+            Source Code
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://mcic-osu.github.io/tutorials/issues/new">
+            Report an Issue
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#goals-for-this-session" id="toc-goals-for-this-session" class="nav-link active" data-scroll-target="#goals-for-this-session"><span class="header-section-number">1</span> Goals for this session</a></li>
+  <li><a href="#high-performance-computing" id="toc-high-performance-computing" class="nav-link" data-scroll-target="#high-performance-computing"><span class="header-section-number">2</span> High-performance computing</a></li>
+  <li><a href="#the-structure-of-a-supercomputer-center" id="toc-the-structure-of-a-supercomputer-center" class="nav-link" data-scroll-target="#the-structure-of-a-supercomputer-center"><span class="header-section-number">3</span> The structure of a supercomputer center</a>
+  <ul class="collapse">
+  <li><a href="#terminology" id="toc-terminology" class="nav-link" data-scroll-target="#terminology"><span class="header-section-number">3.1</span> Terminology</a></li>
+  <li><a href="#supercomputer-components" id="toc-supercomputer-components" class="nav-link" data-scroll-target="#supercomputer-components"><span class="header-section-number">3.2</span> Supercomputer components</a></li>
+  </ul></li>
+  <li><a href="#osc-ondemand" id="toc-osc-ondemand" class="nav-link" data-scroll-target="#osc-ondemand"><span class="header-section-number">4</span> OSC OnDemand</a>
+  <ul class="collapse">
+  <li><a href="#files-file-system-access" id="toc-files-file-system-access" class="nav-link" data-scroll-target="#files-file-system-access"><span class="header-section-number">4.1</span> Files: File system access</a></li>
+  <li><a href="#interactive-apps" id="toc-interactive-apps" class="nav-link" data-scroll-target="#interactive-apps"><span class="header-section-number">4.2</span> Interactive Apps</a></li>
+  <li><a href="#clusters-unix-shell-access" id="toc-clusters-unix-shell-access" class="nav-link" data-scroll-target="#clusters-unix-shell-access"><span class="header-section-number">4.3</span> Clusters: Unix shell access</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Intro to the Ohio Supercomputer Center (OSC)</h1>
+<p class="subtitle lead">Week 1 - Tue lecture</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Jelmer Poelstra </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 27, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<hr>
+<hr style="height:1pt; visibility:hidden;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/osc_logo.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+<p><br></p>
+<section id="goals-for-this-session" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="goals-for-this-session"><span class="header-section-number">1</span> Goals for this session</h2>
+<p>This session will provide an introduction to high-performance computing in general and to the Ohio Supercomputer Center (OSC).</p>
+<p>This is only meant as a brief introductory overview to give some context about the working environment that we will start using this week. During the course, you’ll learn a lot more about most topics touched on in this page — week 5 in particular focuses on OSC.</p>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="high-performance-computing" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="high-performance-computing"><span class="header-section-number">2</span> High-performance computing</h2>
+<p>A <strong>supercomputer</strong> (also known as a “compute cluster” or simply a “<strong>cluster</strong>”) consists of many computers that are connected by a high-speed network, and that can be accessed remotely by its users. In more general terms, supercomputers provide high-performance computing (<strong>HPC</strong>) resources.</p>
+<p>This is what Owens, one of the OSC supercomputers, physically looks like:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/owens.jpg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+</figure>
+</div>
+<p>Here are some possible reasons to use a supercomputer instead of your own laptop or desktop:</p>
+<ul>
+<li>Your analyses take a long time to run, need large numbers of CPUs, or a large amount of memory.</li>
+<li>You need to run some analyses many times.</li>
+<li>You need to store a lot of data.</li>
+<li>Your analyses require specialized hardware, such as GPUs (Graphical Processing Units).</li>
+<li>Your analyses require software available only for the Linux operating system, but you use Windows.</li>
+</ul>
+<p>When you’re working with omics data, many of these reasons typically apply. This can make it hard or sometimes simply impossible to do all your work on your personal workstation, and supercomputers provide a solution.</p>
+<hr style="height:1pt; visibility:hidden;">
+<section id="the-ohio-supercomputer-center-osc" class="level4">
+<h4 class="anchored" data-anchor-id="the-ohio-supercomputer-center-osc">The Ohio Supercomputer Center (OSC)</h4>
+<p>The Ohio Supercomputer Center (OSC) is a facility provided by the state of Ohio in the US. It has two supercomputers, lots of storage space, and an excellent infrastructure for accessing these resources.</p>
+<hr style="height:1pt; visibility:hidden;">
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+OSC websites and “Projects”
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>OSC has <strong>three main websites</strong> — we will mostly or only use the first:</p>
+<ul>
+<li><strong><a href="https://ondemand.osc.edu" class="uri">https://ondemand.osc.edu</a></strong>: A web portal to use OSC resources through your browser (<em>login needed</em>).</li>
+<li><a href="https://my.osc.edu" class="uri">https://my.osc.edu</a>: Account and project management (<em>login needed</em>).</li>
+<li><a href="https://osc.edu" class="uri">https://osc.edu</a>: General website with information about the supercomputers, installed software, and usage.</li>
+</ul>
+<hr>
+<p>Access to OSC’s computing power and storage space goes through <strong>OSC “Projects”</strong>:</p>
+<ul>
+<li>A project can be tied to a research project or lab, or be educational like this course’s project, <code>PAS2700</code>.</li>
+<li>Each project has a budget in terms of “compute hours” and storage space<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</li>
+<li>As a user, it’s possible to be a member of multiple different projects.</li>
+</ul>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+</section>
+<section id="the-structure-of-a-supercomputer-center" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="the-structure-of-a-supercomputer-center"><span class="header-section-number">3</span> The structure of a supercomputer center</h2>
+<section id="terminology" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="terminology"><span class="header-section-number">3.1</span> Terminology</h3>
+<p>Let’s start with some (super)computing terminology, going from smaller things to bigger things:</p>
+<ul>
+<li><strong>Node</strong><br>
+A single computer that is a part of a supercomputer.</li>
+<li><strong>Supercomputer / Cluster</strong><br>
+A collection of computers connected by a high-speed network. OSC has two: “Pitzer” and “Owens”.</li>
+<li><strong>Supercomputer Center</strong><br>
+A facility like OSC that has one or more supercomputers.</li>
+</ul>
+</section>
+<section id="supercomputer-components" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="supercomputer-components"><span class="header-section-number">3.2</span> Supercomputer components</h3>
+<p>We can think of a supercomputer as having three main parts:</p>
+<ul>
+<li><strong>File Systems</strong>: Where files are stored (these are shared between the two OSC supercomputers!)</li>
+<li><strong>Login Nodes</strong>: The handful of computers everyone shares after logging in</li>
+<li><strong>Compute Nodes</strong>: The many computers you can reserve to run your analyses</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/cluster_overview_ed.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></p>
+</figure>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+<section id="file-systems" class="level4">
+<h4 class="anchored" data-anchor-id="file-systems">File systems</h4>
+<p>OSC has several distinct file systems:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 16%">
+<col style="width: 19%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>File system</th>
+<th>Located within</th>
+<th>Quota</th>
+<th>Backed up?</th>
+<th>Auto-purged?</th>
+<th>One for each…</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Home</strong></td>
+<td><code>/users/</code></td>
+<td>500 GB / 1 M files</td>
+<td>Yes</td>
+<td>No</td>
+<td>User</td>
+</tr>
+<tr class="even">
+<td><strong>Project</strong></td>
+<td><code>/fs/ess/</code></td>
+<td>Flexible</td>
+<td>Yes</td>
+<td>No</td>
+<td>OSC Project</td>
+</tr>
+<tr class="odd">
+<td><strong>Scratch</strong></td>
+<td><code>/fs/scratch/</code></td>
+<td>100 TB</td>
+<td>No</td>
+<td>After 90 days</td>
+<td>OSC Project</td>
+</tr>
+</tbody>
+</table>
+<p>During the course, we will be working in the project directory of the course’s OSC Project <code>PAS2700</code>: <code>/fs/ess/PAS2700</code>. (We’ll talk more about these different file systems in week 5.)</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Directory is just another word for folder, often written as “dir” for short
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="login-nodes" class="level4">
+<h4 class="anchored" data-anchor-id="login-nodes">Login Nodes</h4>
+<p>Login nodes are set aside as an initial landing spot for everyone who logs in to a supercomputer. There are only a handful of them on each supercomputer, they are shared among everyone, and cannot be “reserved”.</p>
+<p>As such, login nodes are meant only to do things like organizing your files and creating scripts for compute jobs, and are <strong><em>not</em></strong> <strong>meant for any serious computing</strong>, which should be done on the compute nodes.</p>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="compute-nodes" class="level4">
+<h4 class="anchored" data-anchor-id="compute-nodes">Compute Nodes</h4>
+<p>Data processing and analysis is done on compute nodes. You can only use compute nodes after putting in a <strong>request</strong> for resources (a “job”). The Slurm <em>job scheduler</em>, which we will learn to use in week 5, will then assign resources to your request.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Compute node types
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Compute nodes come in different shapes and sizes. Standard, default nodes work fine for the vast majority of analyses, even with large-scale omics data. But you will sometimes need non-standard nodes, such as when you need a lot of RAM memory or need GPUs<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+At-home reading: What works differently on a supercomputer like at OSC? <em>(Click to expand)</em>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Compared to command-line computing on a laptop or desktop, a number of aspects are different when working on a supercomputer like at OSC. We’ll learn much more about these later on in the course, but here is an overview:</p>
+<ul>
+<li><strong>“Non-interactive” computing is common</strong><br>
+It is common to write and “submit” scripts to a queue instead of running programs interactively.</li>
+<li><strong>Software</strong><br>
+You generally can’t install “the regular way”, and a lot of installed software needs to be “loaded”.</li>
+<li><strong>Operating system</strong><br>
+Supercomputers run on the Linux operating system.</li>
+<li><strong>Login versus compute nodes</strong><br>
+As mentioned, the nodes you end up on after logging in are not meant for heavy computing and you have to <em>request access to “compute nodes”</em> to run most analyses.<br>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+</section>
+</section>
+<section id="osc-ondemand" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="osc-ondemand"><span class="header-section-number">4</span> OSC OnDemand</h2>
+<p>The OSC OnDemand web portal allows you to use a web browser to access OSC resources such as:</p>
+<ul>
+<li>A <strong>file browser</strong> where you can also create and rename folders and files, etc.</li>
+<li>A <strong>Unix shell</strong></li>
+<li>“<strong>Interactive Apps</strong>”: programs such as RStudio, Jupyter, VS Code and QGIS.</li>
+</ul>
+<p>{{&lt; fa user-edit &gt;}} <strong>Go to <a href="https://ondemand.osc.edu" class="uri">https://ondemand.osc.edu</a> and log in</strong> (use the boxes on the left-hand side)</p>
+<p>You should see a landing page similar to the one below:</p>
+<p align="center">
+</p><p><img src="img/ondemand_home.png" width="90%"></p>
+<p></p>
+<p>We will now go through some of the dropdown menus in the <strong>blue bar along the top</strong>.</p>
+<hr style="height:1pt; visibility:hidden;">
+<section id="files-file-system-access" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="files-file-system-access"><span class="header-section-number">4.1</span> Files: File system access</h3>
+<p>Hovering over the <strong>Files</strong> dropdown menu gives a list of directories that you have access to. If your account is brand new, and you were added to <code>PAS2700</code>, you should only have three directories listed:</p>
+<ol type="1">
+<li>A <strong>Home</strong> directory (starts with <code>/users/</code>)</li>
+<li>The <code>PAS2700</code> project’s “<strong>scratch</strong>” directory (<code>/fs/scratch/PAS2700</code>)</li>
+<li>The <code>PAS2700</code> project’s “<strong>project</strong>” directory (<code>/fs/ess/PAS2700</code>)</li>
+</ol>
+<p>You will only ever have one Home directory at OSC, but for every additional project you are a member of, you should usually see additional <code>/fs/ess</code> and <code>/fs/scratch</code> directories appear.</p>
+<p>{{&lt; fa user-edit &gt;}} <strong>Click on our focal directory <code>/fs/ess/PAS2700</code></strong>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/ondemand_files_selectproject.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%"></p>
+</figure>
+</div>
+<p>Once there, you should see whichever directories and files are present at the selected location, and you can click on the directories to explore the contents further:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/ondemand_files_pas2700.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:95.0%"></p>
+</figure>
+</div>
+<p>This interface is <strong>much like the file browser on your own computer</strong>, so you can also create, delete, move and copy files and folders, and even upload (from your computer to OSC) and download (from OSC your computer) files<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> — see the buttons across the top.</p>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="interactive-apps" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="interactive-apps"><span class="header-section-number">4.2</span> Interactive Apps</h3>
+<p>We can access programs with Graphical User Interfaces (<strong>GUI</strong>s; point-and-click interfaces) via the <strong>Interactive Apps</strong> dropdown menu:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/ondemand_vscode_select.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:32.0%"></p>
+</figure>
+</div>
+<p>Next week, we will start using the VS Code text editor, which is listed here as <code>Code Server</code>.</p>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="clusters-unix-shell-access" class="level3" data-number="4.3">
+<h3 data-number="4.3" class="anchored" data-anchor-id="clusters-unix-shell-access"><span class="header-section-number">4.3</span> Clusters: Unix shell access</h3>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+System Status within Clusters <em>(Click to expand)</em>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>In the “<strong>Clusters</strong>” dropdown menu, click on the item at the bottom, “<strong>System Status</strong>”:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/ondemand_systemstatus_select.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+</figure>
+</div>
+<p>This page shows an overview of the live, current usage of the two clusters — that can be interesting to get a good idea of the scale of the supercomputer center, which cluster is being used more, what the size of the “queue” (which has jobs waiting to start) is, and so on.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/ondemand_systemstatus.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>Interacting with a supercomputer is most commonly done using a Unix shell. Under the <strong>Clusters</strong> dropdown menu, you can access a Unix shell either on Owens or Pitzer:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/ondemand_shell_select.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+</figure>
+</div>
+<p>I’m selecting a shell on the Pitzer supercomputer (“Pitzer Shell Access”), which will open a new browser tab, where the bottom of the page looks like this:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/ondemand_shell2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:95.0%"></p>
+</figure>
+</div>
+<p>We’ll return to this Unix shell in the next session.</p>
+<p><br><br></p>
+
+
+</section>
+</section>
+
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p> But we don’t have to pay anything for educational projects like this one. Otherwise, for OSC’s rates for academic research, see <a href="https://www.osc.edu/content/academic_fee_model_faq">this page</a>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>GPUs are e.g.&nbsp;used for Nanopore basecalling<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Though this is not meant for large (&gt;1 GB) transfers. Different methods are available — we’ll talk about those later on.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/mcic-osu\.github\.io\/tutorials");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>2024-2025, Jelmer Poelstra</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/mcic-osu/tutorials">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

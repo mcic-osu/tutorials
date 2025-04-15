@@ -1,0 +1,26 @@
+
+::: callout-note
+#### More shell keyboard shortcuts
+
+-   Press **<kbd>⇧</kbd>** to get the previous command back on the prompt, and then
+    press **<kbd>Ctrl+U</kbd>** to delete text until the beginning of the line.
+
+-   <kbd>Ctrl</kbd>+<kbd>U</kbd> actually *cuts* the text: "Yank" it back with
+    **<kbd>Ctrl</kbd>+<kbd>Y</kbd>**. Press <kbd>Enter</kbd> again.
+
+-   Type `cd` and then space, and then press **<kbd>Alt</kbd>+<kbd>.</kbd>** (or
+    **<kbd>Esc</kbd>+<kbd>.</kbd>** on a Mac). That should insert `/fs/ess/PAS2700`
+    on the line. In general terms, this keyboard shortcut will insert the last
+    word (argument) from the last command line (and you can cycle back by
+    pressing it multiple times!).
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: exercise
+#### {{< fa user-edit >}} Exercise: Add keyboard shortcut to run shell commands from the editor:
+
+- Click the <i class="fa fa-cog"></i> (bottom-left) => `Keyboard Shortcuts`.
+- Find `Terminal: Run Selected Text in Active Terminal`, click on it,
+  then add a shortcut, e.g. <kbd>Ctrl</kbd>+<kbd>Enter</kbd>.
+:::

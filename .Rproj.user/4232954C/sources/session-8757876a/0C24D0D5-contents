@@ -1,0 +1,480 @@
+---
+title: "Trimming with _TrimGalore_"
+pagetitle: "TrimGalore"
+highlight-style: github
+number-sections: true
+engine: knitr
+author: Jelmer Poelstra
+date: 2023-10-13
+---
+
+-------
+
+<br>
+
+## Overview & setting up {-}
+
+In this tutorial, we will run _TrimGalore_ to filter our FASTQ files, removing:
+
+- Any adapter sequences that are present in the reads
+- Poor-quality bases at the start and end of the reads
+- Reads that have become very short after the prior two steps
+
+For reference-based RNAseq, this step is sometimes considered optional,
+since current tools that align reads to the genome
+should generally be able to deal with poor-quality bases and adapter sequences.
+
+Several largely equivalent tools exist for this kind of FASTQ preprocessing ---
+_Trimmomatic_ and _fastp_ are two other commonly used ones.
+_TrimGalore_ itself is in fact "just" a wrapper around another tool called _CutAdapt_,
+but it is much simpler to use.
+Two advantages of of _TrimGalore_ are that it will auto-detect the adapters that
+are present in your reads
+(e.g., different library prep protocols use different adapters),
+and that it can automatically run _FastQC_ on the processed sequences.
+
+<br>
+
+## Using TrimGalore at OSC
+
+_TrimGalore_ isn't installed at OSC,
+so we'll use my _Conda_ environment for _TrimGalore_ like we did with _MultiQC_:
+
+```bash
+module load miniconda3
+source activate /fs/ess/PAS0471/jelmer/conda/trimgalore
+```
+
+Let's see if we can now run it &mdash;
+note that the command is `trim_galore` with an underscore:
+
+```bash
+trim_galore --version
+```
+```{.bash-out}
+
+            Quality-/Adapter-/RRBS-/Speciality-Trimming
+                    [powered by Cutadapt]
+                        version 0.6.10
+
+                    Last update: 02 02 2023
+```
+
+::: {.callout-note collapse="true"}
+#### How you can create your own TrimGalore Conda environment (click to expand) 
+
+```bash
+# Make sure the load the latest miniconda version when doing installations
+module load miniconda3/23.3.1-py310
+
+# Create a new environment called 'trimgalore' and install the program into it
+# (Yes, the Conda package is named 'trim-galore' with a dash!)
+conda create -y -n trimgalore -c bioconda trim-galore
+```
+:::
+
+<br>
+
+## TrimGalore syntax
+
+Let's run _TrimGalore_ with the `--help` option to get some information about
+how we can run it:
+
+```bash
+trim_galore --help
+
+# Note: Below I am only showing (truncated) output for the key options!
+```
+```{.bash-out}
+ USAGE:
+trim_galore [options] <filename(s)>
+
+--paired                This option performs length trimming of quality/adapter/RRBS trimmed reads for
+                        paired-end files.
+
+-o/--output_dir <DIR>   If specified all output will be written to this directory instead of the current
+                        directory. If the directory doesn't exist it will be created for you.
+
+-j/--cores INT          Number of cores to be used for trimming [default: 1].
+
+--fastqc                Run FastQC in the default mode on the FastQ file once trimming is complete.
+
+--fastqc_args "<ARGS>"  Passes extra arguments to FastQC.
+
+-a/--adapter <STRING>   Adapter sequence to be trimmed. If not specified explicitly, Trim Galore will
+                        try to auto-detect whether the Illumina universal, Nextera transposase or Illumina
+                        small RNA adapter sequence was used.
+
+-q/--quality <INT>      Trim low-quality ends from reads in addition to adapter removal.
+
+--length <INT>          Discard reads that became shorter than length INT because of either
+                        quality or adapter trimming. A value of '0' effectively disables
+                        this behaviour. Default: 20 bp.
+```
+
+The line below "USAGE:" tells us that the FASTQ file names should be specified
+as **positional arguments at the end of the command**.
+
+**We will run TrimGalore for one sample at a time**,
+but this means having to specify two FASTQ file names:
+one with the forward reads, and one with the reverse reads.
+When we have paired-end reads,
+much of the trimming happens separately for the R1 (forward) and R2 (reverse) files,
+but at the end of the run,
+TrimGalore will make sure that every R1 read still has its R2 counterpart,
+and vice versa.
+Any "orphaned" reads will by default be removed,
+because R1 and R2 files for the same samples always need to contain all the same reads.
+(TrimGalore does have an option to retain these orphaned reads into _separate_ files.)
+
+None of the **options** are required,
+as the square brackets around `[options]` indicate,
+but any option we may want to use should be placed _after_ the `trim_galore`
+command and _before_ the FASTQ file name(s).
+With paired-end reads, _we'll have to use the `--paired` option_ ---
+otherwise, TrimGalore will only process the R1 and R2 separately
+and omit the final step where it removes orphaned reads.
+
+<br>
+
+## Building our _TrimGalore_ command
+
+Given what we discussed above,
+a minimal functional example of a TrimGalore command would be  
+(with fictional FASTQ files `A_R1.fastq.gz` and `A_R2.fastq.gz`):
+
+```bash
+# (Don't run this, fictional example command)
+trim_galore --paired A_R1.fastq.gz A_R2.fastq.gz
+```
+
+As for other TrimGalore options:
+
+- We will use TrimGalore with **default settings** for the following options
+  (i.e., we will not use these options in our command):
+
+  - The trimming of adapters (`--adapter` option, default: auto-detect the adapters used)
+  - The minimum base quality threshold (`--quality` option, default: Phred score of 20)
+  - The minimum read length threshold (`--length` option, default: 20 bp)
+
+    ...but it's good to know we could easily change those if we wanted to.
+
+- We do want to specify the **output directory**,
+  since it's pretty inconvenient to have the output files placed in the current working dir,
+  as is the TrimGalore default.
+  We could for instance use **`--output_dir results/trimgalore`**.
+
+- We'll typically also want to have _TrimGalore_ **run _FastQC_** on the filtered FASTQ files,
+  since it will be good to check if adapter sequences were successfully removed, and so on.
+  
+  When we do so, we'll also have to tell _FastQC_ about the output dir of its files:
+  we can do so via `--fastqc_args`
+  (and using that option will already trigger the running of _FastQC_, i.e.,
+  there is then no need to also use the `--fastqc` option).
+  
+  So, we could use **`--fastqc_args "--outdir results/trimgalore/fastqc"`**.
+
+- Finally, we'll usually want to specify the number of cores/threads/CPUs,
+  and it should correspond to what we have available for our compute job.
+  Since we have 1 core available in the VS Code session,
+  we'll use **`--cores 1`** in the test-run, but something else in our final script.
+
+A final test command to run TrimGalore on our actual (but small, subsetted)
+FASTQ files in `data/fastq` could therefore look as follows:
+
+```bash
+# For clarity, I am specifying each option on a separate line
+trim_galore \
+    --paired \
+    --output_dir results/trimgalore \
+    --cores 1 \
+    --fastqc_args "--outdir results/trimgalore/fastqc" \
+    data/fastq/ASPC1_A178V_R1.fastq.gz data/fastq/ASPC1_A178V_R2.fastq.gz
+```
+
+Let's try that out.
+
+<br>
+
+## _TrimGalore_ output
+
+After you ran the line above,
+quite a lot of logging output should have been printed to screen.
+If we take a look at that output:
+
+- The first section of interest is "AUTO-DETECTING ADAPTER TYPE",
+  where we can see that TrimGalore detected the "Illumina adapter"
+  and will use that for trimming.
+
+- After that, the section "SUMMARISING RUN PARAMETERS" tells us what the final
+  parameters (settings) are for running Cutadapt,
+  which will do the actual trimming.
+  We can for example see which base quality and read length parameters are
+  being used (the defaults, in this case).
+
+- Then, ... 
+
+The log for each FASTQ file is also saved to the output dir in files named `XXX`.
+Curiously, though, logging output that is not R1/R2-specific,
+like that reporting on the final removal of orphaned reads, is not.
+As such, when we will run TrimGalore by submitting batch jobs in a minute,
+and the logging output that was now printed to screen will go to a Slurm log file,
+it is a good idea to **keep these Slurm files**.
+
+Let's take a look at what files have been added to our output dir:
+
+```bash
+ls -lh results/trimgalore
+```
+
+<br>
+
+## A script to run TrimGalore
+
+To run _TrimGalore_ efficiently at OSC,
+we will submit a separate compute job for each sample,
+and submit these all at the same time using a `for` loop in which we pass arguments
+to the script.
+
+This is quite similar to how we ran FastQC.
+However, one added complication is that we now have to work with _two FASTQ files_
+(an R1 and R2 file for the same sample) at the same time.
+
+### Dealing with two FASTQ files per run
+
+There are several different ways of dealing with having to run TrimGalore not for one
+but for two files at the same time, but we'll do it as follows:
+we'll only pass an R1 FASTQ filename to the script,
+_and the script will then infer the name of the R2 file_ (by replacing `_R1` with `_R2`).
+This is generally the easiest method,
+because it allows us to simply loop over the R1 FASTQ files in our "runner script".
+
+That is, in our `run.sh` script,
+the code to submit the TrimGalore scripts would look as follows:
+
+```bash
+# We're only looping over the R1 files: we include the R2 files _inside_ the script
+for R1 in data/fastq/*_R1.fastq.gz; do
+    sbatch scripts/trimgalore.sh $R1 results/trimgalore
+done
+```
+
+Here is how we can include the R2 files inside the script:
+
+```bash
+# Arguments passed to the script include the R1 filename,
+R1=$1                # "$1" will for example be data/fastq/ASPC1_A178V_R1.fastq.gz
+# ....
+
+# Infer the name of the corresponding R2 file:
+R2=${R1/_R1/_R2}     # "$2" will then be data/fastq/ASPC1_A178V_R2.fastq.gz
+```
+
+The funny-looking `${R1/_R1/_R2}` bit does a search-and-replace in the value
+of the `$R1` variable (this is called "_parameter expansion_"),
+and assigns the output to a new variable `$R2`: 
+
+- Take the `$R1` variable, using the long notation `${R1}`
+- After the first forward slash, we enter the search pattern: `_R1`
+- After the second forward slash, we enter the replacement: `_R2`.
+
+Let's practice with parameter expansion:
+
+```bash
+filename1=myfile.txt
+filename2=${filename1/.txt/_copy.txt}
+
+echo $filename2
+```
+```{.bash-out}
+myfile_copy.txt
+```
+
+### Using multiple threads
+
+When we ran FastQC, we already practiced with using multiple threads/cores/cpus
+(remember, these are all all equivalent for our purposes here),
+which always involves two steps:
+
+- Requesting the desired number of threads for the Slurm job,
+  e.g. a line `#SBATCH --cpus-per-node=8` at the top of your script.
+
+- Telling the bioinformatics tool that it can use that same number of threads,
+  e.g. with `--cores 8` in the case of TrimGalore.
+
+So, you're always specifying your desired number of cores in (at least) two 
+different places.
+As such, there is the possibility that you're accidentally specifying a different
+number in the two places, e.g. when you want to change the number but only
+do so in one of these two places.
+
+Let's introduce a trick you can use to automatically make sure that the
+number of threads is the same in both places,
+by using the Slurm "environment variable" `$SLURM_CPUS_ON_NODE`.
+When you run a Slurm job and you've requested a number of threads with 
+`--cpus-per-node`, then this variable will always be set automatically.
+(In fact, there are many Slurm variables,
+see [this section](https://slurm.schedmd.com/sbatch.html#SECTION_INPUT-ENVIRONMENT-VARIABLES)
+in the Slurm documentation for more information.)
+
+Here's how we can use this environment variable in practice:
+
+```bash
+#SBATCH --cpus-per-node=8
+
+# [...]
+trim_galore \
+    --cores "$SLURM_CPUS_ON_NODE" \
+
+# [...]
+```
+
+### Our final TrimGalore command
+
+Like we've done in our FastQC and MultiQC scripts,
+we'll also include an argument with the output directory name,
+as it is good practice not to hardcode this in your script.
+
+With that, our final TrimGalore will be:
+
+```bash
+trim_galore \
+    --paired \
+    --output_dir "$outdir" \
+    --cores "$SLURM_CPUS_ON_NODE" \
+    --fastqc_args "--outdir "$outdir"/fastqc" \
+    "$R1" "$R2"    
+```
+
+### Renaming the output files
+
+One annoying aspect of _TrimGalore_ is that it will give the output FASTQ files
+suffixes --- here are the output files of our earlier test run:
+
+```bash
+ASPC1_A178V_R1_val_1.fq.gz
+ASPC1_A178V_R2_val_2.fq.gz
+```
+
+First, the extension is `.fq` instead of `.fastq`,
+and second, there are `_val_1` / `_val_2` additions to the filename.
+With filenames like that, we would need to modify our globbing patterns
+(e.g. `*_R1.fastq.gz`) in the next step in our workflow.
+This is of course possible and not even hard, per se, but it is inconvenient ---
+and in practice, these kind of inconsistencies easily end up leading to confusion and errors. 
+
+Therefore, I usually choose to rename TrimGalore's output files inside the script,
+and give **the output files the exact same name as the input files**.
+We can do so as follows:
+
+```bash
+file_id=$(basename "$R1" _R1.fastq.gz)
+
+R1_out="$outdir"/"$file_id"_R1_val_1.fq.gz
+R2_out="$outdir"/"$file_id"_R2_val_2.fq.gz
+
+mv -v "$R1_out" "$outdir"/"$file_id"_R1.fastq.gz
+mv -v "$R2_out" "$outdir"/"$file_id"_R2.fastq.gz
+```
+
+::: {.callout-tip}
+#### Command substitution
+The first line in the code block above used a construct called
+"command substitution",
+which allows you to save the output of a command in a variable.
+To understand this better, please refer to this
+[at-home reading section in module A07](A07_overview.qmd#at-home-reading-command-substitution).
+:::
+
+One thing that we do need to be wary of, however,
+when we give the output FASTQ files the same name as the input files,
+is that we don't overwrite the output files.
+In general with these kind of scripts,
+you don't want the output dir to be the same as the input dir,
+and as long as that is the case, the input files won't be overwritten.
+But here,
+we should really make _absolutely_ sure that the input dir isn't the same as
+the output dir inside the script, and we can do so as follows:
+
+```bash
+# Check that the output dir isn't the same as the input dir
+# This is because we will let the output files have the same name as the input files
+if [[ $(dirname "$R1") == "$outdir" ]]; then
+    echo "# ERROR: Input dir is the same as the output dir ($outdir)" 
+    exit 1
+fi
+```
+
+There are several new things here:
+
+- If statement
+- `dirname` command
+- `exit 1`
+
+<br>
+
+## The final script to run TrimGalore
+
+```bash
+#!/bin/bash
+#SBATCH --account=PAS0471
+#SBATCH --time=1:00:00
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+#SBATCH --job-name=trimgalore
+#SBATCH --output=slurm-trimgalore-%j.out
+
+# Copy the placeholder variables
+R1=$1
+outdir=$2
+
+# Load the Conda environment
+module load miniconda3
+source activate /fs/ess/PAS0471/jelmer/conda/trimgalore
+
+# Use strict Bash settings
+set -euo pipefail
+
+# Infer derived variables
+R2=${R1/_R1/_R2}
+
+# Report
+echo "# Starting script trimgalore.sh"
+date
+echo "# Input R1 FASTQ file:      $R1"
+echo "# Output dir:               $outdir"
+echo
+
+# Check that the output dir isn't the same as the input dir
+# This is because we will let the output files have the same name as the input files
+if [[ $(dirname "$R1") == "$outdir" ]]; then
+    echo "# ERROR: Input dir is the same as the output dir ($outdir)" 
+    exit 1
+fi
+
+# Create the output dir
+mkdir -p "$outdir" "$outdir"/fastqc
+
+# Run TrimGalore
+trim_galore \
+    --paired \
+    --output_dir "$outdir" \
+    --cores "$SLURM_CPUS_ON_NODE" \
+    --fastqc_args "--outdir $outdir/fastqc" \
+    "$R1" "$R2"
+
+# Rename output files
+echo -e "\n# Renaming the output files:"
+file_id=$(basename "$R1" _R1.fastq.gz)
+R1_out="$outdir"/"$file_id"_R1_val_1.fq.gz
+R2_out="$outdir"/"$file_id"_R2_val_2.fq.gz
+mv -v "$R1_out" "$outdir"/"$file_id"_R1.fastq.gz
+mv -v "$R2_out" "$outdir"/"$file_id"_R2.fastq.gz
+
+# Report
+echo -e "\n# Done with script trimgalore.sh"
+date
+echo -e "\n# Listing files in the output dir:"
+ls -lh "$outdir"
+```
+

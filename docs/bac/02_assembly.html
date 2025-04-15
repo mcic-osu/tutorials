@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jelmer Poelstra">
+<meta name="dcterms.date" content="2024-02-08">
+
+<title>Genome assembly – MCIC Bioinformatics Tutorials</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-57476271c5f0467c372e20ff5d25630e.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-93a206ead970ce8646eacc93a2842d74.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">MCIC Bioinformatics Tutorials</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-shell" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Shell</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-shell">    
+        <li>
+    <a class="dropdown-item" href="../shell/01_shell1.html">
+ <span class="dropdown-text">Intro the Unix Shell</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/02_shellfiles.html">
+ <span class="dropdown-text">Managing files in the shell</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/03_scripts.html">
+ <span class="dropdown-text">Writing shell scripts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/04_cli-tools.html">
+ <span class="dropdown-text">Running CLI tools</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/05_bonus.html">
+ <span class="dropdown-text">Advanced shell</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-osc" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">OSC</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-osc">    
+        <li>
+    <a class="dropdown-item" href="../osc/01_osc1.html">
+ <span class="dropdown-text">Intro to OSC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/02_vscode.html">
+ <span class="dropdown-text">VS Code</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/03_osc2.html">
+ <span class="dropdown-text">More about OSC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/05_slurm.html">
+ <span class="dropdown-text">Slurm</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/06_ssh.html">
+ <span class="dropdown-text">SSH</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-git" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Git</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-git">    
+        <li>
+    <a class="dropdown-item" href="../git/02_git1.html">
+ <span class="dropdown-text">Git 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../git/03_git2.html">
+ <span class="dropdown-text">Git 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../git/04_git3.html">
+ <span class="dropdown-text">Git 3</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reproducibility" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reproducibility</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reproducibility">    
+        <li>
+    <a class="dropdown-item" href="../reprod/project-org.html">
+ <span class="dropdown-text">Project file organization</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reprod/markdown.html">
+ <span class="dropdown-text">Markdown</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-nextflow" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Nextflow</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-nextflow">    
+        <li>
+    <a class="dropdown-item" href="../nf-run/01_pipelines.html">
+ <span class="dropdown-text">Intro to pipelines</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../nf-run/02_nfcore.html">
+ <span class="dropdown-text">Running an nf-core pipeline</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-metabar" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Metabar</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-metabar">    
+        <li>
+    <a class="dropdown-item" href="../metabar/01_qc-trim.html">
+ <span class="dropdown-text">Read QC and trimming</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-rna-seq" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">RNA-Seq</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-rna-seq">    
+        <li>
+    <a class="dropdown-item" href="../rnaseq/01_data.html">
+ <span class="dropdown-text">Data files</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/02_nfc-rnaseq.html">
+ <span class="dropdown-text">The nf-core rnaseq pipeline</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/03_DE.html">
+ <span class="dropdown-text">Differential expression analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/04_fastqc.html">
+ <span class="dropdown-text">Read QC with FastQC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/05_trimgalore.html">
+ <span class="dropdown-text">Trimming reads with TrimGalore</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other">    
+        <li class="dropdown-header">BACTERIAL WGS</li>
+        <li>
+    <a class="dropdown-item" href="../bac/01_preprocess.qmd">
+ <span class="dropdown-text">Data preprocessing</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../bac/02_assembly.html">
+ <span class="dropdown-text">Genome assembly</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../bac/03_annotation.qmd">
+ <span class="dropdown-text">Genome annotation</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <div class="dropdown">
+      <a href="" title="" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label=""><i class="bi bi-github"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://github.com/mcic-osu/tutorials">
+            Source Code
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://mcic-osu.github.io/tutorials/issues/new">
+            Report an Issue
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#the-fasta-format" id="toc-the-fasta-format" class="nav-link" data-scroll-target="#the-fasta-format"><span class="header-section-number">1</span> The FASTA format</a></li>
+  <li><a href="#batch-jobs-with-sbatch" id="toc-batch-jobs-with-sbatch" class="nav-link" data-scroll-target="#batch-jobs-with-sbatch"><span class="header-section-number">2</span> “Batch jobs” with <code>sbatch</code></a></li>
+  <li><a href="#assembly-with-spades" id="toc-assembly-with-spades" class="nav-link" data-scroll-target="#assembly-with-spades"><span class="header-section-number">3</span> Assembly with SPAdes</a>
+  <ul class="collapse">
+  <li><a href="#our-spades-command" id="toc-our-spades-command" class="nav-link" data-scroll-target="#our-spades-command"><span class="header-section-number">3.1</span> Our SPAdes command</a></li>
+  <li><a href="#running-spades" id="toc-running-spades" class="nav-link" data-scroll-target="#running-spades"><span class="header-section-number">3.2</span> Running SPAdes</a></li>
+  <li><a href="#spades-output-files" id="toc-spades-output-files" class="nav-link" data-scroll-target="#spades-output-files"><span class="header-section-number">3.3</span> SPAdes output files</a></li>
+  </ul></li>
+  <li><a href="#basic-assembly-stats" id="toc-basic-assembly-stats" class="nav-link" data-scroll-target="#basic-assembly-stats"><span class="header-section-number">4</span> Basic assembly stats</a></li>
+  <li><a href="#assembly-completeness-check-with-busco" id="toc-assembly-completeness-check-with-busco" class="nav-link" data-scroll-target="#assembly-completeness-check-with-busco"><span class="header-section-number">5</span> Assembly completeness check with Busco</a></li>
+  <li><a href="#bonus-assembly-filtering-with-kraken2" id="toc-bonus-assembly-filtering-with-kraken2" class="nav-link" data-scroll-target="#bonus-assembly-filtering-with-kraken2"><span class="header-section-number">6</span> Bonus: Assembly filtering with Kraken2</a>
+  <ul class="collapse">
+  <li><a href="#kraken2" id="toc-kraken2" class="nav-link" data-scroll-target="#kraken2"><span class="header-section-number">6.1</span> Kraken2</a></li>
+  <li><a href="#running-kraken" id="toc-running-kraken" class="nav-link" data-scroll-target="#running-kraken"><span class="header-section-number">6.2</span> Running Kraken</a></li>
+  <li><a href="#interpreting-the-kraken-output" id="toc-interpreting-the-kraken-output" class="nav-link" data-scroll-target="#interpreting-the-kraken-output"><span class="header-section-number">6.3</span> Interpreting the Kraken output</a></li>
+  <li><a href="#removing-contaminant-contigs" id="toc-removing-contaminant-contigs" class="nav-link" data-scroll-target="#removing-contaminant-contigs"><span class="header-section-number">6.4</span> Removing contaminant contigs</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Genome assembly and assembly QC</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Jelmer Poelstra </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 8, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><br></p>
+<section id="introduction" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="introduction">Introduction</h2>
+<p>We will now create a genome assembly from the preprocessed reads with the program <strong>SPAdes</strong>.</p>
+<p><em>After the assembly</em>, we will run several assembly QC and filtering steps to:</p>
+<ul>
+<li>Get some basic assembly summary stats with BBtools</li>
+<li>Run Busco to check for genome completeness</li>
+<li>Identify and remove contaminant contigs with Kraken2</li>
+</ul>
+<section id="setting-up" class="level4 exercise">
+<h4 class="anchored" data-anchor-id="setting-up"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Setting up</strong></h4>
+<p>You should have an active VS Code session with an open terminal. In that terminal, you should be be in your dir <code>/fs/scratch/PAS2250/cabana/$USER/bact/bact</code>.</p>
+</section>
+<p><br></p>
+</section>
+<section id="the-fasta-format" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="the-fasta-format"><span class="header-section-number">1</span> The FASTA format</h2>
+<p>The genome assembly that we will create will be in the FASTA formet. FASTA files contain one or more DNA or amino acid sequences, with no limits on the number of sequences or the sequence lengths.</p>
+<p>The following example FASTA file contains two entries:</p>
+<pre class="bash-in-nocolor"><code>&gt;unique_sequence_ID Optional description
+ATTCATTAAAGCAGTTTATTGGCTTAATGTACATCAGTGAAATCATAAATGCTAAAAA
+&gt;unique_sequence_ID2
+ATTCATTAAAGCAGTTTATTGGCTTAATGTACATCAGTGAAATCATAAATGCTAAATG</code></pre>
+<p>Each entry consists of a <strong>header</strong> line and the <strong>sequence</strong> itself. Header lines <strong>start with a <code>&gt;</code></strong> (greater-than sign) and are otherwise “free form”, though the idea is that they provide an identifier for the sequence that follows.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+FASTA file name extensions are variable: <code>.fa</code>, <code>.fasta</code>, <code>.fna</code>, <code>.faa</code> (<em>Click to expand</em>)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>“Generic” extensions are <code>.fasta</code> and <code>.fa</code> (e.g: <code>my_assembly.fasta</code>)</li>
+<li>Also used are extensions that explicitly indicate whether sequences are <em>nucleotides</em> (<code>.fna</code>) or <em>amino acids</em> (<code>.faa</code>)</li>
+</ul>
+</div>
+</div>
+</div>
+<p><br></p>
+</section>
+<section id="batch-jobs-with-sbatch" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="batch-jobs-with-sbatch"><span class="header-section-number">2</span> “Batch jobs” with <code>sbatch</code></h2>
+<p>So far, we having been running programs by directly typing/pasting the commands in the terminal. Because SPAdes needs more computing resources, we will run it differently.</p>
+<p>We will submit it as a so-called “batch” (non-interactive) job using the <code>sbatch</code> command. This job will then be run on a compute node that we ourselves never move to (!).</p>
+<p>To first see a simple example, say that we just wanted to run <code>echo Hello there $USER</code> as a batch job, where we’ll use these options:</p>
+<ul>
+<li><code>-A</code> for the OSC Project we want to use</li>
+<li><code>-t</code> for the time in minutes that we need</li>
+<li><code>-c</code> for the number of cores that we need</li>
+<li><code>-o</code> for the name of the log file (where “Hello there <user>” will be printed)</user></li>
+<li>The command that we want to run in the batch job is wrapped in <code>wrap="&lt;command&gt;"</code></li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> <span class="at">-A</span> PAS2250 <span class="at">-t</span> 1 <span class="at">-c</span> 1 <span class="at">-o</span> slurm-hello.out <span class="dt">\</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--wrap</span><span class="op">=</span><span class="st">"echo Hello there </span><span class="va">$USER</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Submitted batch job 25928455
+# [You will get a different number, each job has a unique ID]</code></pre>
+<p>Now, the output of our command (<code>ls -lh</code>) is not printed to the screen, but will end up in a file in our working directory, whose name starts with <code>slurm</code> and contains the job ID number:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>data  README.md  results  slurm-hello.out</code></pre>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The <code>slurm</code> file will only show up once the job has started running, which can take up to a minute or so.
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+<p>Let’s take a look at that “Slurm log file”:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> slurm-hello.out</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Hello there jelmer</code></pre>
+<p><br></p>
+</section>
+<section id="assembly-with-spades" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="assembly-with-spades"><span class="header-section-number">3</span> Assembly with SPAdes</h2>
+<p>SPAdes is a well-performing and very flexible assembler that can be used to do many kinds of assemblies, including metagenomes and transcriptomes. It has a special “mode” for bacterial isolate assembly, which can be activated with the <code>--isolate</code> flag.</p>
+<hr style="height:1pt; visibility:hidden;">
+<section id="our-spades-command" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="our-spades-command"><span class="header-section-number">3.1</span> Our SPAdes command</h3>
+<p>We will run SPAdes with the following options:</p>
+<ul>
+<li><code>-1</code> and <code>-2</code> for the R1 and R2 FASTQ files</li>
+<li><code>-o</code> for the output dir, which should be sample-specific, and should not yet exist</li>
+<li><code>--isolate</code> to activate the bacterial isolate mode</li>
+<li><code>-k 21,33,55,77,99,127</code> to assemble with a variety of kmer sizes</li>
+<li><code>--threads 20</code> and <code>--memory 80</code> to use 20 threads and 80 GB of memory</li>
+</ul>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># (Don't run this yet)</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">spades.py</span> <span class="dt">\</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-1</span> results/trimgalore/SM04_R1_val_1.fq.gz <span class="dt">\</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">-2</span> results/trimgalore/SM04_R2_val_2.fq.gz <span class="dt">\</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">-o</span> results/spades/SM04 <span class="dt">\</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">-k</span> 21,33,55,77,99,127 <span class="dt">\</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--isolate</span> <span class="dt">\</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">--threads</span> 20 <span class="dt">\</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">--memory</span> 80</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="running-spades" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="running-spades"><span class="header-section-number">3.2</span> Running SPAdes</h3>
+<p>First, we’ll have to switch back to the <code>cabana</code> Conda environment, since we activated a different Conda environment for TrimGalore earlier.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> activate /fs/ess/PAS0471/jelmer/conda/cabana</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr style="height:1pt; visibility:hidden;">
+<section id="submitting-the-spades-sbatch-job" class="level4">
+<h4 class="anchored" data-anchor-id="submitting-the-spades-sbatch-job">Submitting the SPAdes <code>sbatch</code> job</h4>
+<p>Now we’re ready to submit our SPAdes job, with 30 minutes (<code>-t 30</code>) and 20 cores (<code>-c 20</code>):</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> <span class="at">-A</span> PAS2250 <span class="at">-t</span> 30 <span class="at">-c</span> 20 <span class="at">-o</span> slurm-spades.out <span class="at">--wrap</span><span class="op">=</span><span class="st">"</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="st">    spades.py </span><span class="dt">\</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="st">      -1 results/trimgalore/SM04_R1_val_1.fq.gz </span><span class="dt">\</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="st">      -2 results/trimgalore/SM04_R2_val_2.fq.gz </span><span class="dt">\</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="st">      -o results/spades/SM04 </span><span class="dt">\</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="st">      -k 21,33,55,77,99,127 </span><span class="dt">\</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="st">      --isolate </span><span class="dt">\</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="st">      --threads 20 </span><span class="dt">\</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="st">      --memory 80</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="exercise-monitor-the-spades-run" class="level4 exercise">
+<h4 class="anchored" data-anchor-id="exercise-monitor-the-spades-run"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Exercise</strong>: Monitor the SPAdes run</h4>
+<ul>
+<li><p>Use <code>less</code> to check the <code>slurm-spades.out</code> file, which will have the SPAdes “log”.</p></li>
+<li><p>In <code>less</code>, press <kbd>G</kbd> (<em>capital</em> G!) to look at the end of the file.</p></li>
+</ul>
+<p>When you first check the <code>slurm-spades.out</code> file, SPAdes should still be running. You know it will be done when you see the following line at the end:</p>
+<pre class="bash-out"><code>Thank you for using SPAdes!</code></pre>
+<ul>
+<li>To monitor the progress of the SPAdes run, you can use <code>tail -f slurm-spades.out</code>, which will “follow” the file and add any new text in real-time! To exit this, press <kbd>Ctrl</kbd>+<kbd>c</kbd>.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+SPAdes may take 5-10 minutes to complete
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+</section>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="spades-output-files" class="level3" data-number="3.3">
+<h3 data-number="3.3" class="anchored" data-anchor-id="spades-output-files"><span class="header-section-number">3.3</span> SPAdes output files</h3>
+<p>Let’s check the files in the output dir:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-lh</span> results/spades/SM04</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details>
+<summary>
+Click to show the output
+</summary>
+<pre class="bash-out"><code>total 47M
+-rw-r--r-- 1 jelmer PAS0471 5.8M Feb  4 21:49 assembly_graph_after_simplification.gfa
+-rw-r--r-- 1 jelmer PAS0471  12M Feb  4 21:49 assembly_graph.fastg
+-rw-r--r-- 1 jelmer PAS0471 5.8M Feb  4 21:49 assembly_graph_with_scaffolds.gfa
+-rw-r--r-- 1 jelmer PAS0471 5.9M Feb  4 21:49 before_rr.fasta
+-rw-r--r-- 1 jelmer PAS0471 5.8M Feb  4 21:49 contigs.fasta
+-rw-r--r-- 1 jelmer PAS0471 9.8K Feb  4 21:49 contigs.paths
+-rw-r--r-- 1 jelmer PAS0471   79 Feb  4 21:42 dataset.info
+-rw-r--r-- 1 jelmer PAS0471  278 Feb  4 21:42 input_dataset.yaml
+drwxr-xr-x 4 jelmer PAS0471 4.0K Feb  4 21:49 K127
+drwxr-xr-x 4 jelmer PAS0471 4.0K Feb  4 21:43 K21
+drwxr-xr-x 4 jelmer PAS0471 4.0K Feb  4 21:44 K33
+drwxr-xr-x 4 jelmer PAS0471 4.0K Feb  4 21:45 K55
+drwxr-xr-x 4 jelmer PAS0471 4.0K Feb  4 21:47 K77
+drwxr-xr-x 4 jelmer PAS0471 4.0K Feb  4 21:48 K99
+drwxr-xr-x 2 jelmer PAS0471 4.0K Feb  4 21:49 logs
+drwxr-xr-x 2 jelmer PAS0471 4.0K Feb  4 21:49 misc
+-rw-r--r-- 1 jelmer PAS0471 1.5K Feb  4 21:42 params.txt
+drwxr-xr-x 2 jelmer PAS0471 4.0K Feb  4 21:49 pipeline_state
+-rw-r--r-- 1 jelmer PAS0471 3.4K Feb  4 21:42 run_spades.sh
+-rw-r--r-- 1 jelmer PAS0471 4.9K Feb  4 21:42 run_spades.yaml
+-rw-r--r-- 1 jelmer PAS0471 5.8M Feb  4 21:49 scaffolds.fasta
+-rw-r--r-- 1 jelmer PAS0471 8.9K Feb  4 21:49 scaffolds.paths
+-rw-r--r-- 1 jelmer PAS0471 5.8M Feb  4 21:49 SM04
+-rw-r--r-- 1 jelmer PAS0471 194K Feb  4 21:49 spades.log</code></pre>
+</details>
+<p>There are quite some files, as well as subdirs for different k-mer sizes, but we’re really only interested in the assembly FASTA file, which is <code>contigs.fasta</code>. Let’s take a look at that file:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">less</span> results/spades/SM04/contigs.fasta</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>&gt;NODE_1_length_1267796_cov_33.239498
+ACCTTGAGTTCCCTAAAGGGCCGTCGAAGACTACGACGTTGATAGGTTGGGTGTGTAAGC
+GCTGTGAGGCGTTGAGCTAACCAATACTAATTGCCCGTGAGGCTTGACCATATAACACCC
+AAGCAATTTGCGTTGAATGAGCAGATTGCGGTGACTGTGAAGATGACACGAACCGAAAGT
+TTGCGTCACGAACGACACCTGAACCAGCTTGCTATCACATACCCGATTTGCTGAAGCGCG
+CCGCAAGGCACGATTCGGTACCCGAATTTCTTGACGACCATAGAGCATTGGAACCACCTG
+ATCCCATCCCGAACTCAGTAGTGAAACGATGTATCGCCGATGGTAGTGTGGGGTTTCCCC
+ATGTGAGAGTAGGTCATCGTCAAGATTAAATTCCAGAAACCCTCATCGCTTACGCGTTGA
+GGGTTTTTGTTTGTCTGGGGTTCCAGAAACCTCTGCATTCTCTATCTGGCTCATCTCATT
+GCAATGCAGCCGCATTGGCGCCAGAGACCCCCAAGGTTTAGTGAAACGCCCCCATCCCTG</code></pre>
+<p>In this file, <strong>each contig is one FASTA entry</strong>. The contig headers have some metadata, such as its length in base pairs, and its depth of coverage (<code>cov_</code>; i.e.&nbsp;how many reads, on average, cover each base).</p>
+<p>We can see a few more headers by using the <strong><code>grep</code></strong> command, which will print lines matching a search pattern (in our case, the <strong><code>&gt;</code></strong> from the header), as follows:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># (Do NOT omit the quotes around the "&gt;"!)</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="st">"&gt;"</span> results/spades/SM04/contigs.fasta <span class="kw">|</span> <span class="fu">head</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>&gt;NODE_1_length_1267796_cov_33.239498
+&gt;NODE_2_length_902255_cov_32.000245
+&gt;NODE_3_length_697265_cov_34.901625
+&gt;NODE_4_length_534491_cov_32.088021
+&gt;NODE_5_length_350317_cov_33.463137
+&gt;NODE_6_length_339735_cov_31.812540
+&gt;NODE_7_length_291220_cov_35.951730
+&gt;NODE_8_length_274792_cov_32.455031
+&gt;NODE_9_length_167931_cov_33.795917
+&gt;NODE_10_length_164349_cov_34.581646</code></pre>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+If you don’t pipe (<strong><code>|</code></strong>) the <code>grep</code> output to <code>head</code>, you will see all headers
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+<p>If we use <code>grep</code>’s <code>-c</code> option, it will count the number of matching lines, which will give us a count of the number of contigs:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-c</span> <span class="st">"&gt;"</span> results/spades/SM04/contigs.fasta</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>86</code></pre>
+<p><br></p>
+</section>
+</section>
+<section id="basic-assembly-stats" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="basic-assembly-stats"><span class="header-section-number">4</span> Basic assembly stats</h2>
+<p>We can use the tools <code>stats.sh</code> from the <a href="https://jgi.doe.gov/data-and-tools/software-tools/bbtools/">BBTools</a> suite of genomics tools to get some (more) basic statistics for our genome assembly:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">stats.sh</span> results/spades/SM04/contigs.fasta </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>A       C       G       T       N       IUPAC   Other   GC      GC_stdev
+0.2048  0.2969  0.2945  0.2038  0.0000  0.0000  0.0000  0.5914  0.0875
+
+Main genome scaffold total:             86
+Main genome contig total:               86
+Main genome scaffold sequence total:    5.968 MB
+Main genome contig sequence total:      5.968 MB        0.000% gap
+Main genome scaffold N/L50:             4/534.491 KB
+Main genome contig N/L50:               4/534.491 KB
+Main genome scaffold N/L90:             14/97.943 KB
+Main genome contig N/L90:               14/97.943 KB
+Max scaffold length:                    1.268 MB
+Max contig length:                      1.268 MB
+Number of scaffolds &gt; 50 KB:            18
+% main genome in scaffolds &gt; 50 KB:     96.64%</code></pre>
+<p><br></p>
+</section>
+<section id="assembly-completeness-check-with-busco" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="assembly-completeness-check-with-busco"><span class="header-section-number">5</span> Assembly completeness check with Busco</h2>
+<p>We will use the program Busco (<a href="https://academic.oup.com/mbe/article/38/10/4647/6329644">Manni et al.&nbsp;2021</a>, <a href="https://busco.ezlab.org/">documentation</a>) to check how complete our genome assembly is. Busco checks for the presence of genes that are expected to be <em>universally present in a single copy</em> in a specific taxonomic lineage.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Other tool options
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Another commonly used program to check assembly completeness and also contamination is CheckM (<a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4484387/">Parks et al.&nbsp;2015</a>, <a href="https://ecogenomics.github.io/CheckM/">documentation</a>), but in the interest of time, we will only run Busco.</p>
+</div>
+</div>
+<p>Because Busco will always output a number of files in your working directory, we will move into our desired output dir in advance:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> results/busco</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We will also have to load a different Conda environment, again:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> activate /fs/ess/PAS0471/jelmer/conda/busco</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Using the <strong><code>--lineage_dataset</code></strong> option, we have to tell Busco which lineage’s reference database it should use: there is a <a href="https://busco.ezlab.org/list_of_lineages.html">list of lineages on Busco’s website</a>.</p>
+<div class="exercise">
+<p><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Exercise:</strong> Busco database</p>
+<p>Take a look at the website linked to above. Which lineage dataset should we pick?</p>
+<details>
+<summary>
+Click for the solution
+</summary>
+<p>There is a database for the order that Pseudomonas is in: <code>pseudomonadales</code>.</p>
+<p>Alternatively, we could use the database for all bacteria: <code>bacteria</code>.</p>
+</details>
+</div>
+<p>Otherwise, we will use the following options:</p>
+<ul>
+<li><code>--in</code> — input file</li>
+<li><code>--out</code> — output ID (not the full filename)</li>
+<li><code>--mode genome</code> — our input file is a genome assembly, not a transcriptome assembly or proteome</li>
+</ul>
+<div class="sourceCode" id="cb24"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run Busco</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="ex">busco</span> <span class="dt">\</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--in</span> ../spades/SM04/contigs.fasta <span class="dt">\</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">--out</span> SM04 <span class="dt">\</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">--lineage_dataset</span> pseudomonadales <span class="dt">\</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">--mode</span> genome</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code># (Only showing the bit of outkey results output)
+        ---------------------------------------------------
+        |Results from dataset pseudomonadales_odb10        |
+        ---------------------------------------------------
+        |C:99.6%[S:99.6%,D:0.0%],F:0.1%,M:0.3%,n:782       |
+        |779    Complete BUSCOs (C)                        |
+        |779    Complete and single-copy BUSCOs (S)        |
+        |0      Complete and duplicated BUSCOs (D)         |
+        |1      Fragmented BUSCOs (F)                      |
+        |2      Missing BUSCOs (M)                         |
+        |782    Total BUSCO groups searched                |
+        ---------------------------------------------------</code></pre>
+<details>
+<summary>
+Click to see the full expected Busco output
+</summary>
+<pre class="bash-out"><code>2024-02-05 17:31:00 INFO:       ***** Start a BUSCO v5.5.0 analysis, current time: 02/05/2024 17:31:00 *****
+2024-02-05 17:31:00 INFO:       Configuring BUSCO with local environment
+2024-02-05 17:31:00 INFO:       Mode is genome
+2024-02-05 17:31:00 INFO:       Downloading information on latest versions of BUSCO data...
+2024-02-05 17:31:03 INFO:       Input file is /fs/scratch/PAS2250/cabana/jelmer_prep/results/spades/SM04/contigs.fasta
+2024-02-05 17:31:03 INFO:       Downloading file 'https://busco-data.ezlab.org/v5/data/lineages/pseudomonadales_odb10.2024-01-08.tar.gz'
+2024-02-05 17:31:06 INFO:       Decompressing file '/fs/scratch/PAS2250/cabana/jelmer_prep/busco_downloads/lineages/pseudomonadales_odb10.tar.gz'
+2024-02-05 17:31:24 INFO:       Running BUSCO using lineage dataset pseudomonadales_odb10 (prokaryota, 2024-01-08)
+2024-02-05 17:31:24 INFO:       Running 1 job(s) on bbtools, starting at 02/05/2024 17:31:24
+2024-02-05 17:31:26 INFO:       [bbtools]       1 of 1 task(s) completed
+2024-02-05 17:31:26 INFO:       ***** Run Prodigal on input to predict and extract genes *****
+2024-02-05 17:31:26 INFO:       Running Prodigal with genetic code 11 in single mode
+2024-02-05 17:31:26 INFO:       Running 1 job(s) on prodigal, starting at 02/05/2024 17:31:26
+2024-02-05 17:31:44 INFO:       [prodigal]      1 of 1 task(s) completed
+2024-02-05 17:31:45 INFO:       Genetic code 11 selected as optimal
+2024-02-05 17:31:45 INFO:       ***** Run HMMER on gene sequences *****
+2024-02-05 17:31:45 INFO:       Running 782 job(s) on hmmsearch, starting at 02/05/2024 17:31:45
+2024-02-05 17:31:55 INFO:       [hmmsearch]     79 of 782 task(s) completed
+2024-02-05 17:32:04 INFO:       [hmmsearch]     157 of 782 task(s) completed
+2024-02-05 17:32:13 INFO:       [hmmsearch]     235 of 782 task(s) completed
+2024-02-05 17:32:21 INFO:       [hmmsearch]     313 of 782 task(s) completed
+2024-02-05 17:32:28 INFO:       [hmmsearch]     392 of 782 task(s) completed
+2024-02-05 17:32:34 INFO:       [hmmsearch]     470 of 782 task(s) completed
+2024-02-05 17:32:42 INFO:       [hmmsearch]     548 of 782 task(s) completed
+2024-02-05 17:32:47 INFO:       [hmmsearch]     626 of 782 task(s) completed
+2024-02-05 17:32:53 INFO:       [hmmsearch]     704 of 782 task(s) completed
+2024-02-05 17:33:01 INFO:       [hmmsearch]     782 of 782 task(s) completed
+2024-02-05 17:33:19 INFO:       Results:        C:99.6%[S:99.6%,D:0.0%],F:0.1%,M:0.3%,n:782        
+
+2024-02-05 17:33:21 INFO:
+
+        ---------------------------------------------------
+        |Results from dataset pseudomonadales_odb10        |
+        ---------------------------------------------------
+        |C:99.6%[S:99.6%,D:0.0%],F:0.1%,M:0.3%,n:782       |
+        |779    Complete BUSCOs (C)                        |
+        |779    Complete and single-copy BUSCOs (S)        |
+        |0      Complete and duplicated BUSCOs (D)         |
+        |1      Fragmented BUSCOs (F)                      |
+        |2      Missing BUSCOs (M)                         |
+        |782    Total BUSCO groups searched                |
+        ---------------------------------------------------
+2024-02-05 17:33:21 INFO:       BUSCO analysis done. Total running time: 138 seconds
+2024-02-05 17:33:21 INFO:       Results written in /fs/scratch/PAS2250/cabana/jelmer_prep/SM04
+2024-02-05 17:33:21 INFO:       For assistance with interpreting the results, please consult the userguide: https://busco.ezlab.org/busco_userguide.html
+
+2024-02-05 17:33:21 INFO:       Visit this page https://gitlab.com/ezlab/busco#how-to-cite-busco to see how to cite BUSCO</code></pre>
+</details>
+<p>That is looking pretty good, 99.6% (n=779) of expected genes are indeed present completely and as a single copy. Only 0.1% (n=1) of genes are fragmented and 0.3% (n=2) are missing.</p>
+<p>Finally, we should move back to your main project dir, and load the main Conda environment</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ../..</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> activate /fs/ess/PAS0471/jelmer/conda/cabana</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="bonus-assembly-filtering-with-kraken2" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="bonus-assembly-filtering-with-kraken2"><span class="header-section-number">6</span> Bonus: Assembly filtering with Kraken2</h2>
+<p>You’ll probably want to filter your assembly, based on:</p>
+<ul>
+<li>Minimum contig size</li>
+<li>Minimum contig depth of coverage</li>
+<li>Inferred contamination from other organisms</li>
+</ul>
+<p>Here, we will perform the third and most complex of these.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Filtering on contig size <em>(Click to expand)</em>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>200 bp is the minimum contig size when you upload a genome assembly to NCBI. But you may want to be more stringent, e.g.&nbsp;using a 300 or 500 bp threshold.</p>
+<p>TODO - Add <code>seqkit</code> command</p>
+</div>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+<section id="kraken2" class="level3" data-number="6.1">
+<h3 data-number="6.1" class="anchored" data-anchor-id="kraken2"><span class="header-section-number">6.1</span> Kraken2</h3>
+<p>To identify contaminant contigs, we will run the program Kraken2 (<a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1891-0">Wood et al.&nbsp;2019</a>, <a href="https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown">manual</a>). This is a general purpose lowest-common ancestor (LCA) <strong>taxonomic classifier of sequences</strong> (can be reads, contigs, etc).</p>
+<p>(It is also possible to run Kraken2 or a similar program on the <em>reads</em> rather than on the assembly, but this can be more error-prone due to errors and their shorter lengths compared to (most) contigs.)</p>
+<p>Kraken requires a reference database. Ready-made databases can be downloaded from <a href="https://benlangmead.github.io/aws-indexes/">this site</a> — in this case, I already downloaded one for you, which we can use.</p>
+<p><strong>Check that you are back in your <code>bact</code> dir, and have the cabana Conda environment active.</strong></p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="bu">pwd</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code># Should be:
+/fs/scratch/PAS2250/cabana/$USER/bact/bact</code></pre>
+<p>We will start by creating an output dir for Kraken:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># (If we don't create the output dir, Kraken will not produce output files!)</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> results/kraken</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="running-kraken" class="level3" data-number="6.2">
+<h3 data-number="6.2" class="anchored" data-anchor-id="running-kraken"><span class="header-section-number">6.2</span> Running Kraken</h3>
+<p>We’ll run Kraken2 with the following options:</p>
+<ul>
+<li><code>--db /fs/scratch/PAS2250/cabana/databases/kraken_std</code> — the database for Kraken2</li>
+<li><code>--minimum-hit-groups 3</code> (Following recommendations from <a href="https://www.nature.com/articles/s41596-022-00738-y">Lu et al.&nbsp;2022</a>)</li>
+<li><code>--confidence 0.15</code> (Following recommendations from <a href="https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000949">Wright et al.&nbsp;2023</a>)</li>
+<li><code>--report</code> and <code>--output</code> to indicate where the output files should go</li>
+<li><code>--threads 20</code> to use 20 threads</li>
+<li>And finally, the input file (our assembly) is passed as an argument at the end of the command</li>
+</ul>
+<div class="sourceCode" id="cb31"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run Kraken2 -- like with Spades, we will run it as a batch job</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> <span class="at">-A</span> PAS2250 <span class="at">-t</span> 5 <span class="at">-c</span> 20 <span class="at">-o</span> slurm-kraken.out <span class="at">--wrap</span><span class="op">=</span><span class="st">"</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="st">  kraken2 </span><span class="dt">\</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="st">    --db /fs/scratch/PAS2250/cabana/databases/kraken_std </span><span class="dt">\</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="st">    --minimum-hit-groups 3 </span><span class="dt">\</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="st">    --confidence 0.15 </span><span class="dt">\</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="st">    --threads 20 </span><span class="dt">\</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a><span class="st">    --report results/kraken/SM04_report.txt </span><span class="dt">\</span></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a><span class="st">    --output results/kraken/SM04_main.txt </span><span class="dt">\</span></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a><span class="st">    results/spades/SM04/contigs.fasta</span></span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Once its done (this should only take 1-2 minutes), the Slurm log file should contain the following:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> slurm-kraken.out</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Loading database information... done.
+86 sequences (5.97 Mbp) processed in 0.619s (8.3 Kseq/m, 578.49 Mbp/m).
+  84 sequences classified (97.67%)
+  2 sequences unclassified (2.33%)</code></pre>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="interpreting-the-kraken-output" class="level3" data-number="6.3">
+<h3 data-number="6.3" class="anchored" data-anchor-id="interpreting-the-kraken-output"><span class="header-section-number">6.3</span> Interpreting the Kraken output</h3>
+<p>Let’s take a look at the output files:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-lh</span> results/kraken</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>-rw-r--r-- 1 jelmer PAS0471 3.0M Feb  5 15:41 SM04_main.txt
+-rw-r--r-- 1 jelmer PAS0471 3.5K Feb  5 15:41 SM04_report.txt</code></pre>
+<p>The report file (<code>report.txt</code>) file has a summary of taxonomic assignments, whereas the main output file (<code>main.txt</code>) has one line for each contig with its taxonomic assignment.</p>
+<p>We’ll first take a look at the report file, which has the following columns:</p>
+<ol type="1">
+<li>Percentage of fragments covered by the clade rooted at this taxon</li>
+<li>Number of fragments covered by the clade rooted at this taxon</li>
+<li>Number of fragments assigned directly to this taxon</li>
+<li>A rank code, indicating (U)nclassified, (R)oot, (D)omain, (K)ingdom, (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.</li>
+<li>NCBI taxonomic ID number</li>
+<li>Indented scientific name</li>
+</ol>
+<div class="sourceCode" id="cb36"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">less</span> <span class="at">-S</span> results/kraken/SM04_report.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details>
+<summary>
+Click to show the contents of the file
+</summary>
+<pre class="bash-out"><code>  2.33  2   2   U   0   unclassified
+ 97.67  84  0   R   1   root
+ 97.67  84  0   R1  131567    cellular organisms
+ 73.26  63  0   D   2       Bacteria
+ 72.09  62  3   P   1224          Pseudomonadota
+ 68.60  59  2   C   1236            Gammaproteobacteria
+ 58.14  50  0   O   72274             Pseudomonadales
+ 58.14  50  1   F   135621              Pseudomonadaceae
+ 56.98  49  12  G   286               Pseudomonas
+ 43.02  37  1   G1  136849                  Pseudomonas syringae group
+ 41.86  36  0   G2  251695                    Pseudomonas syringae group genomosp. 1
+ 41.86  36  36  S   317                     Pseudomonas syringae
+  8.14  7   0   O   91347             Enterobacterales
+  8.14  7   2   F   543             Enterobacteriaceae
+  5.81  5   5   G   590               Salmonella
+  1.16  1   0   D1  1783272       Terrabacteria group
+  1.16  1   0   P   201174          Actinomycetota
+  1.16  1   0   C   1760              Actinomycetes
+  1.16  1   0   O   85009               Propionibacteriales
+  1.16  1   0   F   31957                 Propionibacteriaceae
+  1.16  1   0   G   1912216                 Cutibacterium
+  1.16  1   1   S   1747                      Cutibacterium acnes
+ 24.42  21  0   D   2759        Eukaryota
+ 24.42  21  0   D1  33154         Opisthokonta
+ 24.42  21  0   K   33208           Metazoa
+ 24.42  21  0   K1  6072              Eumetazoa
+ 24.42  21  0   K2  33213               Bilateria
+ 24.42  21  0   K3  33511                 Deuterostomia
+ 24.42  21  0   P   7711                    Chordata
+ 24.42  21  0   P1  89593                     Craniata
+ 24.42  21  0   P2  7742                        Vertebrata
+ 24.42  21  0   P3  7776                          Gnathostomata
+ 24.42  21  0   P4  117570                          Teleostomi
+ 24.42  21  0   P5  117571                            Euteleostomi
+ 24.42  21  0   P6  8287                                Sarcopterygii
+ 24.42  21  0   P7  1338369                               Dipnotetrapodomorpha
+ 24.42  21  0   P8  32523                                   Tetrapoda
+ 24.42  21  0   P9  32524                                     Amniota
+ 24.42  21  0   C   40674                                       Mammalia
+ 24.42  21  0   C1  32525                                         Theria
+ 24.42  21  0   C2  9347                                            Eutheria
+ 24.42  21  0   C3  1437010                                           Boreoeutheria
+ 24.42  21  0   C4  314146                                              Euarchontoglires
+ 24.42  21  0   O   9443                                                  Primates
+ 24.42  21  0   O1  376913                                                  Haplorrhini
+ 24.42  21  0   O2  314293                                                    Simiiformes
+ 24.42  21  0   O3  9526                                                        Catarrhini
+ 24.42  21  0   O4  314295                                                        Hominoidea
+ 24.42  21  0   F   9604                                                            Hominidae
+ 24.42  21  0   F1  207598                                                            Homininae
+ 24.42  21  0   G   9605                                                                Homo
+ 24.42  21  21  S   9606                                                                  Homo sapiens</code></pre>
+</details>
+<section id="exercise-contamination" class="level4 exercise">
+<h4 class="anchored" data-anchor-id="exercise-contamination"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Exercise</strong>: Contamination?</h4>
+<p>Try to interpret the Kraken report — are there any contaminant contigs?</p>
+<details>
+<summary>
+Click for the solution
+</summary>
+Ouch! While the majority of our contigs have been classified as <em>Pseudomonas syringae</em>, we also have a few other bacteria (including the human skin bacterium <em>Cutibacterium acnes</em>), and no fewer than 21 human contigs!
+</details>
+</section>
+<hr style="height:1pt; visibility:hidden;">
+<p>The 5th column of the Kraken report has the NCBI taxonomic IDs, and that of human (on the last line) is <code>9606</code>.</p>
+<p>The <code>main.txt</code> output file reports the taxonomic ID in the 3rd column, so we can use the following command to print just the lines where the 3rd column is <code>9606</code>:</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">awk</span> <span class="st">'$3 == 9606'</span> results/kraken/SM04_main.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>C       NODE_28_length_766_cov_1.003130 9606    766     9606:4 131567:5 9606:1 131567:36 9606:11 131567:1 9606:20 131567:47 9606:16 131567:2 9606:5 131567:1 9606:1 131567:1 9606:6 131567:32 9606:68 131567:18 9606:95 131567:146 9606:12 131567:4 9606:11 131567:96 9606:28 131567:5 9606:11 131567:2 9606:29 131567:2 9606:1 131567:5 9606:10
+C       NODE_33_length_621_cov_0.706478 9606    621     9606:180 0:1 9606:3 0:17 9606:1 0:2 9606:12 0:32 9606:199 131567:5 9606:21 131567:2 1:1 9606:111
+C       NODE_36_length_567_cov_0.784091 9606    567     0:6 9606:527
+C       NODE_37_length_563_cov_0.779817 9606    563     9606:271 0:29 9606:229
+C       NODE_39_length_553_cov_0.809859 9606    553     0:1 9606:7 0:3 9606:261 0:3 9606:1 0:15 9606:3 0:5 9606:220
+C       NODE_40_length_552_cov_0.809412 9606    552     9606:41 131567:1 9606:1 131567:17 9606:10 131567:5 9606:56 131567:5 9606:89 131567:6 9606:63 131567:3 9606:84 131567:1 9606:1 131567:17 9606:10 131567:5 9606:103
+C       NODE_42_length_521_cov_0.746193 9606    521     9606:349 0:9 9606:1 0:21 9606:107
+C       NODE_44_length_510_cov_0.906005 9606    510     9606:476
+C       NODE_45_length_497_cov_0.772973 9606    497     9606:218 0:47 9606:1 0:28 9606:1 0:15 9606:1 0:4 9606:140 0:8
+C       NODE_47_length_480_cov_0.866856 9606    480     9606:446
+C       NODE_48_length_479_cov_0.849432 9606    479     9606:445
+C       NODE_50_length_470_cov_1.011662 9606    470     9606:117 0:1 9606:5 0:1 9606:3 0:24 9606:285
+C       NODE_51_length_470_cov_0.915452 9606    470     9606:436
+C       NODE_52_length_466_cov_1.017699 9606    466     9606:20 0:17 9606:6 0:9 9606:135 0:30 9606:215
+C       NODE_54_length_458_cov_1.000000 9606    458     9606:213 0:4 9606:5 0:15 9606:1 0:5 9606:125 0:20 9606:2 0:5 9606:3 0:5 9606:21
+C       NODE_55_length_455_cov_1.179878 9606    455     9606:2 131567:3 9606:218 131567:3 9606:195
+C       NODE_60_length_444_cov_0.933754 9606    444     9606:410
+C       NODE_61_length_442_cov_0.907937 9606    442     9606:21 131567:1 9606:386
+C       NODE_65_length_438_cov_0.405145 9606    438     0:24 9606:2 0:8 9606:80 131567:2 9606:31 131567:19 9606:10 131567:3 9606:13 131567:7 9606:205
+C       NODE_66_length_433_cov_1.133987 9606    433     9606:399
+C       NODE_67_length_432_cov_0.718033 9606    432     9606:398</code></pre>
+<section id="exercise-which-contigs-are-contaminants" class="level4 exercise">
+<h4 class="anchored" data-anchor-id="exercise-which-contigs-are-contaminants"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Exercise</strong>: Which contigs are contaminants?</h4>
+<p>In the output above, the contig IDs are in the second column. Do you notice anything about these? Does that provide some independent support for the idea that they are contaminants?</p>
+<details>
+<summary>
+Click for the solution
+</summary>
+<p>All of these contigs are small (&lt;600 bp) and have very low coverage (&lt;1.2x, versus the &gt;30x we saw for the contigs IDs that we printed earlier).</p>
+Note that Kraken doesn’t use this kind of information at all, so this provides independent evidence that this is contamination.
+</details>
+</section>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="removing-contaminant-contigs" class="level3" data-number="6.4">
+<h3 data-number="6.4" class="anchored" data-anchor-id="removing-contaminant-contigs"><span class="header-section-number">6.4</span> Removing contaminant contigs</h3>
+<p>We will use the Kraken’s companion program KrakenTools (<a href="https://www.nature.com/articles/s41596-022-00738-y">paper</a>, <a href="https://github.com/jenniferlu717/KrakenTools">documentation</a>) to remove the contaminant contigs, with options:</p>
+<ul>
+<li><code>-k</code> — main Kraken output file</li>
+<li><code>-s</code> — input sequence file to be filtered</li>
+<li><code>o</code> — output sequence file</li>
+<li><code>-t</code> — NCBI taxonomic ID (<code>9606</code> = human)</li>
+<li><code>--exclude</code> — exclude (rather than extract) contigs with the specified taxonomic ID</li>
+</ul>
+<div class="sourceCode" id="cb40"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> results/decontam</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="ex">extract_kraken_reads.py</span> <span class="dt">\</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">-k</span> results/kraken/SM04_main.txt <span class="dt">\</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">-s</span> results/spades/SM04/contigs.fasta <span class="dt">\</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">-o</span> results/decontam/SM04.fasta <span class="dt">\</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">-t</span> 9606 <span class="dt">\</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">--exclude</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>PROGRAM START TIME: 02-05-2024 22:16:21
+        1 taxonomy IDs to parse
+&gt;&gt; STEP 1: PARSING KRAKEN FILE FOR READIDS results/kraken/SM04.main.txt
+        0.00 million reads processed
+        65 read IDs saved
+&gt;&gt; STEP 2: READING SEQUENCE FILES AND WRITING READS
+        65 read IDs found (0.00 mill reads processed)
+        65 reads printed to file
+        Generated file: results/decontam/SM04.fasta
+PROGRAM END TIME: 02-05-2024 22:16:21</code></pre>
+<p>Let’s check that we indeed have 65 contigs left:</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-c</span> <span class="st">"&gt;"</span> results/decontam/SM04.fasta</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>65</code></pre>
+<p><br></p>
+
+
+</section>
+</section>
+
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Note that because individual sequence entries are commonly spread across multiple lines, FASTA entries do not necessarily cover 2 lines (cf.&nbsp;FASTQ).<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/mcic-osu\.github\.io\/tutorials");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>2024-2025, Jelmer Poelstra</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/mcic-osu/tutorials">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

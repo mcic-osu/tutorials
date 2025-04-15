@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jelmer Poelstra">
+<meta name="dcterms.date" content="2024-11-19">
+
+<title>Git: Branching, collaborating, and undoing – MCIC Bioinformatics Tutorials</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-57476271c5f0467c372e20ff5d25630e.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-93a206ead970ce8646eacc93a2842d74.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">MCIC Bioinformatics Tutorials</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-shell" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Shell</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-shell">    
+        <li>
+    <a class="dropdown-item" href="../shell/01_shell1.html">
+ <span class="dropdown-text">Intro the Unix Shell</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/02_shellfiles.html">
+ <span class="dropdown-text">Managing files in the shell</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/03_scripts.html">
+ <span class="dropdown-text">Writing shell scripts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/04_cli-tools.html">
+ <span class="dropdown-text">Running CLI tools</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/05_bonus.html">
+ <span class="dropdown-text">Advanced shell</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-osc" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">OSC</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-osc">    
+        <li>
+    <a class="dropdown-item" href="../osc/01_osc1.html">
+ <span class="dropdown-text">Intro to OSC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/02_vscode.html">
+ <span class="dropdown-text">VS Code</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/03_osc2.html">
+ <span class="dropdown-text">More about OSC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/05_slurm.html">
+ <span class="dropdown-text">Slurm</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/06_ssh.html">
+ <span class="dropdown-text">SSH</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-git" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Git</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-git">    
+        <li>
+    <a class="dropdown-item" href="../git/02_git1.html">
+ <span class="dropdown-text">Git 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../git/03_git2.html">
+ <span class="dropdown-text">Git 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../git/04_git3.html">
+ <span class="dropdown-text">Git 3</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-r" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">R</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-r">    
+        <li>
+    <a class="dropdown-item" href="../r/r_data-structures.html">
+ <span class="dropdown-text">Data structures</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../r/r_dplyr.html">
+ <span class="dropdown-text">Data wrangling</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reproducibility" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reproducibility</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reproducibility">    
+        <li>
+    <a class="dropdown-item" href="../reprod/project-org.html">
+ <span class="dropdown-text">Project file organization</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reprod/markdown.html">
+ <span class="dropdown-text">Markdown</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-nextflow" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Nextflow</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-nextflow">    
+        <li>
+    <a class="dropdown-item" href="../nf-run/01_pipelines.html">
+ <span class="dropdown-text">Intro to pipelines</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../nf-run/02_nfcore.html">
+ <span class="dropdown-text">Running an nf-core pipeline</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-metabar" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Metabar</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-metabar">    
+        <li>
+    <a class="dropdown-item" href="../metabar/01_qc-trim.html">
+ <span class="dropdown-text">Read QC and trimming</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-rna-seq" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">RNA-Seq</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-rna-seq">    
+        <li>
+    <a class="dropdown-item" href="../rnaseq/01_data.html">
+ <span class="dropdown-text">Data files</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/02_nfc-rnaseq.html">
+ <span class="dropdown-text">The nf-core rnaseq pipeline</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/03_DE.html">
+ <span class="dropdown-text">Differential expression analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/04_fastqc.html">
+ <span class="dropdown-text">Read QC with FastQC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/05_trimgalore.html">
+ <span class="dropdown-text">Trimming reads with TrimGalore</span></a>
+  </li>  
+        <li class="dropdown-header">RNA-Seq</li>
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other">    
+        <li class="dropdown-header">BACTERIAL WGS</li>
+        <li>
+    <a class="dropdown-item" href="../bac/01_preprocess.html">
+ <span class="dropdown-text">Data preprocessing</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../bac/02_assembly.html">
+ <span class="dropdown-text">Genome assembly</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../bac/03_annotation.html">
+ <span class="dropdown-text">Genome annotation</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <div class="dropdown">
+      <a href="" title="" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label=""><i class="bi bi-github"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://github.com/mcic-osu/tutorials">
+            Source Code
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://mcic-osu.github.io/tutorials/issues/new">
+            Report an Issue
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#branching-merging" id="toc-branching-merging" class="nav-link active" data-scroll-target="#branching-merging"><span class="header-section-number">1</span> Branching &amp; merging</a>
+  <ul class="collapse">
+  <li><a href="#a-repo-with-a-couple-of-commits" id="toc-a-repo-with-a-couple-of-commits" class="nav-link" data-scroll-target="#a-repo-with-a-couple-of-commits"><span class="header-section-number">1.1</span> A repo with a couple of commits</a></li>
+  <li><a href="#using-branches-in-git" id="toc-using-branches-in-git" class="nav-link" data-scroll-target="#using-branches-in-git"><span class="header-section-number">1.2</span> Using branches in Git</a></li>
+  <li><a href="#branching-and-merging-workflow-summary" id="toc-branching-and-merging-workflow-summary" class="nav-link" data-scroll-target="#branching-and-merging-workflow-summary"><span class="header-section-number">1.3</span> Branching and merging – Workflow summary</a></li>
+  </ul></li>
+  <li><a href="#collaboration-with-git-multi-user-remote-workflows" id="toc-collaboration-with-git-multi-user-remote-workflows" class="nav-link" data-scroll-target="#collaboration-with-git-multi-user-remote-workflows"><span class="header-section-number">2</span> Collaboration with Git: multi-user remote workflows</a>
+  <ul class="collapse">
+  <li><a href="#add-a-collaborator-in-github" id="toc-add-a-collaborator-in-github" class="nav-link" data-scroll-target="#add-a-collaborator-in-github"><span class="header-section-number">2.1</span> Add a collaborator in GitHub</a></li>
+  <li><a href="#merge-conflicts" id="toc-merge-conflicts" class="nav-link" data-scroll-target="#merge-conflicts"><span class="header-section-number">2.2</span> Merge conflicts</a></li>
+  </ul></li>
+  <li><a href="#contributing-to-repositories-forking-pull-requests" id="toc-contributing-to-repositories-forking-pull-requests" class="nav-link" data-scroll-target="#contributing-to-repositories-forking-pull-requests"><span class="header-section-number">3</span> Contributing to repositories: Forking &amp; Pull Requests</a>
+  <ul class="collapse">
+  <li><a href="#what-can-you-do-with-someone-elses-github-repository" id="toc-what-can-you-do-with-someone-elses-github-repository" class="nav-link" data-scroll-target="#what-can-you-do-with-someone-elses-github-repository"><span class="header-section-number">3.1</span> What can you do with someone else’s GitHub repository?</a></li>
+  </ul></li>
+  <li><a href="#undoing-viewing-changes-that-have-been-committed" id="toc-undoing-viewing-changes-that-have-been-committed" class="nav-link" data-scroll-target="#undoing-viewing-changes-that-have-been-committed"><span class="header-section-number">4</span> Undoing (&amp; viewing) changes that have been committed</a>
+  <ul class="collapse">
+  <li><a href="#viewing-past-versions-of-the-repository" id="toc-viewing-past-versions-of-the-repository" class="nav-link" data-scroll-target="#viewing-past-versions-of-the-repository"><span class="header-section-number">4.1</span> Viewing past versions of the repository</a></li>
+  <li><a href="#undoing-entire-commits" id="toc-undoing-entire-commits" class="nav-link" data-scroll-target="#undoing-entire-commits"><span class="header-section-number">4.2</span> Undoing entire commits</a></li>
+  <li><a href="#viewing-reverting-to-earlier-versions-of-files" id="toc-viewing-reverting-to-earlier-versions-of-files" class="nav-link" data-scroll-target="#viewing-reverting-to-earlier-versions-of-files"><span class="header-section-number">4.3</span> Viewing &amp; reverting to earlier versions of files</a></li>
+  </ul></li>
+  <li><a href="#miscellaneous-git" id="toc-miscellaneous-git" class="nav-link" data-scroll-target="#miscellaneous-git"><span class="header-section-number">5</span> Miscellaneous Git</a>
+  <ul class="collapse">
+  <li><a href="#amending-commits" id="toc-amending-commits" class="nav-link" data-scroll-target="#amending-commits"><span class="header-section-number">5.1</span> Amending commits</a></li>
+  <li><a href="#git-stash" id="toc-git-stash" class="nav-link" data-scroll-target="#git-stash"><span class="header-section-number">5.2</span> <code>git stash</code></a></li>
+  <li><a href="#a-few-more-tips" id="toc-a-few-more-tips" class="nav-link" data-scroll-target="#a-few-more-tips"><span class="header-section-number">5.3</span> A few more tips</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Git: Branching, collaborating, and undoing</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Jelmer Poelstra </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 19, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<hr>
+<p><br></p>
+<p>This page contains optional self-study material if you want to dig deeper into Git. Some of it may also be useful as a reference in case you run into problems while trying to use Git.</p>
+<ul>
+<li>Branching &amp; merging</li>
+<li>Collaboration with Git: multi-user remote workflows</li>
+<li>Contributing to repositories: Forking &amp; Pull Requests</li>
+<li>Undoing (&amp; viewing) changes that have been committed</li>
+<li>Miscellaneous Git</li>
+</ul>
+<p><br></p>
+<section id="branching-merging" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="branching-merging"><span class="header-section-number">1</span> Branching &amp; merging</h2>
+<p>In this section, you’ll learn about using so-called “branches” in Git. Branches are basically parallel versions of your repository, which allow you or your collaborators to experiment or create variants without affecting existing functionality or others’ work.</p>
+<hr style="height:1pt; visibility:hidden;">
+<section id="a-repo-with-a-couple-of-commits" class="level3" data-number="1.1">
+<h3 data-number="1.1" class="anchored" data-anchor-id="a-repo-with-a-couple-of-commits"><span class="header-section-number">1.1</span> A repo with a couple of commits</h3>
+<p>First, you’ll create a dummy repo with a few commits by running a script (following CSB).</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /fs/ess/PAS2700/users/<span class="va">$USER</span>/CSB/git/sandbox</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Take a look at the script you will run to create your repo:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> ../data/create_repository.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>#!/bin/bash
+
+# function of the script:
+# sets up a repository and
+# immitates workflow of
+# creating and commiting two text files
+
+mkdir branching_example
+cd branching_example
+git init
+echo "Some great code here" &gt; code.txt
+git add .
+git commit -m "Code ready"
+echo "If everything would be that easy!" &gt; manuscript.txt 
+git add .
+git commit -m "Drafted paper"</code></pre>
+<p>Run the script:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> ../data/create_repository.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Initialized empty Git repository in /fs/ess/PAS2700/users/jelmer/CSB/git/sandbox/branching_example/.git/
+[main (root-commit) 3c59d8a] Code ready
+ 1 file changed, 1 insertion(+)
+ create mode 100644 code.txt
+[main 7ba8ca4] Drafted paper
+ 1 file changed, 1 insertion(+)
+ create mode 100644 manuscript.txt</code></pre>
+<p>And move into the repository’s dir:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> branching_example</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Let’s see what has been done in this repo:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> log <span class="at">--oneline</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>7ba8ca4 (HEAD -&gt; main) Drafted paper
+3c59d8a Code ready</code></pre>
+<p>We will later modify the file <code>code.txt</code> — let’s see what it contains now:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> code.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Some great code here</code></pre>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="using-branches-in-git" class="level3" data-number="1.2">
+<h3 data-number="1.2" class="anchored" data-anchor-id="using-branches-in-git"><span class="header-section-number">1.2</span> Using branches in Git</h3>
+<p>You now want to improve the code, but these changes are <em>experimental,</em> and you want to retain your previous version that you know works. This is where <strong><em>branching</em></strong> comes in. With a new branch, you can make changes that don’t affect the <code>main</code> branch, and can also keep working on the <code>main</code> branch:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/csb-branch-intro.png" class="img-fluid figure-img" style="width:75.0%"></p>
+<figcaption>Figure modified after Allesino &amp; Wilmes (2019).<br>(Note that the <code>main</code> branch is here called “master”.)</figcaption>
+</figure>
+</div>
+<section id="creating-a-new-branch" class="level4">
+<h4 class="anchored" data-anchor-id="creating-a-new-branch">Creating a new branch</h4>
+<p>First, create a new branch as follows, naming it <code>fastercode</code>:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> branch fastercode</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>List the branches:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Without args, git branch will list the branches</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> branch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>  fastercode
+* main</code></pre>
+<p>It turns out that you created a new branch <em>but are still on the main branch</em>, as the <strong><code>*</code></strong> indicates.</p>
+<p>You can <strong>switch branches</strong> with <code>git checkout</code>:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout fastercode</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Switched to branch 'fastercode'</code></pre>
+<p>And confirm your switch with <code>git branch</code>:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> branch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>* fastercode
+  main</code></pre>
+<p>Note that you can also tell from the <code>git status</code> output on which branch you are:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> status</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>On branch fastercode
+nothing to commit, working tree clean</code></pre>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="making-experimental-changes-on-the-new-branch" class="level4">
+<h4 class="anchored" data-anchor-id="making-experimental-changes-on-the-new-branch">Making experimental changes on the new branch</h4>
+<p>You edit the code, stage and commit the changes:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Yeah, faster code"</span> <span class="op">&gt;&gt;</span> code.txt</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> code.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Some great code here
+Yeah, faster code</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add code.txt</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"Managed to make code faster"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>[fastercode 21f1828] Managed to make code faster
+ 1 file changed, 1 insertion(+)</code></pre>
+<p>Let’s check the log again, which tells you that the last commit was made on the <code>fastercode</code> branch:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> log <span class="at">--oneline</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>21f1828 (HEAD -&gt; fastercode) Managed to make code faster
+7ba8ca4 (main) Drafted paper
+3c59d8a Code ready</code></pre>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="moving-back-to-the-main-branch" class="level4">
+<h4 class="anchored" data-anchor-id="moving-back-to-the-main-branch">Moving back to the <code>main</code> branch</h4>
+<p>You need to switch gears and add references to the paper draft. Since this has nothing to do with your attempt at faster code, you should make these changes <strong>back on the <code>main</code> branch</strong>:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Move back to the 'main' branch</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout main</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Switched to branch 'main'</code></pre>
+<p>What does <code>code.txt</code>, which we edited on <code>fastercode</code>, now look like?</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> code.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Some great code here</code></pre>
+<p>So, by switching between branches, your working dir contents has changed!</p>
+<p>Now, while still on the <code>main</code> branch, add the reference, stage and commit:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Marra et al. 2014"</span> <span class="op">&gt;</span> references.txt</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add references.txt</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"Fixed the references"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>[main 1bf123f] Fixed the references
+ 1 file changed, 1 insertion(+)
+ create mode 100644 references.txt</code></pre>
+<p>Now that you’ve made changes to both branches, let’s see the log in “graph” format with <code>--graph</code>, also listing all branches with <code>--all</code> — note how it tries to depict these branches:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> log <span class="at">--oneline</span> <span class="at">--graph</span> <span class="at">--all</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>* 1bf123f (HEAD -&gt; main) Fixed the references
+| * 21f1828 (fastercode) Managed to make code faster
+|/  
+* 7ba8ca4 Drafted paper
+* 3c59d8a Code ready</code></pre>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="finishing-up-on-the-experimental-branch" class="level4">
+<h4 class="anchored" data-anchor-id="finishing-up-on-the-experimental-branch">Finishing up on the experimental branch</h4>
+<p>Earlier, you finished speeding up the code in the <code>fastercode</code> branch, but you still need to document your changes. So, you go back:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout fastercode</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Switched to branch 'fastercode'</code></pre>
+<p>Do you still have the <code>references.txt</code> file from the <code>main</code> branch?</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>code.txt  manuscript.txt</code></pre>
+<p>Nope, your working dir has changed again.</p>
+<p>Then, add the “documentation” to the code, and stage and commit:</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"# My documentation"</span> <span class="op">&gt;&gt;</span> code.txt</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add code.txt</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"Added comments to the code"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>[fastercode d09f611] Added comments to the code
+ 1 file changed, 1 insertion(+)</code></pre>
+<p>Check the log graph:</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> log <span class="at">--oneline</span> <span class="at">--all</span> <span class="at">--graph</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>* d09f611 (HEAD -&gt; fastercode) Added comments to the code
+* 21f1828 Managed to make code faster
+| * 1bf123f (main) Fixed the references
+|/  
+* 7ba8ca4 Drafted paper
+* 3c59d8a Code ready</code></pre>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="merging-the-branches" class="level4">
+<h4 class="anchored" data-anchor-id="merging-the-branches">Merging the branches</h4>
+<p>You’re happy with the changes to the code, and want to make the <code>fastercode</code> version <em>the default version of the code</em>. This means you should merge the <code>fastercode</code> branch back into <code>main</code>. To do so, you first have to move back to <code>main</code>:</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout main</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Switched to branch 'main'</code></pre>
+<p>Now you are ready to merge with the <code>git merge</code> command. You’ll also have to provide a commit message, <em>because a merge is always accompanied by a commit</em>:</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> merge fastercode <span class="at">-m</span> <span class="st">"Much faster version of code"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Merge made by the 'ort' strategy.
+ code.txt | 2 ++
+ 1 file changed, 2 insertions(+)</code></pre>
+<p>Once again, check the log graph, which depicts the branches coming back together:</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> log <span class="at">--oneline</span> <span class="at">--all</span> <span class="at">--graph</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>*   5bb84cd (HEAD -&gt; main) Much faster version of code
+|\  
+| * d09f611 (fastercode) Added comments to the code
+| * 21f1828 Managed to make code faster
+* | 1bf123f Fixed the references
+|/  
+* 7ba8ca4 Drafted paper
+* 3c59d8a Code ready</code></pre>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="cleaning-up" class="level4">
+<h4 class="anchored" data-anchor-id="cleaning-up">Cleaning up</h4>
+<p>You no longer need the <code>fastercode</code> branch, so you can delete it as follows:</p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> branch <span class="at">-d</span> fastercode</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Deleted branch fastercode (was d09f611).</code></pre>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+</section>
+<section id="branching-and-merging-workflow-summary" class="level3" data-number="1.3">
+<h3 data-number="1.3" class="anchored" data-anchor-id="branching-and-merging-workflow-summary"><span class="header-section-number">1.3</span> Branching and merging – Workflow summary</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/csb-branch.png" class="img-fluid figure-img" style="width:90.0%"></p>
+<figcaption>Figure from after Allesino &amp; Wilmes (2019)</figcaption>
+</figure>
+</div>
+<section id="overview-of-commands-used-in-the-branching-workflow" class="level4">
+<h4 class="anchored" data-anchor-id="overview-of-commands-used-in-the-branching-workflow">Overview of commands used in the branching workflow</h4>
+<div class="sourceCode" id="cb50"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># (</span><span class="al">NOTE</span><span class="co">: Don't run this)</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a new branch:</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> branch mybranch</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Move to new branch:</span></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout mybranch</span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Add and commit changes:</span></span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add <span class="at">--all</span></span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"my message"</span></span>
+<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Done with branch - move back to main trunk and merge</span></span>
+<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout main</span>
+<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> merge mybranch <span class="at">-m</span> <span class="st">"Message for merge"</span></span>
+<span id="cb50-16"><a href="#cb50-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-17"><a href="#cb50-17" aria-hidden="true" tabindex="-1"></a><span class="co"># And [optionally] delete the branch:</span></span>
+<span id="cb50-18"><a href="#cb50-18" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> <span class="at">-d</span> mybranch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="exercise-intermezzo-2.2" class="level4 exercise">
+<h4 class="anchored" data-anchor-id="exercise-intermezzo-2.2"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> Exercise (Intermezzo 2.2)</h4>
+<ul>
+<li><strong>(a)</strong> Move to the directory <code>CSB/git/sandbox</code>.</li>
+</ul>
+<details>
+<summary>
+Solution
+</summary>
+<div class="sourceCode" id="cb51"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /fs/ess/PAS2700/users/<span class="va">$USER</span>/CSB/git/sandbox</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<ul>
+<li><strong>(b)</strong> Create a directory <code>thesis</code> and turn it into a Git repository.</li>
+</ul>
+<details>
+<summary>
+Solution
+</summary>
+<div class="sourceCode" id="cb52"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> thesis</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> thesis</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> init</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<ul>
+<li><strong>(c)</strong> Create the file <code>introduction.txt</code> with the line <em>“Best introduction ever.”</em></li>
+</ul>
+<details>
+<summary>
+Solution
+</summary>
+<div class="sourceCode" id="cb53"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"The best introduction ever"</span> <span class="op">&gt;</span> introduction.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<ul>
+<li><strong>(d)</strong> Stage <code>introduction.txt</code> and commit with the message <em>“Started introduction.”</em></li>
+</ul>
+<details>
+<summary>
+Solution
+</summary>
+<div class="sourceCode" id="cb54"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add introduction.txt</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"Started introduction"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<hr>
+<ul>
+<li><strong>(e)</strong> Create the branch <code>newintro</code> and change into it.</li>
+</ul>
+<details>
+<summary>
+Solution
+</summary>
+<div class="sourceCode" id="cb55"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> branch newintro</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout newintro</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<ul>
+<li><strong>(f)</strong> Overwrite the contents of <code>introduction.txt</code>, create a new file <code>methods.txt</code>, stage, and commit.</li>
+</ul>
+<details>
+<summary>
+Solution
+</summary>
+<div class="sourceCode" id="cb56"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"A much better introduction"</span> <span class="op">&gt;</span> introduction.txt</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="fu">touch</span> methods.txt</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add <span class="at">--all</span></span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"A new introduction and methods file"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<ul>
+<li><strong>(g)</strong> Move back to <code>main</code>. What does your working directory look like now?</li>
+</ul>
+<details>
+<summary>
+Solution
+</summary>
+<div class="sourceCode" id="cb57"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout main</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span>     <span class="co"># Changes made on the other branch are not visible here!</span></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> introduction.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<ul>
+<li><strong>(h)</strong> Merge in the <code>newintro</code> branch, and confirm that the changes you made there are now in your working dir.</li>
+</ul>
+<details>
+<summary>
+Solution
+</summary>
+<div class="sourceCode" id="cb58"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> merge newintro <span class="at">-m</span> <span class="st">"New introduction"</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> introduction.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<ul>
+<li><strong>(i)</strong> <em>Bonus:</em> Delete the branch <code>newintro</code>.</li>
+</ul>
+<details>
+<summary>
+Solution
+</summary>
+<div class="sourceCode" id="cb59"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> branch <span class="at">-d</span> newintro</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</section>
+<p><br></p>
+</section>
+</section>
+<section id="collaboration-with-git-multi-user-remote-workflows" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="collaboration-with-git-multi-user-remote-workflows"><span class="header-section-number">2</span> Collaboration with Git: multi-user remote workflows</h2>
+<p>In a multi-user workflow, your collaborator can make changes to the repository (committing to local, then pushing to remote), and you need to make sure that you stay up-to-date with these changes.</p>
+<p>Synchronization between your and your collaborator’s repository happens via the remote, so now you will need a way to <em>download</em> changes from the remote that your collaborator made. This happens with the <strong><code>git pull</code></strong> command.</p>
+<div class="columns">
+<div class="column" style="width:48%;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/git-remote-mult-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption><strong>A</strong><br>First, a second user, your collaborator, downloads (<em>clones</em>) the online repo. They should also receive admin rights on the repo (not shown - done on GitHub).</figcaption>
+</figure>
+</div>
+</div><div class="column" style="width:4%;">
+
+</div><div class="column" style="width:48%;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/git-remote-mult-2.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption><strong>B</strong><br>Then, your collaborator commits changes to their local copy of the repository.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+<div class="columns">
+<div class="column" style="width:48%;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/git-remote-mult-3.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption><strong>C</strong><br>Before you can receive these changes, your collaborator will need to push their changes to the remote, which you can access too.</figcaption>
+</figure>
+</div>
+</div><div class="column" style="width:4%;">
+
+</div><div class="column" style="width:48%;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/git-remote-mult-4.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption><strong>D</strong><br>To update your local repo with the changes made by your collaborator, you <em>pull</em> in the changes from the remote. Now all 3 copies of the repo are in sync again!</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+<p>In a multi-user workflow, changes made by different users are <strong>shared via the online copy of the repo</strong>. But syncing is not automatic:</p>
+<ul>
+<li>Changes to your local repo remain local-only until you <strong>push</strong> to remote.</li>
+<li>Someone else’s changes to the remote repo do not make it into your local repo until you <strong>pull</strong> from remote.</li>
+</ul>
+<p>However, when your collaborator has made changes, Git <em>will</em> tell you about “divergence” between your local repository and the remote when you run <code>git status</code>:</p>
+<div class="sourceCode" id="cb60"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co"># (Don't run this)</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> status</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><img src="img/git-sync.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:60.0%"></p>
+</figure>
+</div>
+<p>In a multi-user workflow, you should use use <code>git pull</code> often, since staying up-to-date with your collaborator’s changes will reduce the chances of <em><a href="w3_git3.qmd#merge-conflicts">merge conflicts</a></em>.</p>
+<hr style="height:1pt; visibility:hidden;">
+<section id="add-a-collaborator-in-github" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="add-a-collaborator-in-github"><span class="header-section-number">2.1</span> Add a collaborator in GitHub</h3>
+<p>You can add a collaborator to a repository on GitHub as follows:</p>
+<ol type="1">
+<li>Go to the repository’s settings:</li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/github-repo-settings.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:30.0%"></p>
+</figure>
+</div>
+<ol start="2" type="1">
+<li>Find and click <code>Manage access</code>:</li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/github-repo-access.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:30.0%"></p>
+</figure>
+</div>
+<ol start="3" type="1">
+<li>Click <code>Invite a collaborator</code>:</li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/github-repo-collaborator.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:30.0%"></p>
+</figure>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="merge-conflicts" class="level3" data-number="2.2">
+<h3 data-number="2.2" class="anchored" data-anchor-id="merge-conflicts"><span class="header-section-number">2.2</span> Merge conflicts</h3>
+<p>A so-called <strong>merge conflict</strong> means that Git is not able to automatically merge two branches, which occurs when all three of the following conditions are met:</p>
+<ul>
+<li>You try to merge two branches (including when pulling from remote: a pull includes a merge)</li>
+<li>One or more file changes have been committed on <strong><em>both</em></strong> of these branches since their divergence.</li>
+<li>Some of these changes were made in the same part(s) of file(s).</li>
+</ul>
+<p>When this occurs, Git has no way of knowing which changes to keep, and it will report a merge conflict as follows:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/merge-conflict-start.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+<section id="resolving-a-merge-conflict" class="level4">
+<h4 class="anchored" data-anchor-id="resolving-a-merge-conflict">Resolving a merge conflict</h4>
+<p>When Git reports a merge conflict, follow these steps:</p>
+<ol type="1">
+<li>Use <strong><code>git status</code></strong> to find the conflicting file(s).</li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/merge-conflict-status.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+<ol start="2" type="1">
+<li><p><strong>Open and edit those file(s) manually</strong> to a version that fixes the conflict (!).</p>
+<p>Note below that Git will have changed these file(s) to add the conflicting lines from both versions of the file, and to add marks that indicate which lines conflict.</p>
+<p>You have to manually change the contents in your text editor to keep the conflicting content that you want, and to remove the indicator marks that Git made.</p>
+<pre class="bash-out-solo"><code>On the Origin of Species       # Line preceding conflicting line
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD                   # GIT MARK 1: Next line = current branch
+Line 2 - from main             # Conflict line: current branch
+=======                        # GIT MARK 2: Dividing line
+Line 2 - from conflict-branch  # Conflict line: incoming branch
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; conflict-branch        # GIT MARK 3: Prev line = incoming branch</code></pre></li>
+<li><p>Use <code>git add</code> to tell Git you’ve resolved the conflict in a particular file:</p>
+<div class="sourceCode" id="cb62"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add origin.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/merge-conflict-resolved.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+</figure>
+</div>
+<ol start="4" type="1">
+<li><p>Once all conflicts are resolved, use <code>git status</code> to check that all changes have been staged. Then, use <code>git commit</code> to finish the merge commit:</p>
+<div class="sourceCode" id="cb63"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"Solved the merge conflict"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ol>
+<hr style="height:1pt; visibility:hidden;">
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+VS Code functionality for resolving Merge Conflicts
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>VS Code has some nice functionality to make Step 2 (resolving the conflict) easier:</p>
+<div class="sourceCode" id="cb64"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="ex">code</span> <span class="op">&lt;</span>conflicting-file<span class="op">&gt;</span>  <span class="co"># Open the file in VS Code</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/vs-code-merge-conflict.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+<p>If you click on “<em>Accept Current Change</em>” or “<em>Accept Incoming Change</em>”, etc., it will keep the desired lines and remove the Git indicator marks. Then, save and exit.</p>
+</div>
+</div>
+<p><br></p>
+</section>
+</section>
+</section>
+<section id="contributing-to-repositories-forking-pull-requests" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="contributing-to-repositories-forking-pull-requests"><span class="header-section-number">3</span> Contributing to repositories: Forking &amp; Pull Requests</h2>
+<section id="what-can-you-do-with-someone-elses-github-repository" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="what-can-you-do-with-someone-elses-github-repository"><span class="header-section-number">3.1</span> What can you do with someone else’s GitHub repository?</h3>
+<p>In some cases, you may be interested in working in some way with someone else’s repository that you found on GitHub. If you do not have rights to push, you can:</p>
+<ul>
+<li><strong>Clone</strong> the repo and make changes locally (as we have been doing with the <code>CSB</code> repo). When you do this, you can also periodically pull to remain up-to-date with changes in the original repo.</li>
+<li><strong>Fork</strong> the repository on GitHub and develop it independently. Forking creates <em>a new personal GitHub repo</em>, to which you can push.</li>
+<li>Using a forked repo, you can also submit a <strong>Pull Request</strong> with proposed changes to the original repo: for example, if you’ve fixed a bug in someone else’s program.</li>
+</ul>
+<p>If you’re actually collaborating on a project, though, you should ask your collaborator to give you admin rights for the repo, which makes things a lot easier than working via Pull Requests.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Forking, Pull Requests, and Issues are GitHub functionality, and not part of Git.
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+<section id="forking-a-github-repository" class="level4">
+<h4 class="anchored" data-anchor-id="forking-a-github-repository">Forking a GitHub repository</h4>
+<p>You can follow along by e.g.&nbsp;forking <a href="https://github.com/jelmerp/originspecies">my <code>originspecies</code> repo</a>.</p>
+<ul>
+<li>Go to a GitHub repository, and click the “<strong><em>Fork</em></strong>” button in the top-right:</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/github-fork.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+</figure>
+</div>
+<ul>
+<li>You may be asked which account to fork to: select your account.</li>
+<li>Now, you have your own version of the repository, and it is labeled explicitly as a fork:</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/github-forked.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+</figure>
+</div>
+</section>
+<section id="forking-workflow" class="level4">
+<h4 class="anchored" data-anchor-id="forking-workflow">Forking workflow</h4>
+<p>You can’t directly modify the <em>original repository</em>, but you can:</p>
+<ul>
+<li>First, <strong>modify your fork</strong> (with local edits and pushing).</li>
+<li>Then, <strong>submit a so-called Pull Request</strong> to the owner of the original repo to pull in your changes.</li>
+<li>Also, you can also easily <strong>keep your fork up-to-date</strong> with changes to the original repository.</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/fork-triangle-happy.png" class="img-fluid figure-img" style="width:70.0%"></p>
+<figcaption><a href="https://happygitwithr.com/fork-and-clone.html">Figure from Happy Git and GitHub for the useR</a></figcaption>
+</figure>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="editing-the-forked-repository" class="level4">
+<h4 class="anchored" data-anchor-id="editing-the-forked-repository">Editing the forked repository</h4>
+<p>To clone your forked GitHub repository to a dir at OSC, start by creating a dir there — for example:</p>
+<div class="sourceCode" id="cb65"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> /fs/ess/PAS2700/users/<span class="va">$USER</span>/week03/fork_test</span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /fs/ess/PAS2700/users/<span class="va">$USER</span>/week03/fork_test</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Then, find the URL for your forked GitHub repository by clicking the green <code>Code</code> button. Make sure you get the SSH URL (rather than the HTTPS URL), and click the clipboard button next to the URL to copy it:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/github-ssh-url.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+</figure>
+</div>
+<p>Then, type <code>git clone</code> and a space, and paste the URL, e.g.:</p>
+<div class="sourceCode" id="cb66"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone git@github.com:jelmerp/originspecies.git</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Cloning into 'originspecies'...
+remote: Enumerating objects: 31, done.
+remote: Counting objects: 100% (31/31), done.
+remote: Compressing objects: 100% (19/19), done.
+remote: Total 31 (delta 4), reused 30 (delta 3), pack-reused 0
+Receiving objects: 100% (31/31), done.
+Resolving deltas: 100% (4/4), done.</code></pre>
+<p>Now, you can make changes to the repository in the familiar way, for example:</p>
+<div class="sourceCode" id="cb68"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"# Chapter 1. Variation under domestication"</span> <span class="op">&gt;</span> origin.txt</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add origin.txt</span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"Suggested title for first chapter."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>And note that you can push without any setup — because you cloned the repository, the remote setup is already done (and you have permission to push because its your own repo on GitHub and you have set up GitHub authentication):</p>
+<div class="sourceCode" id="cb69"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> push</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="creating-a-pull-request" class="level4">
+<h4 class="anchored" data-anchor-id="creating-a-pull-request">Creating a Pull Request</h4>
+<p>If you then go back to GitHub, you’ll see that your forked repo is “<em>x commit(s) ahead</em>” of the original repo:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/github-fork-ahead.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%"></p>
+</figure>
+</div>
+<p>Click <code>Pull request</code>, and check whether the right repositories and branches are being compared (and here you can also see the changes that were made in the commits):</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/github-pr-compare.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%"></p>
+</figure>
+</div>
+<p>If it looks good, click the green <code>Create Pull Request</code> button:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/github-pr.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%"></p>
+</figure>
+</div>
+<p>Give your Pull Request a title, and write a brief description of your changes:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/github-pr-confirm.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></p>
+</figure>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="keeping-your-fork-up-to-date" class="level4">
+<h4 class="anchored" data-anchor-id="keeping-your-fork-up-to-date">Keeping your fork up-to-date</h4>
+<p>As you saw, you can’t directly <em>push</em> to original repo but instead have to submit a Pull Request (yes, this terminology is confusing!).</p>
+<p>But, you <em>can</em> create an ongoing connection to the original repo, which you can use to periodically <em>pull</em> to keep your fork up-to-date. This works similarly to connecting your own GitHub repo, but you should give the remote a different nickname than <code>origin</code> — the convention is <code>upstream</code>:</p>
+<div class="sourceCode" id="cb70"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the "upstream" connection</span></span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> remote add upstream git@github.com:jelmerp/originspecies.git</span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a><span class="co"># List the remotes:</span></span>
+<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> remote <span class="at">-v</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>origin   git@github.com:pallass-boszanger/originspecies.git  (fetch)
+origin   git@github.com:pallass-boszanger/originspecies.git  (push)
+upstream   git@github.com:jelmerp/originspecies.git  (fetch)
+upstream   git@github.com:jelmerp/originspecies.git  (push)</code></pre>
+<div class="sourceCode" id="cb72"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pull from the upstream repository:</span></span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> pull upstream main</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+“<em>upstream</em>” is an arbitrary but convential name, compare with “origin” which is used for your <em>own</em> version of the online repo.
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+<p><br></p>
+</section>
+</section>
+</section>
+<section id="undoing-viewing-changes-that-have-been-committed" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="undoing-viewing-changes-that-have-been-committed"><span class="header-section-number">4</span> Undoing (&amp; viewing) changes that have been committed</h2>
+<p>Whereas on <a href="w3_git1.qmd">the first Git page</a>, we learned about undoing changes that have <em>not</em> been committed, here you’ll see how you can undo changes that have been committed.</p>
+<hr style="height:1pt; visibility:hidden;">
+<section id="viewing-past-versions-of-the-repository" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="viewing-past-versions-of-the-repository"><span class="header-section-number">4.1</span> Viewing past versions of the repository</h3>
+<p>Before undoing committed changes, you may want to look at earlier states of your repo, e.g.&nbsp;to know what to revert to:</p>
+<ul>
+<li><p>First, print an overview of past commits and their messages:</p>
+<div class="sourceCode" id="cb73"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="co"># (</span><span class="al">NOTE</span><span class="co">: example code in this and the next few boxes - don't run as-is)</span></span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> log <span class="at">--oneline</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>Find a commit you want to go back to, and look around in the past:</p>
+<div class="sourceCode" id="cb74"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout <span class="op">&lt;</span>sha-id<span class="op">&gt;</span> <span class="co"># Replace &lt;sha-id&gt; by an actual hash</span></span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a><span class="fu">less</span> myfile.txt       <span class="co"># Etc. ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>Then, you can go back to where you were originally as follows:</p>
+<div class="sourceCode" id="cb75"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout main</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+<p>The next section will talk about strategies to move your repo back to an earlier state that you found this way.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Just need to retrieve an older version of a single file?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you just want to retrieve/restore an older version of a <strong>single file</strong> that you found while browsing around in the past, then a quick way can be: simply copy the file to a location outside of your repo, move yourself back to the “present”, and move the file back into your repo, now in the present.</p>
+</div>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/git-checkout-softcarp.svg" class="img-fluid figure-img" style="width:90.0%"></p>
+<figcaption>A visual of using <code>git checkout</code> to view files from older versions of your repo.<br>Figure from <a href="https://software-carpentry.org" class="uri">https://software-carpentry.org</a>.</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The multiple uses of <code>git checkout</code>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Note the confusing re-use of <code>git checkout</code>! We have now seen <code>git checkout</code> being used to:</p>
+<ul>
+<li>Move between branches</li>
+<li>Move to previous commits to explore (<strong>figure below</strong>)</li>
+<li>(Revert files back to previous states — as an alternative to <code>git restore</code>)</li>
+</ul>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="undoing-entire-commits" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="undoing-entire-commits"><span class="header-section-number">4.2</span> Undoing entire commits</h3>
+<p>To undo commits, i.e.&nbsp;move the state of your repository back to how it was before the commit you want to undo, there are two main commands:</p>
+<ul>
+<li><code>git revert</code>: Undo the changes made by commits by reverting them in a new commit.</li>
+<li><code>git reset</code>: Delete commits as if they were never made.</li>
+</ul>
+<section id="undoing-commits-with-git-revert" class="level4">
+<h4 class="anchored" data-anchor-id="undoing-commits-with-git-revert">Undoing commits with <code>git revert</code></h4>
+<p>A couple of examples of creating a new commit that will revert all changes made in the specified commit:</p>
+<div class="sourceCode" id="cb76"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Undo changes by the most recent commit:</span></span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> revert HEAD</span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Undo changes by the second-to-last commit:</span></span>
+<span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> revert HEAD^</span>
+<span id="cb76-6"><a href="#cb76-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb76-7"><a href="#cb76-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Undo changes by a commit identified by its checksum:</span></span>
+<span id="cb76-8"><a href="#cb76-8" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> revert e1c5739</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="undoing-commits-with-git-reset" class="level4">
+<h4 class="anchored" data-anchor-id="undoing-commits-with-git-reset">Undoing commits with <code>git reset</code></h4>
+<p><code>git reset</code> is quite complicated as it has three modes (<code>--hard</code>, <code>--mixed</code> (default), and <code>--soft</code>) <em>and</em> can act either on individual files and on entire commits. <strong>To undo a commit, and:</strong></p>
+<ul>
+<li><p>Stage all changes made by that commit:</p>
+<div class="sourceCode" id="cb77"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Resetting to the 2nd-to-last commit (HEAD^) =&gt; undoing the last commit</span></span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> reset <span class="at">--soft</span> HEAD^</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>Put all changes made by that commit as uncomitted working-dir changes:</p>
+<div class="sourceCode" id="cb78"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Note that '--mixed' is the default, so you could omit that</span></span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> reset <span class="at">--mixed</span> HEAD^</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>Completely <strong>discard</strong> all changes made by that commit:</p>
+<div class="sourceCode" id="cb79"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> reset <span class="at">--hard</span> HEAD^ </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<code>git reset</code> erases history
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Undoing with <code>git revert</code> is much safer than with <code>git reset</code>, because <code>git revert</code> does not erase any history.</p>
+<p>For this reason, some argue you should not use <code>git reset</code> on commits altogether. At any rate, you should <strong>never</strong> use <code>git reset</code> for commits that have already been pushed online.</p>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+</section>
+<section id="viewing-reverting-to-earlier-versions-of-files" class="level3" data-number="4.3">
+<h3 data-number="4.3" class="anchored" data-anchor-id="viewing-reverting-to-earlier-versions-of-files"><span class="header-section-number">4.3</span> Viewing &amp; reverting to earlier versions of files</h3>
+<p>Above, you learned to undo at a project/commit-wide level. But you can also undo things for specific files:</p>
+<ol type="1">
+<li><p>Get a specific version of a file from a past commit:</p>
+<div class="sourceCode" id="cb80"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Retrieve the version of README.md from the second-to-last commit</span></span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout HEAD^^ <span class="at">--</span> README.md</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb81"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Or: Retrieve the version of README.md from a commit IDed by the checksum</span></span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout e1c5739 <span class="at">--</span> README.md</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>Now, your have the old version in the working dir &amp; staged, which you can optionally check with:</p>
+<div class="sourceCode" id="cb82"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Optional: check the file at the earlier state</span></span>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> README.md</span>
+<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> status</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>You can go on to commit this version from the past, or go back to the current version, as we will do below:</p>
+<div class="sourceCode" id="cb83"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout HEAD <span class="at">--</span> README.md</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ol>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Be careful with <code>git checkout</code>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Be careful with <code>git checkout</code>: any uncommitted changes to this file would be overwritten by the past version you retrieve!</p>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+<p>An <strong>alternative method</strong> to view and revert to older versions of specific files is to use <code>git show</code>.</p>
+<ul>
+<li><p>View a file from any commit as follows:</p>
+<div class="sourceCode" id="cb84"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Retrieve the version of README.md from the last commit</span></span>
+<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> show HEAD:README.md</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb85"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Or: Retrieve the version of README.md from a commit IDed by the checksum</span></span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> show ad4ca74:README.md</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>Revert a file to a previous version:</p>
+<div class="sourceCode" id="cb86"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> show ad4ca74:README.md <span class="op">&gt;</span> README.md</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+<p><br></p>
+</section>
+</section>
+<section id="miscellaneous-git" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="miscellaneous-git"><span class="header-section-number">5</span> Miscellaneous Git</h2>
+<section id="amending-commits" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="amending-commits"><span class="header-section-number">5.1</span> Amending commits</h3>
+<p>Let’s say you forgot to add a file to a commit, or notice a silly typo in something we just committed. Creating a separate commit for this seems “wasteful” or even confusing, and including these changes along with others in a next commit is also likely to be inappropriate. In such cases, you can <strong><em>amend</em> the previous commit</strong>.</p>
+<p>First, stage the forgotten or fixed file:</p>
+<div class="sourceCode" id="cb87"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="co"># (</span><span class="al">NOTE</span><span class="co">: don't run this)</span></span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add myfile.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Then, amend the commit, adding <code>--no-edit</code> to indicate that you do not want change the commit message:</p>
+<div class="sourceCode" id="cb88"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a><span class="co"># (</span><span class="al">NOTE</span><span class="co">: don't run this)</span></span>
+<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">--amend</span> <span class="at">--no-edit</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Amending commits is a way of “changing history”
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Because amending a commit “changes history”, some recommend avoiding this altogether. For sure, do <strong>not</strong> amend commits that have been published in (<em>pushed to</em>) the online counterpart of the repo.</p>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="git-stash" class="level3" data-number="5.2">
+<h3 data-number="5.2" class="anchored" data-anchor-id="git-stash"><span class="header-section-number">5.2</span> <code>git stash</code></h3>
+<p>Git stash can be useful when you need to <em>pull from the remote</em>, but have changes in your working dir that:</p>
+<ul>
+<li>Are not appropriate for a separate commit</li>
+<li>Are not worth starting a new branch for</li>
+</ul>
+<p>Here is an example of the sequence of commands you can use in such cases.</p>
+<ol type="1">
+<li><p>Stash changes to tracked files with <code>git stash</code>:</p>
+<div class="sourceCode" id="cb89"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="co"># (Note: add option '-u' if you need to include untracked files) </span></span>
+<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> stash</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>Pull from the remote repository:</p>
+<div class="sourceCode" id="cb90"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> pull</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>“Apply” (recover) the stashed changes back to your working dir:</p>
+<div class="sourceCode" id="cb91"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> stash apply</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ol>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="a-few-more-tips" class="level3" data-number="5.3">
+<h3 data-number="5.3" class="anchored" data-anchor-id="a-few-more-tips"><span class="header-section-number">5.3</span> A few more tips</h3>
+<ul>
+<li><p>Git will not pay attention to <em>empty</em> directories in your working dir.</p></li>
+<li><p>You can create a new branch and move to it in one go using:</p>
+<div class="sourceCode" id="cb92"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout <span class="at">-b</span> <span class="op">&lt;</span>new-branch-name<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>To show commits in which a specific file was changed, you can simply use:</p>
+<div class="sourceCode" id="cb93"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> log <span class="op">&lt;</span>filename<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>“<em>Aliases</em>” (command shortcuts) can be useful with Git, and can be added in two ways:</p>
+<ul>
+<li><p>By adding lines like the below to the <code>~/.gitconfig</code> file:</p>
+<pre class="bash-out"><code>[alias]
+  hist = log --graph --pretty=format:'%h %ad | %s%d [%an]' --date=short
+  last = log -1 HEAD  # Just show the last commit</code></pre></li>
+<li><p>With the <code>git config</code> command:</p>
+<div class="sourceCode" id="cb95"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> config <span class="at">--global</span> alias.last <span class="st">"log -1 HEAD"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+</ul>
+<p><br></p>
+
+
+</section>
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/mcic-osu\.github\.io\/tutorials");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>2024-2025, Jelmer Poelstra</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/mcic-osu/tutorials">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

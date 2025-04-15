@@ -4,5 +4,134 @@
   },
   "about.qmd": {
     "about.html": "6eb76a70"
+  },
+  "proj/markdown.qmd": {
+    "markdown.html": "94e8d075"
+  },
+  "proj/project-org.qmd": {
+    "project-org.html": "e7af9755"
+  },
+  "osc/01-osc1.qmd": {
+    "01-osc1.html": "4c5a18c2"
+  },
+  "osc/02-vscode.qmd": {
+    "02-vscode.html": "d3a74a16"
+  },
+  "osc/03_osc2.qmd": {
+    "03_osc2.html": "9a9e9bfd"
+  },
+  "osc/05_slurm.qmd": {
+    "05_slurm.html": "4891a144"
+  },
+  "osc/06_ssh.qmd": {
+    "06_ssh.html": "484419b1"
+  },
+  "osc/04_software.qmd": {
+    "04_software.html": "700c2105"
+  },
+  "metabar/metabar_qc-trim.qmd": {
+    "metabar_qc-trim.html": "74764a6c"
+  },
+  "shell/02_shellfiles.qmd": {
+    "02_shellfiles.html": "4e4230d3"
+  },
+  "shell/01_shell1.qmd": {
+    "01_shell1.html": "c19e3012"
+  },
+  "shell/04_cli-tools.qmd": {
+    "04_cli-tools.html": "1e202113"
+  },
+  "shell/03_scripts.qmd": {
+    "03_scripts.html": "f9fd29b6"
+  },
+  "shell/05_bonus.qmd": {
+    "05_bonus.html": "3d9396fe"
+  },
+  "MAT_TO_USE/A06_ref-files.qmd.x.qmd": {
+    "A06_ref-files.qmd.x.html": "49d5cab5"
+  },
+  "MAT_TO_USE/A05_fastq.qmd.x.qmd": {
+    "A05_fastq.qmd.x.html": "3943a616"
+  },
+  "MAT_TO_USE/usethis.qmd.x.qmd": {
+    "usethis.qmd.x.html": "96b1edbd"
+  },
+  "MAT_TO_USE/w1_removed.qmd.x.qmd": {
+    "w1_removed.qmd.x.html": "def094d3"
+  },
+  "bac/bac-wgs_assembly.qmd": {
+    "bac-wgs_assembly.html": "9da34e51"
+  },
+  "bac/bac-wgs_preprocess.qmd": {
+    "bac-wgs_preprocess.html": "aab79c56"
+  },
+  "bac/bac-wgs_annotation.qmd": {
+    "bac-wgs_annotation.html": "68981d54"
+  },
+  "r/r_dplyr.qmd": {
+    "r_dplyr.html": "69dc9b8e"
+  },
+  "r/r_data-structures.qmd": {
+    "r_data-structures.html": "c0dae0c2"
+  },
+  "rnaseq/rnaseq_fastqc.qmd": {
+    "rnaseq_fastqc.html": "9ba5f403"
+  },
+  "bac/01_preprocess.qmd": {
+    "01_preprocess.html": "de0f484d"
+  },
+  "bac/02_assembly.qmd": {
+    "02_assembly.html": "f2038a8a"
+  },
+  "bac/03_annotation.qmd": {
+    "03_annotation.html": "318c44d5"
+  },
+  "rnaseq/01_data.qmd": {
+    "01_data.html": "1e68d089"
+  },
+  "rnaseq/05_trimgalore.qmd": {
+    "05_trimgalore.html": "7bcc5fdc"
+  },
+  "rnaseq/03_DE.qmd": {
+    "03_DE.html": "b082abe4"
+  },
+  "rnaseq/02_nfc-rnaseq.qmd": {
+    "02_nfc-rnaseq.html": "181ae6da"
+  },
+  "rnaseq/04_fastqc.qmd": {
+    "04_fastqc.html": "6e9b731b"
+  },
+  "nf-run/02_nfcore.qmd": {
+    "02_nfcore.html": "53fa04b0"
+  },
+  "nf-run/01_pipelines.qmd": {
+    "01_pipelines.html": "32a97fc2"
+  },
+  "git/01_github-account.qmd": {
+    "01_github-account.html": "5cf377bb"
+  },
+  "git/04_git3.qmd": {
+    "04_git3.html": "bf462eb7"
+  },
+  "git/03_git2.qmd": {
+    "03_git2.html": "01d2ebfe"
+  },
+  "git/02_git1.qmd": {
+    "02_git1.html": "2402df03"
+  },
+  "osc/02_vscode.qmd": {
+    "02_vscode.html": "25bcc3ac"
+  },
+  "osc/01_osc1.qmd": {
+    "01_osc1.html": "725440bb"
+  },
+  "reprod/markdown.qmd": {
+    "markdown.html": "f37a2e98"
+  },
+  "reprod/project-org.qmd": {
+    "project-org.html": "e682f693"
+  },
+  "metabar/01_qc-trim.qmd": {
+    "01_qc-trim.html": "a18af60b"
   }
 }

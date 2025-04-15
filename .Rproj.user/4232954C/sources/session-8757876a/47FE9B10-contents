@@ -1,0 +1,1451 @@
+---
+title: "Running an nf-core Nextflow pipeline"
+subtitle: "Week 6 - part II"
+pagetitle: "PRACS24: nf-core"
+author: Jelmer Poelstra
+date: 2024-04-09
+editor_options: 
+  chunk_output_type: console
+---
+
+----------------------------------------------------------------------------------------------------
+
+<br>
+
+## Introduction
+
+To learn how to run a Nextflow/nf-core pipeline,
+we'll use [nf-core rnaseq](https://nf-co.re/rnaseq),
+which performs a reference-based RNA-seq analysis.
+
+#### General mechanics of running a pipeline
+
+Running a pipeline like this is a bit different, and more involved,
+than running a typical piece of bioinformatics software:
+
+- The pipeline **submits Slurm batch jobs for us**,
+  and tries to parallelize as much as possible, spawning _many_ jobs.
+  The main pipeline process functions only to orchestrate these jobs,
+  and will keep running until the pipeline has finished or failed. 
+  We will need a small "config file" to tell the pipeline how to submit jobs.
+
+- We only need an **installation** of Nextflow, and a download of the pipeline's code and associated files.
+  The pipeline then runs all its constituent tools via separate Singularity containers
+  that it will download^[
+  Conda environments can also be used, but containers are recommended, and are
+  what we will use.].
+
+- Nextflow **distinguishes between a final output dir and a "work dir"**.
+  All processes/jobs will run and produce outputs in various sub-dirs of the _work dir_.
+  After each process, only certain output files are copied to the final output dir^[
+  Typically, not all outputs are copied, especially for intermediate steps like
+  read trimming --- and pipelines have settings to determine what is copied].
+  This distinction is very useful at OSC, where a Scratch dir is most suitable
+  as the work dir (due to its fast I/O and ample storage space),
+  while a Project dir is most suitable as the final output dir. 
+
+- When you run a pipeline, there is a distinction between:
+  - **Pipeline-specific options** to e.g. set inputs and outputs and customize
+    which steps will be run and how (there can be 100+ of these for larger pipelines...).
+    These by convention use a double dash `--`, e.g. `--input`.
+  - **General Nextflow options** to e.g. pass a configuration file for Slurm batch job
+    submissions and determine resuming/rerunning behavior (see below).
+    These always use a single dash, e.g. `-resume`.
+
+#### Resuming a pipeline
+
+Finally, we talked about the need for flexible rerunning of parts of a pipeline earlier.
+Nextflow can do this when you use the `-resume` option, which will make a pipeline,
+for example:
+
+- Start where it left off if the previous run failed before finishing, or timed out.
+- Check for changes in input files or pipeline settings,
+  such that it will only rerun what is needed:
+  - After adding or removing samples.
+  - After changing/replacing the reference genome files, which would be all steps
+    that make use of the affected file(s) and anything downstream of these steps.
+  - Given the settings that have changed; a setting only affecting the very last
+    step will mean that only that step has to be rerun.
+
+<br>
+
+## The nf-core rnaseq pipeline
+
+The nf-core rnaseq pipeline is meant for RNA-seq projects that:
+
+- Attempt to sequence only mRNA while avoiding non-coding RNAs ("mRNA-seq").
+- Do not distinguish between RNA from different cell types ("bulk RNA-seq").
+- Use short reads (≤150 bp) that do not cover full transcripts but do uniquely ID genes.
+- Use reference genomes (are reference-based) to associate reads with genes.
+- Downstream of this pipeline,
+  such projects typically aim to statistically compare expression between groups of samples,
+  and have multiple biological replicates per group.
+
+That might seem quite specific, but this is by far the most common use RNA-seq use case.
+The inputs of this pipeline are FASTQ files with raw reads,
+and reference genome files (assembly & annotation),
+while the outputs include a gene count table and many "QC outputs".
+
+::: {.callout-note collapse="true"}
+#### What the pipeline does and does not do _(Click to expand)_
+There are typically two main parts to the kind of RNA-seq data analysis I just described,
+but this pipeline only does the first:
+
+- **From reads to counts: yes**\
+  Generating a count table using the reads & the reference genome.
+- **Count table analysis: no**\
+  Differential expression analysis, function enrichment analysis, etc.
+  
+That makes sense because the latter part is not nearly as "standardized" as the first.
+It also does not need much computing power or parallelization,
+and is best done _interactively_ using a language like R.
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+#### The main steps
+
+Let's take a closer look at the steps in the pipeline:
+
+![](img/nfcore_rnaseq.png){fig-align="center" width="100%"}
+
+**Read QC and pre-processing**
+
+1. Read QC (FastQC)
+2. Adapter and quality trimming (TrimGalore)
+3. Optional removal of rRNA (SortMeRNA) --- off by default, but we will include this
+
+**Alignment & quantification**
+
+4. Alignment to the reference genome/transcriptome (STAR)
+5. Gene expression quantification (Salmon)
+
+**Post-processing, QC, and reporting**
+
+6. Post-processing alignments: sort, index, mark duplicates (samtools, Picard)
+7. Alignment/count QC (RSeQC, Qualimap, dupRadar, Preseq, DESeq2)
+8. Create a QC/metrics report (MultiQC)
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: {.callout-tip collapse="true"}
+#### Customizing what the pipeline runs _(Click to expand)_
+
+This pipeline is quite flexible and you can turn several steps off,
+add optional steps, and change individual options for most tools that the pipeline runs.
+
+- **Optional removal of contaminants** (BBSplit)\
+  Map to 1 or more additional genomes whose sequences may be present as contamination,
+  and remove reads that map better to contaminant genomes.
+- **Alternative quantification routes**
+  - Use RSEM instead of Salmon to quantify.
+  - Skip STAR and perform direct pseudo-alignment & quantification with Salmon.
+- **Transcript assembly and quantification (StringTie)**\
+  While the pipeline is focused on gene-level quantification,
+  it does produce transcript-level counts as well (this is run by default).
+:::
+
+<br>
+
+## Getting set up
+
+### How we'll run the pipeline
+
+The entire pipeline can be run with a single command.
+But we do need to do some prep before we can do so, such as:
+
+- Activating the software environment and downloading the pipeline files.
+- Defining the pipeline's inputs and outputs, which includes creating a "sample sheet".
+- Creating a small "config file" so Nextflow knows how to submit Slurm batch jobs
+  at OSC.
+
+The main Nextflow process does not need much computing power
+(a single core with the default 4 GB of RAM will be sufficient).
+But even though our VS Code shell already runs on a compute node,
+we are better off **submitting the main process as a batch job as well**,
+because this process can run for many hours,
+and we want to be able to log off in the mean time.
+
+Like we've done before, we will use both a _primary script_ that will be submitted
+as a batch job, and a _runner script_ with commands to run interactively
+including the submission of said batch job:
+
+```bash
+mkdir -p week06/nfc-rnaseq
+cd week06/nfc-rnaseq
+```
+
+```bash
+mkdir scripts run software
+touch scripts/nfc-rnaseq.sh run/run.sh
+```
+
+Open the `run/run.sh` in the VS Code editor pane.
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Activating the Conda environment
+
+If you did [last week's exercises](../week5/w5_exercises.qmd),
+you created a Conda environment with [Nextflow](https://anaconda.org/bioconda/nextflow)
+and [nf-core tools](https://anaconda.org/bioconda/nf-core).
+If not, you can use my Conda environment.
+We will activate this environment in our runner script
+because we'll first interactively download the pipeline files.
+
+<details><summary>Code to create this Conda environment</summary>
+```bash
+module load miniconda3/23.3.1-py310
+conda create -y -n nextflow -c bioconda nextflow=23.10.1 nf-core=2.13.1
+```
+</details>
+
+```bash
+# [Paste this code into the run/run.sh script, then run it in the terminal]
+# Activate the Conda environment (or use mine: /fs/ess/PAS0471/jelmer/conda/nextflow)
+module load miniconda3/23.3.1-py310
+conda activate nextflow-23.10
+```
+
+Check that Nextflow and nf-core tools can be run by printing the versions:
+
+```bash
+# [Run this code directly in the terminal]
+nextflow -v
+```
+```bash-out
+nextflow version 23.10.1.5891
+```
+```bash
+# [Run this code directly in the terminal]
+nf-core --version
+```
+```bash-out
+                                          ,--./,-.
+          ___     __   __   __   ___     /,-._.--~\
+    |\ | |__  __ /  ` /  \ |__) |__         }  {
+    | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                          `._,._,'
+
+    nf-core/tools version 2.13.1 - https://nf-co.re
+
+nf-core, version 2.13.1
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Downloading the pipeline
+
+We'll use the `nf-core download` command to download the rnaseq pipeline's files,
+including the Singularity containers for all individual tools that the pipeline runs.
+
+First, we need to set the environment variable `NXF_SINGULARITY_CACHEDIR` to tell
+Nextflow where to store these containers^[
+Somewhat oddly, there is no command-line option available for this:
+we have to use this environment variable, also when running the pipeline.].
+Here, we will use a shared `PAS2700` dir that already has all the containers,
+to save some downloading time and storage space ---
+this took around 15 minutes to download.
+But when you run a pipeline for your own research,
+you'll want to use a dir that you have permissions to write to.
+
+```bash
+# [Paste this code into the run/run.sh script, then run it in the terminal]
+# Create an environment variable for the container dir
+export NXF_SINGULARITY_CACHEDIR=/fs/ess/PAS2700/containers
+```
+
+Next, we'll run the `nf-core download` command to download the latest version
+(`3.14.0`) of the rnaseq pipeline to `software/nfc-rnaseq`,
+and the associated container files to the previously specified dir:
+
+```bash
+# [Paste this code into the run/run.sh script, then run it in the terminal]
+# Download the nf-core rnaseq pipeline files
+nf-core download rnaseq \
+    --revision 3.14.0 \
+    --outdir software/nfc-rnaseq \
+    --compress none \
+    --container-system singularity \
+    --container-cache-utilisation amend \
+    --download-configuration
+```
+
+![](img/nfcore_download_output.png){fig-align="center" width=90%"}
+
+::: {.callout-tip collapse="true"}
+#### Explanation of all options given to `nf-core download` _(Click to expand)_
+
+- `--revision`: The version of the rnaseq pipeline.
+- `--outdir`: The dir to save the pipeline definition files.
+- `--compress`: Whether to compress the pipeline files --- we chose not to.
+- `--container-system`: The type of containers to download.
+  This should always be `singularity` at OSC, because that's the only supported type.
+- `--container-cache-utilisation`: This is a little technical and not terribly interesting,
+  but we used `amend`, which will make it check our `$NXF_SINGULARITY_CACHEDIR` dir
+  for existing containers, and simply download any that aren't already found there.
+- `--download-configuration`: This will download some configuration files that we
+  will actually not use, but if you don't provide this option,
+  it will ask you about it when you run the command.
+  
+Also, don't worry about the following warning, this doesn't impact the downloading:
+
+> WARNING  Could not find GitHub authentication token. Some API requests may fail.
+
+<hr style="height:1pt; visibility:hidden;" />
+:::
+
+Let's take a quick peek at the dirs and files we just downloaded:
+
+```bash
+# [Run this code directly in the terminal]
+ls software/nfc-rnaseq
+```
+```bash-out
+3_14_0  configs
+```
+
+```bash
+# [Run this code directly in the terminal]
+ls software/nfc-rnaseq/3_14_0
+```
+```bash-out
+assets        CODE_OF_CONDUCT.md  LICENSE       nextflow.config       subworkflows
+bin           conf                main.nf       nextflow_schema.json  tower.yml
+CHANGELOG.md  docs                modules       pyproject.toml        workflows
+CITATIONS.md  lib                 modules.json  README.md
+```
+
+<br>
+
+## Defining inputs and outputs
+
+Next, we will define the pipeline's inputs and outputs in the runner script.
+We'll save these in variables, which we'll later pass as arguments to the primary script.
+We will need the following inputs:
+
+- Input 1: A sample sheet: a text file pointing to the FASTQ files (we'll create this in a bit)
+- Input 2: A FASTA reference genome assembly file (we already have this)
+- Input 3: A GTF reference genome annotation file (we already have this)
+
+_(If you're not familiar with FASTA or GTF files,_
+_take a look a [this self-study section at the bottom of this page](#self-study-ii-reference-genome-files).)_
+
+And we will need these outputs:
+
+- Output 1: The desired output dir for the final pipeline output
+- Output 2: The desired Nextflow "workdir" for the initial pipeline output
+
+```bash
+# [Paste this into run/run.sh and then run it in the terminal]
+# Defining the pipeline outputs
+outdir=results/nfc-rnaseq
+workdir=/fs/scratch/PAS2700/week6/nfc-rnaseq/$USER
+
+# Defining the pipeline inputs
+samplesheet="$outdir"/nfc_samplesheet.csv
+fasta=../../garrigos_data/ref/GCF_016801865.2.fna
+gtf=../../garrigos_data/ref/GCF_016801865.2.gtf
+```
+
+Just to give you an idea,
+here is how we will eventually run the primary script (that we have not yet written),
+passing those inputs and outputs as arguments:
+
+```bash
+# [Don't copy or run this yet]
+sbatch scripts/nfc-rnaseq.sh "$samplesheet" "$fasta" "$gtf" "$outdir" "$workdir"
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Preparing the sample sheet
+
+This pipeline requires a "sample sheet" as one of its inputs.
+In the sample sheet, you provide the paths to your FASTQ files and the so-called
+"strandedness" of your RNA-Seq library.
+
+::: {.callout-note collapse="true"}
+#### RNA-Seq library strandedness _(Click to expand)_
+During RNA-Seq library prep, information about the directionality of the original
+RNA transcripts can be retained (resulting in a "stranded" library) or lost
+(resulting in an "unstranded" library: specify `unstranded` in the sample sheet).
+
+In turn, stranded libraries can prepared either in
+reverse-stranded (`reverse`, by far the most common) or forward-stranded (`forward`) fashion.
+For more information about library strandedness,
+see [this page](https://www.azenta.com/blog/stranded-versus-non-stranded-rna-seq).
+
+The pipeline also allows for a fourth option: `auto`,
+in which case the strandedness is automatically determined at the start of the pipeline
+by pseudo-mapping a small proportion of the data with Salmon.
+:::
+
+The sample sheet should be a plain-text comma-separated values (CSV) file.
+Here is the example file from the
+[pipeline's documentation](https://nf-co.re/rnaseq/3.14.0/docs/usage#samplesheet-input):
+
+```bash-out-solo
+sample,fastq_1,fastq_2,strandedness
+CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz,auto
+CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz,auto
+CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz,auto
+```
+
+So, we need a header row with column names, then one row per sample,
+and the following columns:
+
+- Sample ID (we will simply use the file name part that is shared by R1 and R2).
+- R1 FASTQ file path (including the dir, unless these files are in your working dir).
+- R2 FASTQ file path (idem).
+- Strandedness: `unstranded`, `reverse`, `forward`, or `auto`.
+  This data is forward-stranded, so we'll use `forward`.
+
+We will create this file with a helper script that comes with the pipeline,
+and tell the script about the strandedness of the reads,
+the R1 and R2 FASTQ file suffices, the input FASTQ dir (`data/fastq`),
+and the output file (`$samplesheet`):
+
+```bash
+# [Paste this into run/run.sh and then run it in the terminal]
+# Create the dir that will contain the sample sheet
+mkdir -p "$outdir"
+
+# Create the sample sheet for the nf-core pipeline
+python3 software/nfc-rnaseq/3_14_0/bin/fastq_dir_to_samplesheet.py \
+    --strandedness forward \
+    --read1_extension "_R1.fastq.gz" \
+    --read2_extension "_R2.fastq.gz" \
+    ../../garrigos_data/fastq \
+    "$samplesheet"
+```
+
+Check the contents of your newly created sample sheet file:
+
+```bash
+# [Run this directly in the terminal]
+head "$samplesheet"
+```
+```bash-out
+sample,fastq_1,fastq_2,strandedness
+ERR10802863,../../garrigos_data/fastq/ERR10802863_R1.fastq.gz,../../garrigos_data/fastq/ERR10802863_R2.fastq.gz,forward
+ERR10802864,../../garrigos_data/fastq/ERR10802864_R1.fastq.gz,../../garrigos_data/fastq/ERR10802864_R2.fastq.gz,forward
+ERR10802865,../../garrigos_data/fastq/ERR10802865_R1.fastq.gz,../../garrigos_data/fastq/ERR10802865_R2.fastq.gz,forward
+ERR10802866,../../garrigos_data/fastq/ERR10802866_R1.fastq.gz,../../garrigos_data/fastq/ERR10802866_R2.fastq.gz,forward
+ERR10802867,../../garrigos_data/fastq/ERR10802867_R1.fastq.gz,../../garrigos_data/fastq/ERR10802867_R2.fastq.gz,forward
+ERR10802868,../../garrigos_data/fastq/ERR10802868_R1.fastq.gz,../../garrigos_data/fastq/ERR10802868_R2.fastq.gz,forward
+ERR10802869,../../garrigos_data/fastq/ERR10802869_R1.fastq.gz,../../garrigos_data/fastq/ERR10802869_R2.fastq.gz,forward
+ERR10802870,../../garrigos_data/fastq/ERR10802870_R1.fastq.gz,../../garrigos_data/fastq/ERR10802870_R2.fastq.gz,forward
+ERR10802871,../../garrigos_data/fastq/ERR10802871_R1.fastq.gz,../../garrigos_data/fastq/ERR10802871_R2.fastq.gz,forward
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Creating an OSC configuration file
+
+To tell the pipeline how to submit Slurm batch jobs for us,
+we have to use a configuration (config) file.
+There are multiple ways of storing this file and telling Nextflow about it ---
+we'll simply create a file `nextflow.config` in the dir from which we submit the
+`nextflow run` command: Nextflow will automatically detect and parse such a file.
+
+We'll keep this file as simple as possible, specifying only our "executor" program
+(Slurm) and OSC project:
+
+```bash
+# [Paste this into run/run.sh and then run it in the terminal]
+# Create a config file for batch job submissions
+echo "
+process.executor='slurm'
+process.clusterOptions='--account=PAS2700'
+" > nextflow.config
+```
+
+::: callout-note
+#### Multi-line echo strings
+It might look odd, but you can include newlines in `echo` strings as shown above.
+Note also that we are using single quotes (`'...'`) inside the string,
+because a double quote would mark the end the string.
+:::
+
+<br>
+
+## Writing a shell script to run the pipeline
+
+Now, we'll go through the key parts of the script `scripts/nfc-rnaseq.sh`
+that you will submit as a Slurm batch job.
+
+### Processing arguments passed to the script
+
+The inputs and outputs we discussed above, and the Nextflow "workdir", 
+will be the arguments passed to the script:
+
+```bash
+# [Partial shell script code, don't copy or run]
+# Process command-line arguments
+samplesheet=$1
+fasta=$2
+gtf=$3
+outdir=$4
+workdir=$5
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Building the `nextflow run` command
+
+To run the pipeline, use the command `nextflow run`,
+followed by the path to the dir with pipeline files:
+
+```bash
+# [Partial shell script code, don't copy or run]
+nextflow run software/nfc-rnaseq/3_14_0
+```
+
+After that, there are several **required options**
+(see the [pipeline's documentation](https://nf-co.re/rnaseq/3.14.0/docs/usage)),
+which represent the inputs and outputs that we talked about above:
+
+- **`--input`**: The path to the "sample sheet".
+- **`--fasta`**: The path to the reference genome assembly FASTA file.
+- **`--gtf`**: The path to the reference genome annotation GTF file.
+- **`--outdir`**: The path to the output dir.
+
+This pipeline has different options for e.g. alignment and quantification.
+We will stick close to the defaults,
+which includes alignment with `STAR` and quantification with `Salmon`,
+with one exception:
+we want to remove reads from ribosomal RNA (this step is skipped by default).
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: exercise
+#### {{< fa user-edit >}} Exercise: Find the option to remove rRNA
+Take a look at the
+["Parameters" tab on the pipeline's documentation website](https://nf-co.re/rnaseq/parameters):
+
+- Browse through the options for a bit to get a feel for the extent to which you
+  can customize the pipeline.
+- Try to find the option to turn on removal of rRNA with SortMeRNA.
+
+<details><summary> _Click for the solution_ </summary>
+The option we want is **`--remove_ribo_rna`**.
+</details>
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+We'll also use several **general Nextflow options**
+(note the single dash `-` option notation):
+
+- **`-profile`**: A so-called "profile" to indicate how the pipeline should run
+  software --- this should be `singularity` when running the pipeline with Singularity
+  containers.
+- **`-work-dir`**: The dir in which all the pipeline's jobs/processes will run.
+- **`-ansi-log false`**: Change Nextflow's progress "logging" type to a format
+  that works with Slurm log files^[
+  The default logging does not work well the output goes to a text file,
+  as it will in our case because we will submit the script with the Nextflow command
+  as a Slurm batch job.].
+- **`-resume`**: Resume the pipeline where it "needs to" (e.g., where it left off)
+  instead of always starting over.
+  (This option won't make any difference when we run the pipeline for the first time,
+  since there is nothing to resume.
+  Nextflow will even give a warning along these lines, but this is not a problem.)
+
+With all above-mentioned options, your final `nextflow run` command is:
+
+```bash
+# [Partial shell script code, don't copy or run]
+nextflow run software/nfc-rnaseq/3_14_0 \
+    --input "$samplesheet" \
+    --fasta "$fasta" \
+    --gtf "$gtf" \
+    --outdir "$outdir" \
+    --remove_ribo_rna \
+    -work-dir "$workdir" \
+    -profile singularity \
+    -ansi-log false \
+    -resume
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### The final script
+
+Below is the full code for the script, in which I also added:
+
+- Our standard shell script header lines.
+- `#SBATCH` options: note that these are **only** for the "main" Nextflow job,
+  not for the jobs that Nextflow itself will submit!
+  So we ask for quite a bit of time^[
+  And for a run of a full data set, you may want to ask even more, e.g. 12-24 hours.],
+  but we don't need more than the default 1 core and 4 GB of RAM.
+- Some `echo` reporting of arguments/variables, printing the date, etc.
+
+Open your `scripts/nfc-rnaseq.sh` script and paste the following into it:
+
+```bash
+#!/bin/bash
+#SBATCH --account=PAS2700
+#SBATCH --time=6:00:00
+#SBATCH --mail-type=END,FAIL
+#SBATCH --output=slurm-nfc_rnaseq-%j.out
+set -euo pipefail
+
+# Settings and constants
+WORKFLOW_DIR=software/nfc-rnaseq/3_14_0
+
+# Load the Nextflow Conda environment
+module load miniconda3/23.3.1-py310
+conda activate /fs/ess/PAS0471/jelmer/conda/nextflow
+export NXF_SINGULARITY_CACHEDIR=/fs/ess/PAS0471/containers
+
+# Process command-line arguments
+if [[ ! "$#" -eq 5 ]]; then
+    echo "Error: wrong number of arguments"
+    echo "You provided $# arguments, while 5 are required."
+    echo "Usage: nfc-rnaseq.sh <samplesheet> <FASTA> <GTF> <outdir> <workdir>"
+    exit 1
+fi
+samplesheet=$1
+fasta=$2
+gtf=$3
+outdir=$4
+workdir=$5
+
+# Report
+echo "Starting script nfc-rnaseq.sh"
+date
+echo "Samplesheet:          $samplesheet"
+echo "Reference FASTA:      $fasta"
+echo "Reference GTF:        $gtf"
+echo "Output dir:           $outdir"
+echo "Nextflow work dir:    $workdir"
+echo
+
+# Create the output dirs
+mkdir -p "$outdir" "$workdir"
+
+# Run the workflow
+nextflow run "$WORKFLOW_DIR" \
+    --input "$samplesheet" \
+    --fasta "$fasta" \
+    --gtf "$gtf" \
+    --outdir "$outdir" \
+    --remove_ribo_rna \
+    -work-dir "$workdir" \
+    -profile singularity \
+    -ansi-log false \
+    -resume
+
+# Report
+echo "Done with script nfc-rnaseq.sh"
+date
+```
+
+<br>
+
+## Running the pipeline
+
+### Submitting your shell script
+
+Before you submit the script,
+check that all variables have been assigned by prefacing the command with `echo`:
+
+```bash
+# [ Run this directly in the terminal]
+echo sbatch scripts/nfc-rnaseq.sh "$samplesheet" "$fasta" "$gtf" "$outdir" "$workdir"
+```
+```bash-out
+sbatch scripts/nfc-rnaseq.sh results/nfc-rnaseq/nfc_samplesheet.csv data/ref/GCF_016801865.2.fna data/ref/GCF_016801865.2.gtf results/nfc-rnaseq /fs/scratch/PAS2700/week6/nfc-rnaseq/jelmer
+```
+
+If so, you are ready to submit the script as a batch job:
+
+```bash
+# [Paste this into run/run.sh and then run it in the terminal]
+# Submit the script to run the pipeline as a batch job
+sbatch scripts/nfc-rnaseq.sh "$samplesheet" "$fasta" "$gtf" "$outdir" "$workdir"
+```
+```bash-out
+Submitted batch job 27767854
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+<details><summary>Not sure your `run.sh` script is complete, or getting errors? Click for its intended content.</summary>
+```bash
+# Activate the Conda environment (or use mine: /fs/ess/PAS0471/jelmer/conda/nextflow)
+module load miniconda3/23.3.1-py310
+conda activate nextflow-23.10
+
+# Create an environment variable for the container dir
+export NXF_SINGULARITY_CACHEDIR=/fs/ess/PAS2700/containers
+
+# Download the nf-core rnaseq pipeline files
+nf-core download rnaseq \
+    --revision 3.14.0 \
+    --outdir software/nfc-rnaseq \
+    --compress none \
+    --container-system singularity \
+    --container-cache-utilisation amend \
+    --download-configuration
+
+# Defining the pipeline outputs
+outdir=results/nfc-rnaseq
+workdir=/fs/scratch/PAS2700/week6/nfc-rnaseq/$USER
+
+# Defining the pipeline inputs
+samplesheet="$outdir"/nfc_samplesheet.csv
+fasta=../../garrigos_data/ref/GCF_016801865.2.fna
+gtf=../../garrigos_data/ref/GCF_016801865.2.gtf
+
+# Create the dir that will contain the sample sheet
+mkdir -p "$outdir"
+
+# Create the sample sheet for the nf-core pipeline
+python3 software/nfc-rnaseq/3_14_0/bin/fastq_dir_to_samplesheet.py \
+    --strandedness forward \
+    --read1_extension "_R1.fastq.gz" \
+    --read2_extension "_R2.fastq.gz" \
+    ../../garrigos_data/fastq \
+    "$samplesheet"
+
+# Create a config file for batch job submissions
+echo "
+process.executor='slurm'
+process.clusterOptions='--account=PAS2700'
+" > nextflow.config
+
+# Submit the script to run the pipeline as a batch job
+sbatch scripts/nfc-rnaseq.sh "$samplesheet" "$fasta" "$gtf" "$outdir"
+```
+</details>
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Checking the pipeline's progress
+
+Let's check whether your job has started running,
+and if so, whether Nextflow has already spawned jobs:
+
+```bash
+# [Run this directly in the terminal]
+squeue -u $USER -l
+```
+```bash-out
+Mon Mar 25 12:13:38 2024
+      JOBID PARTITION     NAME     USER    STATE   TIME TIME_LIMI  NODES NODELIST(REASON)
+  27767854 serial-40 nfc-rnas   jelmer  RUNNING    1:33   6:00:00      1 p0219
+```
+
+In the example output above, the only running job is the one we directly submitted,
+i.e. the main Nextflow process.
+The `NAME` column is the script's name, `nfc-rnaseq.sh` (truncated to `nfc-rnas`).
+
+::: {.callout-note collapse="true"}
+#### See examples of `squeue` output that includes Nextflow-submitted jobs _(Click to expand)_
+
+The top job, with partial name `nf-NFCOR`, is a job that's been submitted by Nextflow:
+
+```bash
+squeue -u $USER -l
+```
+```bash-out
+Mon Mar 25 13:14:53 2024
+             JOBID PARTITION     NAME     USER    STATE       TIME TIME_LIMI  NODES NODELIST(REASON)
+          27767861 serial-40 nf-NFCOR   jelmer  RUNNING       5:41  16:00:00      1 p0053
+          27767854 serial-40 nfc_rnas   jelmer  RUNNING    1:03:48   6:00:00      1 p0219
+```
+
+Unfortunately, the columns in the output above are quite narrow,
+so it's **not possible to see which step of the pipeline is being run by that job**.
+The following (awful-looking!) code can be used to make that column much wider,
+so you can see the job's full name which makes clear which step is being run
+(rRNA removal with SortMeRNA):
+
+```bash
+squeue -u $USER --format="%.9i %.9P %.60j %.8T %.10M %.10l %.4C %R %.16V"
+```
+```bash-out
+Mon Mar 25 13:15:05 2024
+    JOBID PARTITION                                                          NAME    STATE       TIME TIME_LIMIT CPUS NODELIST(REASON)      SUBMIT_TIME
+ 27767861 serial-40   nf-NFCORE_RNASEQ_RNASEQ_SORTMERNA_(SRR27866691_SRR27866691)  RUNNING       5:55   16:00:00   12 p0053 2024-03-23T09:37
+ 27767854 serial-40                                                    nfc_rnaseq  RUNNING    1:04:02    6:00:00    1 p0219 2024-03-23T09:36
+```
+
+You might also catch the pipeline while there are many more jobs running, e.g.:
+
+```bash-out-solo
+Mon Mar 25 13:59:50 2024
+             JOBID PARTITION     NAME     USER    STATE       TIME TIME_LIMI  NODES NODELIST(REASON)
+          27823107 serial-40 nf-NFCOR   jelmer  RUNNING       0:13  16:00:00      1 p0091
+          27823112 serial-40 nf-NFCOR   jelmer  RUNNING       0:13  16:00:00      1 p0119
+          27823115 serial-40 nf-NFCOR   jelmer  RUNNING       0:13  16:00:00      1 p0055
+          27823120 serial-40 nf-NFCOR   jelmer  RUNNING       0:13  16:00:00      1 p0055
+          27823070 serial-40 nf-NFCOR   jelmer  RUNNING       0:43  16:00:00      1 p0078
+          27823004 serial-40 nfc-rnas   jelmer  RUNNING       2:13   6:00:00      1 p0146
+          27823083 serial-40 nf-NFCOR   jelmer  RUNNING       0:37  16:00:00      1 p0078
+          27823084 serial-40 nf-NFCOR   jelmer  RUNNING       0:37  16:00:00      1 p0096
+          27823085 serial-40 nf-NFCOR   jelmer  RUNNING       0:37  16:00:00      1 p0096
+          27823086 serial-40 nf-NFCOR   jelmer  RUNNING       0:37  16:00:00      1 p0115
+          27823087 serial-40 nf-NFCOR   jelmer  RUNNING       0:37  16:00:00      1 p0115
+          27823088 serial-40 nf-NFCOR   jelmer  RUNNING       0:37  16:00:00      1 p0123
+          27823089 serial-40 nf-NFCOR   jelmer  RUNNING       0:37  16:00:00      1 p0123
+          27823090 serial-40 nf-NFCOR   jelmer  RUNNING       0:37  16:00:00      1 p0057
+          27823091 serial-40 nf-NFCOR   jelmer  RUNNING       0:37  16:00:00      1 p0057
+          27823092 serial-40 nf-NFCOR   jelmer  RUNNING       0:37  16:00:00      1 p0058
+          27823093 serial-40 nf-NFCOR   jelmer  RUNNING       0:37  16:00:00      1 p0058
+          27823095 serial-40 nf-NFCOR   jelmer  RUNNING       0:37  16:00:00      1 p0118
+          27823099 serial-40 nf-NFCOR   jelmer  RUNNING       0:37  16:00:00      1 p0118
+          27823103 serial-40 nf-NFCOR   jelmer  RUNNING       0:37  16:00:00      1 p0119
+          27823121 serial-48 nf-NFCOR   jelmer  RUNNING       0:13  16:00:00      1 p0625
+          27823122 serial-48 nf-NFCOR   jelmer  RUNNING       0:13  16:00:00      1 p0744
+          27823123 serial-48 nf-NFCOR   jelmer  RUNNING       0:13  16:00:00      1 p0780
+          27823124 serial-48 nf-NFCOR   jelmer  RUNNING       0:13  16:00:00      1 p0780
+```
+:::
+
+You can also keep an eye on the pipeline's progress, and see if there are any errors,
+by checking the Slurm log file --- the top of the file should look like this:
+
+```bash
+# You will have a different job ID - replace as appropriate or use Tab completion
+# (We need the -R option to display colors properly)
+less -R slurm-nfc_rnaseq-27767861.out
+```
+```bash-out
+Starting script nfc-rnaseq.sh
+Mon Mar 25 13:01:30 EDT 2024
+Samplesheet:          results/nfc-rnaseq/nfc_samplesheet.csv
+Reference FASTA:      data/ref/GCF_016801865.2.fna
+Reference GTF:        data/ref/GCF_016801865.2.gtf
+Output dir:           results/nfc-rnaseq
+Nextflow workdir:     /fs/scratch/PAS2700/week6/nfc-rnaseq/jelmer
+
+N E X T F L O W  ~  version 23.10.1
+WARN: It appears you have never run this project before -- Option `-resume` is ignored
+Launching `software/nfc-rnaseq/3_14_0/main.nf` [curious_linnaeus] DSL2 - revision: 746820de9b
+WARN: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Multiple config files detected!
+  Please provide pipeline parameters via the CLI or Nextflow '-params-file' option.
+  Custom config files including those provided by the '-c' Nextflow option can be
+  used to provide any configuration except for parameters.
+
+  Docs: https://nf-co.re/usage/configuration#custom-configuration-files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+------------------------------------------------------
+                                        ,--./,-.
+        ___     __   __   __   ___     /,-._.--~'
+  |\ | |__  __ /  ` /  \ |__) |__         }  {
+  | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                        `._,._,'
+  nf-core/rnaseq v3.14.0
+------------------------------------------------------
+Core Nextflow options
+  runName                   : curious_linnaeus
+  containerEngine           : singularity
+[...output truncated...]
+```
+
+The warnings about `-resume` and config files shown above can be ignored.
+Some of this output has nice colors that was not shown above:
+
+![](img/slurmlog.png){fig-align="center" width="80%"}
+
+In the Slurm log file, pipeline progress is shown in the following way ---
+you can only see which jobs are being submitted, not when they finish^[
+The default Nextflow logging (without `-ansi-log false`) does show when jobs finish,
+but this would result in very messy output in a Slurm log file.
+]:
+
+```bash-out-solo
+[6e/d95b6f] Submitted process > NFCORE_RNASEQ:RNASEQ:PREPARE_GENOME:CUSTOM_GETCHROMSIZES (GCF_016801865.2.fna)
+[ee/eba07d] Submitted process > NFCORE_RNASEQ:RNASEQ:FASTQ_FASTQC_UMITOOLS_TRIMGALORE:FASTQC (ERR10802864)
+[28/131e16] Submitted process > NFCORE_RNASEQ:RNASEQ:FASTQ_FASTQC_UMITOOLS_TRIMGALORE:FASTQC (ERR10802863)
+[36/22cf36] Submitted process > NFCORE_RNASEQ:RNASEQ:FASTQ_FASTQC_UMITOOLS_TRIMGALORE:TRIMGALORE (ERR10802863)
+[59/402585] Submitted process > NFCORE_RNASEQ:RNASEQ:FASTQ_FASTQC_UMITOOLS_TRIMGALORE:TRIMGALORE (ERR10802864)
+[c3/27b16d] Submitted process > NFCORE_RNASEQ:RNASEQ:FASTQ_FASTQC_UMITOOLS_TRIMGALORE:FASTQC (ERR10802865)
+[b0/f78597] Submitted process > NFCORE_RNASEQ:RNASEQ:FASTQ_FASTQC_UMITOOLS_TRIMGALORE:TRIMGALORE (ERR10802865)
+[4c/253978] Submitted process > NFCORE_RNASEQ:RNASEQ:PREPARE_GENOME:GTF_FILTER (GCF_016801865.2.fna)
+[39/264a8e] Submitted process > NFCORE_RNASEQ:RNASEQ:FASTQ_FASTQC_UMITOOLS_TRIMGALORE:FASTQC (ERR10802866)
+[ec/6aa13c] Submitted process > NFCORE_RNASEQ:RNASEQ:FASTQ_FASTQC_UMITOOLS_TRIMGALORE:TRIMGALORE (ERR10802866)
+[dd/73a5e4] Submitted process > NFCORE_RNASEQ:RNASEQ:FASTQ_FASTQC_UMITOOLS_TRIMGALORE:FASTQC (ERR10802868)
+[d8/c1bb3e] Submitted process > NFCORE_RNASEQ:RNASEQ:FASTQ_FASTQC_UMITOOLS_TRIMGALORE:FASTQC (ERR10802867)
+```
+
+<details><summary>You should also see the following warning among the job submissions _(Click to expand)_</summary>
+
+This warning can be ignored, the "Biotype QC" is not important and this information
+is indeed simply missing from our GTF file, there is nothing we can do about that.
+
+```bash-out-solo
+WARN: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Biotype attribute 'gene_biotype' not found in the last column of the GTF file!
+
+  Biotype QC will be skipped to circumvent the issue below:
+  https://github.com/nf-core/rnaseq/issues/460
+
+  Amend '--featurecounts_group_type' to change this behaviour.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+</details>
+
+<hr style="height:1pt; visibility:hidden;" />
+
+But if errors occur, they are reported in this file,
+and there is also a message when the entire pipeline has finished:
+
+```bash-out-solo
+[28/79e801] Submitted process > NFCORE_RNASEQ:RNASEQ:BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG_FORWARD:UCSC_BEDGRAPHTOBIGWIG (ERR10802864)
+[e0/ba48c9] Submitted process > NFCORE_RNASEQ:RNASEQ:BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG_REVERSE:UCSC_BEDGRAPHTOBIGWIG (ERR10802864)
+[62/4f8c0d] Submitted process > NFCORE_RNASEQ:RNASEQ:MULTIQC (1)
+-[nf-core/rnaseq] Pipeline completed successfully -
+Done with script nfc-rnaseq.sh
+Mon Mar 25 14:09:52 EDT 2024
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: callout-note
+#### Work-dir paths and output
+The hexadecimals between square brackets (e.g. `[62/4f8c0d]`) that are printed
+before each job point to the sub-directory within the pipeline's work-dir that
+the this process is running in (every individual process runs in its own dir).
+This can be handy for troubleshooting,
+or even just to take a closer look at what exactly the pipeline is running.
+
+- First, list the contents of the top-level work-dir:
+
+  ```bash
+  ls /fs/scratch/PAS2700/week6/nfc-rnaseq/$USER
+  ```
+  ```bash-out
+  28  36  39  59  6e  b0  b7  c3  c9  collect-file  d5  d8  da  dd  e0  ec  ee  tmp
+  ```
+
+- Let's look at the files for one of the processes (jobs) we saw in the log file,
+  the last FastQC process, which had the workdir reference `[d8/c1bb3e]` ---
+  we'll use the `-a` option to `ls` so hidden files are also listed,
+  some of which are of interest:
+
+  ```bash
+  # (The full name of the `c1bb3e` dir is much longer, but these characters uniquely
+  #  identify it, so we can use a *)
+  ls -a /fs/scratch/PAS2700/week6/nfc-rnaseq/jelmer/d8/c1bb3e*
+  ```
+  ```bash-out
+  .               .command.err  .command.run    ERR10802867_1_fastqc.html  ERR10802867_2_fastqc.html  ERR10802867_R1.fastq.gz  versions.yml
+  ..              .command.log  .command.sh     ERR10802867_1_fastqc.zip   ERR10802867_2_fastqc.zip   ERR10802867_R2.fastq.gz
+  .command.begin  .command.out  .command.trace  ERR10802867_1.gz           ERR10802867_2.gz           .exitcode
+  ```
+
+- To see exactly how FastQC was run by the pipeline,
+  show the contents of the `.command.sh` file:
+
+  ```bash
+  cat /fs/scratch/PAS2700/week6/nfc-rnaseq/jelmer/d8/c1bb3ea3e697573b4d5860308b2690/.command.sh 
+  ```
+  ```bash-out
+  #!/bin/bash -euo pipefail
+  printf "%s %s\n" ERR10802867_R1.fastq.gz ERR10802867_1.gz ERR10802867_R2.fastq.gz ERR10802867_2.gz | while read old_name new_name; do
+      [ -f "${new_name}" ] || ln -s $old_name $new_name
+  done
+  
+  fastqc \
+      --quiet \
+      --threads 6 \
+      ERR10802867_1.gz ERR10802867_2.gz
+  
+  cat <<-END_VERSIONS > versions.yml
+  "NFCORE_RNASEQ:RNASEQ:FASTQ_FASTQC_UMITOOLS_TRIMGALORE:FASTQC":
+      fastqc: $( fastqc --version | sed '/FastQC v/!d; s/.*v//' )
+  END_VERSIONS
+  ```
+
+- Logging and errors would end up in the `.command.log`, `.command.out`, and/or
+  `.command.err` files (when there's an error, at least part of it will
+  be printed in your Slurm log, but not always the full error).
+
+- The input files (as links/shortcuts, so the files don't have to be copied in fill)
+  and output files are also present in this dir,
+  such as `ERR10802867_1_fastqc.html` in this case.
+:::
+
+<br>
+
+## The pipeline's outputs
+
+You pipeline run may finish in as little as 15-30 minutes with our small test data set,
+but this can vary substantially, mostly due to variation in Slurm queue times
+(the pipeline makes quite large Slurm resource requests!).
+
+Once it has finished,
+you can take a look at the files and dirs in the specified output dir:
+
+```bash
+ls -lh results/nfc-rnaseq
+```
+```bash-out
+total 83K
+drwxr-xr-x   2 jelmer PAS0471  16K Mar 25 13:02 fastqc
+drwxr-xr-x   2 jelmer PAS0471 4.0K Mar 25 12:58 logs
+drwxr-xr-x   3 jelmer PAS0471 4.0K Mar 25 13:14 multiqc
+-rw-r--r--   1 jelmer PAS0471 2.0K Mar 25 19:55 nfc_samplesheet.csv
+drwxr-xr-x   2 jelmer PAS0471 4.0K Mar 25 13:14 pipeline_info
+drwxr-xr-x 248 jelmer PAS0471  16K Mar 25 13:10 raw
+drwxr-xr-x   2 jelmer PAS0471 4.0K Mar 25 13:06 sortmerna
+drwxr-xr-x  33 jelmer PAS0471  16K Mar 25 13:12 star_salmon
+drwxr-xr-x   3 jelmer PAS0471 4.0K Mar 25 13:02 trimgalore
+```
+
+The two most important outputs are:
+
+- The **MultiQC report** (`<outdir>/multiqc/star_salmon/multiqc_report.html`):
+  this has lots of QC summaries of the data, both the raw data and the alignments,
+  and even a gene expression PCA plot.
+  Importantly, this file also lists the **_versions_** of each piece of software
+  that was used by the pipeline.
+  
+- The **gene count table** (`<outdir>/star_salmon/salmon.merged.gene_counts_length_scaled.tsv`):
+  This is what you would use for downstream analysis such as differential expression
+  and functional enrichment analysis.
+
+<hr style="height:1pt; visibility:hidden;" />
+
+##### Opening the MultiQC report
+
+If your run has finished, you can open your MultiQC report --- because it's
+an HTML file, you'll have to download it and open it on your own computer.
+To download the MultiQC HTML file at
+`results/nfc-rnaseq/multiqc/star_salmon/multiqc_report.html`, 
+find this file in the VS Code explorer (file browser) on the left,
+right-click on it, and select `Download...`.
+You can download it to any location on your computer.
+Then find the file on your computer and click on it to open it ---
+it should be opened in your browser.
+
+Alternatively, you can find a
+**[copy of the MultiQC report on this website](img/multiqc_report.html)**,
+and open it in a separate browser tab.
+There's a lot of information in the report --- if you want to learn more,
+please go through the self-study section below.
+
+<br><br>
+
+## Self-study I: A closer look at the output
+
+If you're interested in RNA-seq data analysis,
+you may want to take a closer look at the outputs of the pipeline,
+especially the [MultiQC report](img/multiqc_report.html).
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### The MultiQC report
+
+Here are some items in that report to pay particular attention to,
+with example figures from this data set:
+
+The **General Statistics** table (the first section) is very useful,
+with the following notes:
+  
+- Most of the table's content is also in later graphs,
+  but the table allows for comparisons across metrics.
+- The `%rRNA` (% of reads identified as rRNA and removed by SortMeRNA)
+  can only be found in this table.
+- It's best to _hide the columns with statistics from Samtools_,
+  which can be confusing if not downright misleading: click on "Configure Columns"
+  and uncheck all the boxes for stats with Samtools in their name.
+- Some stats are for R1 and R2 files only, and some are for each sample as a whole.
+  Unfortunately, this means you get 3 rows per sample in the table.
+
+![](img/multiqc_table.png){fig-align="center" width="90%"}
+
+<hr style="height:1pt; visibility:hidden;" />
+
+The **Qualimap** > **Genomic origin of reads** plot shows, for each sample,
+the proportion of reads mapping to exonic vs. intronic vs. intergenic regions.
+This is an important QC plot: the vast majority of your reads should be exonic^[
+A lot of intronic content may indicate that you have a lot of pre-mRNA in your data;
+this is more common when your library prep used rRNA depletion instead of poly-A selection.
+A lot of intergenic content may indicate DNA contamination.
+Poor genome annotation quality may also contribute to a low percentage of exonic reads.
+The _RSeQC_ > _Read Distribution_ plot will show this with even more categories,
+e.g. separately showing UTRs.].
+
+![This is a good result, with 80-90% of mapped reads in exonic regions.](img/multiqc_genomic-origin.png){fig-align="center" width="90%"}
+
+<hr style="height:1pt; visibility:hidden;" />
+
+The **STAR** > **Alignment Scores** plot shows, for each sample,
+the percentage of reads that was mapped.
+Note that "Mapped to multiple loci" reads _are_ also included in the final counts,
+and that "Unmapped: too short" merely means unmapped, really, and not that the
+reads were too short.
+
+![This is a pretty good results, with 80-90% of reads mapped.](img/multiqc_star.png){fig-align="center" width="90%"}
+
+<hr style="height:1pt; visibility:hidden;" />
+
+**FastQC** checks your FASTQ files, i.e. your data prior to alignment.
+There are FastQC plots both before and after trimming with TrimGalore/Cutadapt.
+The most important FastQC modules are:
+
+- **Sequence Quality Histograms** --- You'd like the mean qualities to stay in the "green area".
+- **Per Sequence GC Content** --- Secondary peaks may indicate contamination.
+- **Adapter Content** --- Any adapter content should be gone in the post-trimming plot.
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: exercise
+#### {{< fa user-edit >}} Exercise: Interpreting FastQC results in the MultiQC report
+
+Take a look at the three FastQC modules discussed above, both before and after trimming.
+
+- Has the base quality improved after trimming, and does this look good?
+
+<details><summary>*Click to see the answer*</summary>
+
+- Pre-trimming graph: The qualities are good overall, but there is more variation
+  that what is usual, and note the poorer qualities in the first 7 or so bases.
+  There is no substantial decline towards the end of the read as one often sees
+  with Illumina data, but this is expected given that the reads are only 75 bp.
+  
+![**Pre-trimming** (Mean base quality scores: one line is one sample.)](img/multiqc_basequal_pretrim.png){fig-align="center" width="90%"}
+
+- Post-trimming graph: The qualities have clearly improved.
+  The first 7 or so bases remain of clearly poorer quality, on average.
+
+![**Post-trimming** ](img/multiqc_basequal_posttrim.png){fig-align="center" width="90%"}
+</details>
+
+- Do you have any idea what's going with the pre-trimming GC content distribution?
+  What about after trimming --- does this look good or is there reason to worry?
+
+<details><summary>*Click to see the answer*</summary>
+
+- The pre-trimming GC content is very odd but this is mostly due to a high number
+  of reads with zero and near-zero percent GC content.
+  These are likely reads with only Ns.
+  There are also some reads with near-hundred percent GC content.
+  These are likely artifactual G-only reads that NextSeq/NovaSeq machines can produce.
+  
+![**Pre-trimming**. One line is one file.](img/multiqc_gc-pretrim.png){fig-align="center" width="90%"}
+
+- After trimming, things look a lot better but there may be contamination here,
+  given the weird "shoulder" at 30-40% GC.
+
+![**Post-trimming**](img/multiqc_gc-posttrim.png){fig-align="center" width="90%"}
+</details>
+
+- Do you know what the "adapters" that FastQC found pre-trimming are?
+  Were these sequences removed by the trimming?
+
+<details><summary>*Click to see the answer*</summary>
+
+- Pre-trimming, there seem to be some samples with very high adapter content throughout
+  the read. This doesn't make sense for true adapters, because these are usually
+  only found towards the end of the read, when the read length is longer than the
+  DNA fragment length. If you hover over the lines, you'll see it says "polyg".
+  These are artifactual G-only reads that NextSeq/NovaSeq can produce,
+  especially in the reverse reads --- and you can see that all of the lines are
+  for reverse-read files indeed.
+
+![**Pre-trimming**](img/multiqc_adapter-pretrim.png){fig-align="center" width="90%"}
+
+- Post-trimming, no adapter content was found.
+
+![**Post-trimming**](img/multiqc_adapter-posttrim.png){fig-align="center" width="90%"}
+</details>
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+The **Qualimap** > **Gene Coverage Profile** plot shows average read-depth across
+the length of genes/transcripts (averaged across all genes),
+which helps to assess the amount of RNA degradation.
+For poly-A selected libraries, RNA molecules "begin" at the 3' end
+(right-hand side of the graph), so the more degradation there is,
+the more you expect a higher read-depth towards the 3' end relative to that at the 5' end.
+(Though note that sharp decreases at the _very_ end on each side are expected.)
+
+![There depth at ~20% (near the 5' end) is clearly lower than at ~80% (near the 3' end),<br>indicating some RNA degradation.](img/multiqc_gene-coverage.png){fig-align="center" width="85%"}
+
+The **RSeqQC** > **Infer experiment** (library strandedness) plot. 
+If your library is:
+
+- Unstranded, there should be similar percentages of Sense and Antisense reads.
+- Forward-stranded, the vast majority of reads should be Sense.
+- Reverse-stranded, the vast majority of reads should be Antisense.
+
+![This libary is clearly forward-stranded, as we indicated in our sample sheet.](img/multiqc_strandedness.png){fig-align="center" width="85%"}
+
+The **STAR_SALMON DESeq2 PCA** plot is from a Principal Component Analysis (PCA)
+run on the final gene count table,
+showing overall patterns of gene expression similarity among samples.
+
+![The samples clearly form two distinct groups along PC1.](img/multiqc_pca.png){fig-align="center" width="80%"}
+
+Finally, the section **nf-corer/rnaseq Software Versions** way at the bottom lists the version
+of all programs used by the pipeline!
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### The gene count table
+
+The gene count table has one row for each gene and one column for each sample,
+with the first two columns being the `gene_id` and `gene_name`^[
+Which happen to be the same here, but these are usually different.].
+Each cell's value contains the read count estimate for a specific gene in a specific sample:
+
+```bash
+# [Paste this into the run/run.sh script and run it in the terminal]
+
+# Take a look at the count table:
+# ('column -t' lines up columns, and less's '-S' option turns off line wrapping)
+counts=results/nfc-rnaseq/star_salmon/salmon.merged.gene_counts_length_scaled.tsv
+column -t "$counts" | less -S
+```
+```bash-out
+gene_id             gene_name           ERR10802863        ERR10802864        ERR10802865        ERR10802866        ERR10802867        ERR10802868       
+ATP6                ATP6                163.611027228009   178.19903533081    82.1025390726658   307.649552934133   225.78249209207    171.251589309856  
+ATP8                ATP8                0                  1.01047333891691   0                  0                  0                  0                 
+COX1                COX1                1429.24769032452   2202.82009602881   764.584344577622   2273.6965332904    2784.47391614249   2000.51277019854  
+COX2                COX2                116.537361366535   175.137972566817   54.0166352459629   256.592955351283   193.291937038438   164.125833130119  
+COX3                COX3                872.88670991359    1178.29247734231   683.167933227141   1200.01735304529   1300.3853323715    1229.11746824104  
+CYTB                CYTB                646.028108528182   968.256051104547   529.393909319439   1025.23768317788   1201.46662840336   842.533209911258  
+LOC120412322        LOC120412322        0                  0                  0                  0                  0.995135178345792  0.996805450081561 
+LOC120412324        LOC120412324        37.8326244586681   20.9489661184365   27.6702324729125   48.6417838830061   22.8313729348804   36.87899862428    
+LOC120412325        LOC120412325        3.21074365394071   2.10702898851342   4.40315394778926   5.47978997387391   4.33241716734803   4.23386924919438  
+LOC120412326        LOC120412326        0                  0                  0                  0                  0                  0                 
+LOC120412327        LOC120412327        37.8206758601034   35.9063291323018   38.517771617566    27.7802608986967   37.6979028802121   32.885944667709   
+LOC120412328        LOC120412328        35.0080600370267   20.0019192467143   23.9260736995594   30.0191332346116   21.0383665366408   28.9844776623531  
+LOC120412329        LOC120412329        121.777922287929   112.794544755113   131.434181046282   127.753086659103   114.864750589664   131.589608063253  
+LOC120412330        LOC120412330        42.8505448763697   28.9442284428204   36.6285174684674   46.7310765909945   42.7633834468768   26.9265243413636  
+LOC120412331        LOC120412331        11.013179311581    9.00559907892481   12.9836833055803   13.029954361225    7.02624958751718   16.000552787954   
+LOC120412332        LOC120412332        12.1055360835441   26.1231316926989   21.2767913384733   18.2783703626438   26.4932540325187   22.098808637857   
+LOC120412333        LOC120412333        19.1159998132169   17.0558058070299   12.0965688236319   14.1510477997588   15.2033452089903   9.02624985028677  
+LOC120412334        LOC120412334        9.01332125155807   3.00232591636489   5.99566364212933   11.0306919231504   8.03448732510427   11.0022053123759  
+# [...output truncated...]
+```
+
+::: callout-note
+#### Count table versions
+The workflow outputs several versions of the count table^[
+And each version in two formats: `.rds` (a binary R object file type) and `.tsv`.
+], but the one with `gene_counts_length_scaled` is the one we want:
+
+- `gene_counts` as opposed to `transcript_counts` for counts that are summed across
+  transcripts for each gene.
+- `length` for estimates that have been adjusted to account for between-sample
+  differences in mean transcript length
+  (longer transcripts would be expected to produce more reads in sequencing).
+- `scaled` for estimates that have been scaled back using the "library sizes",
+  per-sample total read counts.
+:::
+
+<br>
+
+## Self-study II: Reference genome files
+
+### The genome assembly FASTA
+
+#### The FASTA format
+
+FASTA files contain one or more DNA or amino acid sequences, with no limits on the number of sequences or the sequence lengths. FASTA is the standard format for, e.g.:
+
+-   Genome assembly sequences
+-   Transcriptomes and proteomes (all of an organism's transcripts & amino acid sequences, respectively)
+-   Sequence downloads from NCBI such as a single gene/protein or other GenBank entry
+
+The following example FASTA file contains two entries:
+
+``` bash
+>unique_sequence_ID Optional description
+ATTCATTAAAGCAGTTTATTGGCTTAATGTACATCAGTGAAATCATAAATGCTAAAAA
+>unique_sequence_ID2
+ATTCATTAAAGCAGTTTATTGGCTTAATGTACATCAGTGAAATCATAAATGCTAAATG
+```
+
+Each entry consists of a **header** line and the **sequence** itself. Header lines **start with a `>`** (greater-than sign) and are otherwise "free form", though the idea is that they provide an identifier for the sequence that follows.[^2]
+
+[^2]: Note that because individual sequence entries are commonly spread across multiple lines, FASTA entries do not necessarily cover 2 lines (cf. FASTQ).
+
+::: {.callout-note collapse="true"}
+#### FASTA file name extensions are variable: `.fa`, `.fasta`, `.fna`, `.faa` (*Click to expand*)
+
+-   "Generic" extensions are `.fasta` and `.fa` (e.g: `culex_assembly.fasta`)
+-   Also used are extensions that explicitly indicate whether sequences are *nucleotides* (`.fna`) or *amino acids* (`.faa`)
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+#### Your *Culex* genome assembly FASTA
+
+Your reference genome files are in `data/ref`:
+
+``` bash
+ls -lh data/ref
+```
+
+``` bash-out
+-rw------- 1 jelmer PAS0471 547M Jan 22 12:34 GCF_016801865.2.fna
+-rw------- 1 jelmer PAS0471 123M Jan 22 12:34 GCF_016801865.2.gtf
+```
+
+While we can easily open small to medium-size files in the editor pane, "visual editors" like that do not work well for larger files like these.
+
+A handy command to view text files of any size is **`less`**, which opens them up in a "pager" within your shell -- you'll see what that means if you try it with one of the assembly FASTA file:
+
+``` bash
+less data/ref/GCF_016801865.2.fna
+```
+
+``` bash-out
+>NC_068937.1 Culex pipiens pallens isolate TS chromosome 1, TS_CPP_V2, whole genome shotgun sequence
+aagcccttttatggtcaaaaatatcgtttaacttgaatatttttccttaaaaaataaataaatttaagcaaacagctgag
+tagatgtcatctactcaaatctacccataagcacacccctgttcaatttttttttcagccataagggcgcctccagtcaa
+attttcatattgagaatttcaatacaattttttaagtcgtaggggcgcctccagtcaaattttcatattgagaatttcaa
+tacatttttttatgtcgtaggggcgcctccagtcaaattttcatattgagaatttcaatacattttttttaagtcgtagg
+ggcgcctccagtcaaattttcatattgagaatttcaatacatttttttaagtcttaggggcgcctccagtcaaattttca
+tattgagaatttcaatacatttttttaagtcgtaggggcgcctccagtcaaattttcatattgagaattttaatacaatt
+ttttaaatcctaggggcgccttcagacaaacttaatttaaaaaatatcgctcctcgacttggcgactttgcgactgactg
+cgacagcactaccttggaacactgaaatgtttggttgactttccagaaagagtgcatatgacttgaaaaaaaaagagcgc
+ttcaaaattgagtcaagaaattggtgaaacttggtgcaagcccttttatggttaaaaatatcgtttaacttgaatatttt
+tccttaaaaaataaataaatttaagcaaacagctgagtagatgtcatctactcaaatctacccataagcacacccctgga
+CCTAATTCATGGAGGTGAATAGAGCATACGTAAATACAAAACTCATGACATTAGCCTGTAAGGATTGTGTaattaatgca
+aaaatattgaTAGAATGAAAGATGCAAGTCccaaaaattttaagtaaatgaATAGTAATCATAAAGATAActgatgatga
+```
+
+::: {.callout-warning collapse="true"}
+#### Side note: Lowercase vs. uppercase nucleotide letters? *(Click to expand)*
+
+As you have probably noticed, nucleotide bases are typically typed in uppercase (`A`, `C`, `G`, `T`). What does the mixture of lowercase and uppercase bases in the *Cx. pipiens* assembly FASTA mean, then?
+
+Lowercase bases are what is called "soft-masked": they are repetitive sequences, and bioinformatics programs will treat them differently than non-repetitive sequences, which are in uppercase.
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### The genome annotation GFF/GTF
+
+#### The GFF/GTF format
+
+The GTF and GFF formats are very similar tab-delimited **tabular** **files** that contain **genome annotations**, with:
+
+-   One row for each annotated "**genomic feature**" (gene, exon, etc.)
+-   One column for each piece of information about a feature, like its genomic coordinates
+
+See the sample below, with an added header line (*not normally present*) with column names:
+
+``` bash-out-solo
+seqname     source  feature start   end     score  strand  frame    attributes
+NC_000001   RefSeq  gene    11874   14409   .       +       .       gene_id "DDX11L1"; transcript_id ""; db_xref "GeneID:100287102"; db_xref "HGNC:HGNC:37102"; description "DEAD/H-box helicase 11 like 1 (pseudogene)"; gbkey "Gene"; gene "DDX11L1"; gene_biotype "transcribed_pseudogene"; pseudo "true"; 
+NC_000001   RefSeq  exon    11874   12227   .       +       .       gene_id "DDX11L1"; transcript_id "NR_046018.2"; db_xref "GeneID:100287102"; gene "DDX11L1"; product "DEAD/H-box helicase 11 like 1 (pseudogene)"; pseudo "true"; 
+```
+
+Some details on the more important/interesting columns:
+
+-   `seqname` — Name of the chromosome, scaffold, or contig
+-   `feature` — Name of the feature type, e.g. "gene", "exon", "intron", "CDS"
+-   `start` & `end` — Start & end position of the feature
+-   `strand` — Whether the feature is on the `+` (forward) or `-` (reverse) strand
+-   `attribute` — A semicolon-separated list of tag-value pairs with additional information
+
+<hr style="height:1pt; visibility:hidden;" />
+
+#### Your *Culex* GTF file
+
+For our *Cx. pipiens* reference genome, we only have a GTF file.[^3]
+Take a look at it, again with `less` (but now with the `-S` option):
+
+[^3]: A GFF file would contain the same information but in a slightly different format. For programs used in RNA-seq analysis, GTF files tend to be the preferred format.
+
+``` bash
+less -S data/ref/GCF_016801865.2.gtf
+```
+
+``` bash-out
+#gtf-version 2.2
+#!genome-build TS_CPP_V2
+#!genome-build-accession NCBI_Assembly:GCF_016801865.2
+#!annotation-source NCBI RefSeq GCF_016801865.2-RS_2022_12
+NC_068937.1     Gnomon  gene    2046    110808  .       +       .       gene_id "LOC120427725"; transcript_id ""; db_xref "GeneID:120427725"; description "homeotic protein deformed"; gbkey "Gene"; gene "LOC120427725"; gene_biotype "protein_coding"; 
+NC_068937.1     Gnomon  transcript      2046    110808  .       +       .       gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gbkey "mRNA"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 25 Proteins"; product "homeotic protein deformed, transcript variant X3"; transcript_biotype "mRNA"; 
+NC_068937.1     Gnomon  exon    2046    2531    .       +       .       gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 25 Proteins"; product "homeotic protein deformed, transcript variant X3"; transcript_biotype "mRNA"; exon_number "1"; 
+NC_068937.1     Gnomon  exon    52113   52136   .       +       .       gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 25 Proteins"; product "homeotic protein deformed, transcript variant X3"; transcript_biotype "mRNA"; exon_number "2"; 
+NC_068937.1     Gnomon  exon    70113   70962   .       +       .       gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 25 Proteins"; product "homeotic protein deformed, transcript variant X3"; transcript_biotype "mRNA"; exon_number "3"; 
+NC_068937.1     Gnomon  exon    105987  106087  .       +       .       gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 25 Proteins"; product "homeotic protein deformed, transcript variant X3"; transcript_biotype "mRNA"; exon_number "4"; 
+NC_068937.1     Gnomon  exon    106551  106734  .       +       .       gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 25 Proteins"; product "homeotic protein deformed, transcript variant X3"; transcript_biotype "mRNA"; exon_number "5"; 
+```
+
+::: exercise
+#### {{< fa user-edit >}} Exercise: Transcripts and genes
+
+The GTF file is sorted: all entries from the first line of the table,
+until you again see "gene" in the third column, belong to the first gene.
+Can you make sense of all these entries for this gene, 
+given what you know of gene structures?
+How many transcripts does this gene have?
+
+<details><summary>*(Click to see some pointers)*</summary>
+
+-   The first gene ("LOC120427725") has 3 transcripts.
+-   Each transcript has 6-7 exons, 5 CDSs, and a start and stop codon.
+
+Below, I've printed all lines belonging to the first gene:
+
+``` bash-out-solo
+NC_068937.1 Gnomon  gene    2046    110808  .   +   .   gene_id "LOC120427725"; transcript_id ""; db_xref "GeneID:120427725"; description "homeotic protein deformed"; gbkey "Gene"; gene "LOC120427725"; gene_biotype "protein_coding"; 
+NC_068937.1 Gnomon  transcript  2046    110808  .   +   .   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gbkey "mRNA"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 25 Proteins"; product "homeotic protein deformed, transcript variant X3"; transcript_biotype "mRNA"; 
+NC_068937.1 Gnomon  exon    2046    2531    .   +   .   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 25 Proteins"; product "homeotic protein deformed, transcript variant X3"; transcript_biotype "mRNA"; exon_number "1"; 
+NC_068937.1 Gnomon  exon    52113   52136   .   +   .   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 25 Proteins"; product "homeotic protein deformed, transcript variant X3"; transcript_biotype "mRNA"; exon_number "2"; 
+NC_068937.1 Gnomon  exon    70113   70962   .   +   .   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 25 Proteins"; product "homeotic protein deformed, transcript variant X3"; transcript_biotype "mRNA"; exon_number "3"; 
+NC_068937.1 Gnomon  exon    105987  106087  .   +   .   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 25 Proteins"; product "homeotic protein deformed, transcript variant X3"; transcript_biotype "mRNA"; exon_number "4"; 
+NC_068937.1 Gnomon  exon    106551  106734  .   +   .   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 25 Proteins"; product "homeotic protein deformed, transcript variant X3"; transcript_biotype "mRNA"; exon_number "5"; 
+NC_068937.1 Gnomon  exon    109296  109660  .   +   .   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 25 Proteins"; product "homeotic protein deformed, transcript variant X3"; transcript_biotype "mRNA"; exon_number "6"; 
+NC_068937.1 Gnomon  exon    109726  110808  .   +   .   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 25 Proteins"; product "homeotic protein deformed, transcript variant X3"; transcript_biotype "mRNA"; exon_number "7"; 
+NC_068937.1 Gnomon  CDS 70143   70962   .   +   0   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_052563405.1"; exon_number "3"; 
+NC_068937.1 Gnomon  CDS 105987  106087  .   +   2   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_052563405.1"; exon_number "4"; 
+NC_068937.1 Gnomon  CDS 106551  106734  .   +   0   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_052563405.1"; exon_number "5"; 
+NC_068937.1 Gnomon  CDS 109296  109660  .   +   2   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_052563405.1"; exon_number "6"; 
+NC_068937.1 Gnomon  CDS 109726  110025  .   +   0   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_052563405.1"; exon_number "7"; 
+NC_068937.1 Gnomon  start_codon 70143   70145   .   +   0   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_052563405.1"; exon_number "3"; 
+NC_068937.1 Gnomon  stop_codon  110026  110028  .   +   0   gene_id "LOC120427725"; transcript_id "XM_052707445.1"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_052563405.1"; exon_number "7"; 
+NC_068937.1 Gnomon  transcript  5979    110808  .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gbkey "mRNA"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X2"; transcript_biotype "mRNA"; 
+NC_068937.1 Gnomon  exon    5979    6083    .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X2"; transcript_biotype "mRNA"; exon_number "1"; 
+NC_068937.1 Gnomon  exon    52113   52136   .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X2"; transcript_biotype "mRNA"; exon_number "2"; 
+NC_068937.1 Gnomon  exon    70113   70962   .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X2"; transcript_biotype "mRNA"; exon_number "3"; 
+NC_068937.1 Gnomon  exon    105987  106087  .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X2"; transcript_biotype "mRNA"; exon_number "4"; 
+NC_068937.1 Gnomon  exon    106551  106734  .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X2"; transcript_biotype "mRNA"; exon_number "5"; 
+NC_068937.1 Gnomon  exon    109296  109660  .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X2"; transcript_biotype "mRNA"; exon_number "6"; 
+NC_068937.1 Gnomon  exon    109726  110808  .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X2"; transcript_biotype "mRNA"; exon_number "7"; 
+NC_068937.1 Gnomon  CDS 70143   70962   .   +   0   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_039448563.1"; exon_number "3"; 
+NC_068937.1 Gnomon  CDS 105987  106087  .   +   2   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_039448563.1"; exon_number "4"; 
+NC_068937.1 Gnomon  CDS 106551  106734  .   +   0   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_039448563.1"; exon_number "5"; 
+NC_068937.1 Gnomon  CDS 109296  109660  .   +   2   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_039448563.1"; exon_number "6"; 
+NC_068937.1 Gnomon  CDS 109726  110025  .   +   0   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_039448563.1"; exon_number "7"; 
+NC_068937.1 Gnomon  start_codon 70143   70145   .   +   0   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_039448563.1"; exon_number "3"; 
+NC_068937.1 Gnomon  stop_codon  110026  110028  .   +   0   gene_id "LOC120427725"; transcript_id "XM_039592629.2"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_039448563.1"; exon_number "7"; 
+NC_068937.1 Gnomon  transcript  60854   110807  .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592628.2"; db_xref "GeneID:120427725"; gbkey "mRNA"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X1"; transcript_biotype "mRNA"; 
+NC_068937.1 Gnomon  exon    60854   61525   .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592628.2"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X1"; transcript_biotype "mRNA"; exon_number "1"; 
+NC_068937.1 Gnomon  exon    70113   70962   .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592628.2"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X1"; transcript_biotype "mRNA"; exon_number "2"; 
+NC_068937.1 Gnomon  exon    105987  106087  .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592628.2"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X1"; transcript_biotype "mRNA"; exon_number "3"; 
+NC_068937.1 Gnomon  exon    106551  106734  .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592628.2"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X1"; transcript_biotype "mRNA"; exon_number "4"; 
+NC_068937.1 Gnomon  exon    109296  109660  .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592628.2"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X1"; transcript_biotype "mRNA"; exon_number "5"; 
+NC_068937.1 Gnomon  exon    109726  110807  .   +   .   gene_id "LOC120427725"; transcript_id "XM_039592628.2"; db_xref "GeneID:120427725"; gene "LOC120427725"; model_evidence "Supporting evidence includes similarity to: 24 Proteins"; product "homeotic protein deformed, transcript variant X1"; transcript_biotype "mRNA"; exon_number "6"; 
+NC_068937.1 Gnomon  CDS 70143   70962   .   +   0   gene_id "LOC120427725"; transcript_id "XM_039592628.2"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_039448562.1"; exon_number "2"; 
+NC_068937.1 Gnomon  CDS 105987  106087  .   +   2   gene_id "LOC120427725"; transcript_id "XM_039592628.2"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_039448562.1"; exon_number "3"; 
+NC_068937.1 Gnomon  CDS 106551  106734  .   +   0   gene_id "LOC120427725"; transcript_id "XM_039592628.2"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_039448562.1"; exon_number "4"; 
+NC_068937.1 Gnomon  CDS 109296  109660  .   +   2   gene_id "LOC120427725"; transcript_id "XM_039592628.2"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_039448562.1"; exon_number "5"; 
+NC_068937.1 Gnomon  CDS 109726  110025  .   +   0   gene_id "LOC120427725"; transcript_id "XM_039592628.2"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_039448562.1"; exon_number "6"; 
+NC_068937.1 Gnomon  start_codon 70143   70145   .   +   0   gene_id "LOC120427725"; transcript_id "XM_039592628.2"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_039448562.1"; exon_number "2"; 
+NC_068937.1 Gnomon  stop_codon  110026  110028  .   +   0   gene_id "LOC120427725"; transcript_id "XM_039592628.2"; db_xref "GeneID:120427725"; gbkey "CDS"; gene "LOC120427725"; product "homeotic protein deformed"; protein_id "XP_039448562.1"; exon_number "6"; 
+```
+</details>
+:::
+
+<br> <br>

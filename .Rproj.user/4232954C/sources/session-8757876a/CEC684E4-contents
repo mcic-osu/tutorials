@@ -1,0 +1,1156 @@
+---
+title: "Shell scripting"
+author: Jelmer Poelstra
+date: 2024-08-28
+---
+
+-------
+
+<br>
+
+## Overview and setting up {-}
+
+#### This tutorial
+
+In this tutorial, we will talk about:
+
+- The basics of shell scripts
+- Boilerplate shell script header lines: shebang and safe settings
+- Command-line arguments to scripts
+- Some more details on shell variables (`$myvar` etc)
+- Conditionals (`if` statements) --- if we get to that
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: {.callout-note}
+#### VS Code improvements
+
+These two settings will make life easier when writing shell scripts in VS Code.
+
+**First, we'll add a keyboard shortcut to send code from your editor to the terminal.**
+This is the same type of behavior that you may be familiar with from RStudio,
+and will mean that won't have to copy-and-paste code into the terminal:
+
+- Click the <i class="fa fa-cog"></i> (bottom-left) => `Keyboard Shortcuts`.
+- Find `Terminal: Run Selected Text in Active Terminal`, click on it,
+  then add a shortcut, e.g. <kbd>Ctrl</kbd>+<kbd>Enter</kbd>^[
+  Don't worry about the warning that other keybindings exist for this shortcut.].
+
+In VS Code's editor pane,
+the _entire line that your cursor is on is selected by default_.
+As such, your keyboard shortcut will send the line that your cursor is in to the terminal;
+you can also send multiple lines to the terminal after selecting them.
+
+----
+
+**Second, we'll add the ShellCheck VS Code extension**.
+This extension checks shell scripts for errors like referencing variables
+that have not been assigned. Potential problems show up as colored squiggly lines.
+It also provided links with more information about the error and how to improve your code.
+This extension is incredibly useful!
+
+- Click on the Extensions icon in the far left (narrow) sidebar in VS Code.
+- Type "shellcheck" and click the small purple "Install" button next to the entry
+  of this name (the description should include "Timon Wong", who is the author).
+:::
+
+<br>
+
+## Introduction to shell scripts
+
+Many bioinformatics tools (programs/software) that are used to analyze omics data
+are run from the command line.
+We can run them using command line expressions that are structurally
+_very similar to how we've been using basic Unix shell commands._
+
+However, we've been running shell commands in a manner that we may call "interactive",
+by typing or pasting them into the shell, and then pressing <kbd>Enter</kbd>.
+But when you run bioinformatics tools,
+it is in most cases a much better idea to **run them via shell scripts**,
+which are plain-text files that contain shell code.
+
+> *"Most Bash scripts in bioinformatics are simply commands organized into a
+> rerunnable script with some added bells and whistles to check that files exist
+> and ensuring any error causes the script to abort."* --- Buffalo Ch. 12
+
+Therefore, shell scripts are relatively straightforward to write with what you already know!
+We will learn about those bells and whistles from the quote above in this session.
+
+::: callout-tip
+#### Bash vs. shell
+So far, we've mostly used talked about the Unix _shell_ and _shell_ scripts.
+The quote above uses the word "Bash",
+and you'll see that term more often in other tutorials.
+The difference is this: there are multiple Unix shell (language) variants and
+the specific one we have been using, which is also by far the most common, is the Bash shell.
+Our shell scripts are therefore in the Bash language and can be specifically called Bash scripts.
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+#### Running commands interactively vs. via scripts 
+
+Before we see why it's often a better idea to use scripts than to run code
+interactively, let's go through a minimal example of both approaches with the tool FastQC, 
+which performs FASTQ file quality control (QC; more on FastQC in the next session).
+
+- Here's how you can run FastQC on one FASTQ file ---
+  the command `fastqc` followed by a file name:
+  
+  ```bash
+  fastqc data/fastq/A_R1.fastq.gz
+  ```
+
+- This is what a minimal shell script to do the same thing would look like:
+
+  ```bash
+  #!/bin/bash
+  fastqc data/fastq/A_R1.fastq.gz
+  ```
+
+- If the above shell script is saved as `fastqc.sh` in our working dir,
+  it can be executed as follows:
+  
+  ```bash
+  bash fastqc.sh
+  ```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+#### Why use shell scripts
+
+There are several general reasons why it can be beneficial to use shell scripts
+instead of running code interactively line-by-line:
+
+- It is a good way to save and organize your code.
+- You can easily rerun scripts and re-use them in similar contexts.
+- Related to the point above, they provide a first step towards automating the
+  set of analyses in your project.
+- When your code is tucked away in a shell script,
+  you only have to call the script to run what is potentially a large set of commands.
+
+And very importantly for our purposes at OSC,
+we can **submit scripts as "batch jobs"** to the compute job scheduling program
+(which is called Slurm), and this allows us to:
+
+- Run scripts remotely without needing to stay connected to the running process,
+  or even to be connected at all to it:
+  we can submit a script, log out from OSC and shut down our computer, and it will still run.
+- Easily run analyses that take many hours or even multiple days.
+- Run a script many times _simultaneously_, such as for different files/samples.
+
+<hr style="height:1pt; visibility:hidden;" />
+
+#### Summary of what we need to learn about
+
+- [Writing shell scripts](/shell/03_scripts.qmd)
+- [Submitting scripts to the Slurm job scheduler](/osc/05_slurm.qmd)
+- [Making software available at OSC](/osc/04_software.qmd)
+
+<br>
+
+## A basic shell script
+
+### A one-line script to start
+
+Create your first script, `printname.sh`
+(note that shell scripts usually have the extension `.sh`) as follows:
+
+```bash
+# First, let's create and move into a new dir
+mkdir -p week04/scripts
+cd week04
+```
+```bash
+# Create an empty file
+touch scripts/printname.sh
+```
+
+A nice VS Code trick is that is if you hold <kbd>Ctrl</kbd> (<kbd>Cmd</kbd> on Mac)
+while hovering over a file path in the terminal,
+the path should become underlined and you can click on it to open the file.
+Try that with the `printname.sh` script^[
+Alternatively, find the script in the file explorer in the side bar and click
+on it there.].
+
+Once the file is open in your editor pane, type or paste the following inside the script:
+
+```bash
+echo "This script will print a first and a last name"
+```
+
+Shell scripts mostly contain the same regular Unix shell code that we have gotten familiar with,
+but have so far directly typed in the terminal.
+As such, our single line with an `echo` command _constitutes a functional shell script_!
+
+One way of running the script is by typing `bash` followed by the path to the script:
+
+```bash
+bash scripts/printname.sh
+```
+```{.bash-out}
+This script will print a first and a last name
+```
+
+That worked! 
+The script doesn't yet print any names like it "promises" to do,
+but we will add that functionality in a little bit.
+But first, we'll learn about two header lines that are good practice to
+add to every shell script.
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: {.callout-warning collapse="true"}
+#### Auto Save in VS Code _(Click to expand)_
+
+Any changes you make to this and other files in the editor pane should be
+immediately, automatically saved by VS Code.
+If that's not happening for some reason, you should see an indication of unsaved
+changes like a large black dot next to the script's file name in the editor pane tab header.
+
+If the file is not auto-saving, you can always save it manually
+(including with <kbd>Ctrl/Cmd</kbd>+<kbd>S</kbd>) like you would do in other programs.
+However, it may be convenient to turn Auto Save on:
+press <kbd>Ctrl/Cmd</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> to open the Command Palette and
+type "Auto Save". You should see an option "**_Toggle Auto Save_**": click on that.
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Shebang line
+
+We use a so-called "_shebang_" line as the first line of a script to
+**indicate which computer language our script uses**.
+More specifically, this line tell the computer where to find the binary
+(executable) that will run our script.
+
+```sh
+#!/bin/bash
+```
+
+Such a line starts with **`#!`** (hash-bang), basically marking it as a special type of comment.
+After those two characters comes the file path of the relevant program:
+in our case Bash, which itself is just a program with an executable file
+that is located at `/bin/bash` on Linux and Mac computers.
+
+While not always strictly necessary,
+adding a _shebang_ line to every shell script is good practice,
+especially when you submit your script to OSC's Slurm queue,
+as we'll do next week.
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Shell script settings
+
+Another best-practice line you should add to your shell scripts
+will change some default settings to safer alternatives.
+
+#### Bad default shell settings {-}
+
+The following two default settings of the Bash shell are bad ideas inside scripts:
+
+- When you **reference a non-existent ("unset") variable**,
+  the shell replaces that with nothing without complaint:
+
+  ```bash
+  echo "Hello, my name is $myname. What is yours?"
+  ```
+  ```{.bash-out}
+  Hello, my name is . What is yours?
+  ```
+
+  In scripts, this can lead to all sorts of downstream problems,
+  because you very likely tried and failed to do something with an existing variable
+  (e.g. you misspelled its name, or forgot to assign it altogether).
+  Even more problematically,
+  this can lead to potentially very destructive file removal, as the box below illustrates.
+
+- A Bash script **keeps running after encountering errors**.
+  That is, if an error is encountered when running, say, line 2 of a script,
+  any remaining lines in the script will nevertheless be executed.
+
+  In the best case, this is a waste of computer resources,
+  and in worse cases, it can lead to all kinds of unintended consequences.
+  Additionally, if your script prints a lot of output,
+  you might not notice an error somewhere in the middle if it doesn't produce
+  more errors downstream.
+  But the downstream results from what we at that point might call a
+  "zombie script" can still be completely wrong.
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: {.callout-warning}
+##### Accidental file removal with unset variables
+
+The shell's default behavior of ignoring the referencing of unset variables can
+lead to accidental file removal as follows:
+
+- Using a variable, we try to remove some temporary files whose names start with `tmp_`:
+
+  ```bash
+  # NOTE: DO NOT run this!
+  temp_prefix="temp_"
+  rm "$tmp_prefix"*
+  ```
+
+- Using a variable, we try to remove a temporary directory:
+
+  ```bash
+  # NOTE: DO NOT run this!
+  tempdir=output/tmp
+  rm -r $tmpdir/*
+  ```
+
+<details><summary> Above, the text specified the _intent_ of the commands. What would have actually happened? _(Click to expand)_</summary>
+  
+In both examples, there is a similar typo: `temp` vs. `tmp`,
+which means that we are referencing a (likely) non-existent variable.
+
+- In the first example,
+  `rm "$tmp_prefix"*` would have been interpreted as `rm *`,
+  because the non-existent variable is simply ignored.
+  Therefore, we would have **removed all files in the current working directory**.
+
+- In the second example, along similar lines,
+  `rm -rf $tmpdir/*` would have been interpreted as `rm -rf /*`.
+  Horrifyingly, this would **attempt to remove the entire filesystem**:
+  recall that a leading `/` in a path is a computer's root directory.
+  (`-r` makes the removal _recursive_ and `-f` makes _forces_ removal).
+
+</details>
+
+Note this is especially likely to happen inside scripts, 
+where it is common to use variables and to work non-interactively.
+
+Before you get too scared of creating terrible damage, note that at OSC,
+you would not be able to remove any essential files^[
+And more generally, you can't remove or edit files that are not yours unless
+you've explicitly been given permission for this.],
+since you don't have the permissions to do so.
+On your own computer,
+this could be more genuinely dangerous, though even there,
+you would not be able to remove operating system files without specifically
+requesting  "admin" rights.
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+#### Safer settings
+
+The following three settings will make your shell scripts more robust and safer.
+With these settings, **the script terminates** with an appropriate error message if:
+
+- `set -u` --- an "unset" (non-existent) variable is referenced.
+- `set -e` --- almost any error occurs.
+- `set -o pipefail` --- an error occurs in a shell "pipeline" (e.g., `sort | uniq`).
+
+We can change all of these settings in one line in a script:
+
+```bash
+set -e -u -o pipefail
+```
+
+Or even more concisely:
+
+```bash
+set -euo pipefail
+```
+
+<br>
+
+### Adding the header lines to our script
+
+Add the discussed header lines to your `printname.sh` script,
+so it will now contain the following:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+echo "This script will print a first and a last name"
+```
+  
+And run the script again:
+
+```bash
+bash scripts/printname.sh
+```
+```{.bash-out}
+This script will print a first and a last name
+```
+
+That didn't change anything to the output,
+but at least we confirmed that the script still works.
+
+::: {.callout-note collapse="true"}
+#### Can I run scripts without the `bash` command? _(Click to expand)_
+
+Because our script has a _shebang_ line,
+we have taken one step towards being able to execute the script without the `bash` command,
+or in other words, to run the script basically "as a command".
+With that method, we could run a script using just its path:
+
+```bash
+sandbox/printname.sh
+```
+
+(Or if the script was in our current working dir, using `./printname.sh`.
+In that case the `./` is necessary to make it explicit that we are referring
+to a file name:
+otherwise, when running just `printname.sh`,
+the shell would look for a command or program of that name,
+and wouldn't be able to find it.)
+
+However, this would also require us to "make the script executable",
+which we won't talk about.
+But I'm mentioning it here because you might see this way of running scripts
+being used elsewhere.
+:::
+
+<br>
+
+## Command-line arguments for scripts
+
+### Calling a script with arguments
+
+When you call a script to run it, you can pass command-line arguments to it,
+such as a file to operate on.
+This is much like when you provide a command like `ls` with arguments:
+
+```bash
+# [Don't run any of this, these are just syntax examples]
+
+# Run ls without arguments:
+ls
+
+# Pass 1 filename as an argument to ls:
+ls data/sampleA.fastq.gz
+
+# Pass 2 filenames as arguments to ls, separated by spaces:
+ls data/sampleA.fastq.gz data/sampleB.fastq.gz
+```
+
+And here is what it looks like to pass arguments to scripts:
+
+```bash
+# [Don't run any of this, these are just syntax examples]
+
+# Run scripts without any arguments:
+bash scripts/fastqc.sh
+bash scripts/printname.sh
+
+# Run scripts with 1 or 2 arguments:
+bash scripts/fastqc.sh data/sampleA.fastq.gz  # 1 argument: a filename
+bash scripts/printname.sh John Doe            # 2 arguments: strings representing names
+```
+
+In the next section,
+we'll see what happens with the arguments we pass to a script inside that script.
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Placeholder variables
+
+Inside the script, any command-line arguments that you pass to it are
+**automatically available in "placeholder" variables**.
+Specifically:
+
+- Any first argument will be assigned to the variable **`$1`**
+- Any second argument will be assigned to **`$2`**
+- Any third argument will be assigned to **`$3`**, and so on.
+
+<hr style="height:1pt; visibility:hidden;" />
+
+<details><summary>{{< fa user-edit >}} In the calls to `fastqc.sh` and `printname.sh` above,
+what are the placeholder variables and their values? _(Click for the solution)_</summary>
+
+<hr style="height:1pt; visibility:hidden;" />
+
+- In `bash scripts/fastqc.sh data/sampleA.fastq.gz`, a single argument, `data/sampleA.fastq.gz`,
+  is passed to the script, and will be assigned to `$1`.
+
+- In `bash scripts/printname.sh John Doe`, two arguments are passed to the script:
+  the first one (`John`) will be stored in `$1`, and the second one (`Doe`) in `$2`.
+</details>
+
+<hr style="height:1pt; visibility:hidden;" />
+
+However, while they are made available, these placeholder variables are not "automagically" _used_.
+So, unless we explicitly include code in the script to _do_ something with these variables,
+nothing extra really happens.
+
+Therefore, let's add some code to our `printname.sh` script to "process"
+any first and last name that are passed to the script.
+For now, our script will simply `echo` the placeholder variables,
+so that we can see what happens:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+echo "This script will print a first and a last name"
+echo "First name: $1"
+echo "Last name: $2"
+
+# [Paste this into you script - don't enter this directly in your terminal.]
+```
+
+Next, we'll _run_ the script, passing the arguments `John` and `Doe`:
+
+```bash
+bash scripts/printname.sh John Doe
+```
+```{.bash-out}
+This script will print a first and a last name
+First name: John
+Last name: Doe
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+:::{.exercise}
+#### {{< fa user-edit >}} Exercise: Command-line arguments
+
+In each scenario that is described below, think about what might happen.
+Then, run the script as instructed in the scenario to test your prediction.
+
+1. Running the script `printname.sh` without passing arguments to it.
+
+<details><summary>Click here for the solution</summary> 
+The script will error out because we are referencing variables that don't exist:
+since we didn't pass command-line arguments to the script,
+the `$1` and `$2` have not been set.
+
+```bash
+bash scripts/printname.sh
+```
+```bash-out
+printname.sh: line 5: $1: unbound variable
+```
+   
+</details>
+
+2. After commenting out the line with `set` settings,
+   running the script again without passing arguments to it.
+
+<details><summary>Click here to learn what "commenting out" means</summary> 
+You can deactivate a line of code without removing it
+(because perhaps you're not sure you may need this line in the end)
+by inserting a `#` as the first character of that line.
+This is often referred to as "commenting out" code.
+
+For example, below I've commented out the `ls` command, and nothing will happen
+if I run this line:
+
+```bash
+#ls
+```
+
+</details>
+
+<details><summary>Click here for the solution</summary> 
+The script will run in its entirety and not throw any errors,
+because we are now using default Bash settings such that referencing 
+non-existent variables does not throw an error.
+Of course, no names are printed either, since we didn't specify any:
+
+```bash
+bash scripts/printname.sh
+```
+```bash-out
+echo "First name:"
+echo "Last name:"
+```
+
+Being "commented out", the `set` line should read:
+
+```bash
+#set -euo pipefail
+```
+</details>
+
+3. Double-quoting the entire name when you run the script,
+   e.g.: `bash scripts/printname.sh "John Doe"`.
+
+<details><summary>Click here for the solution</summary> 
+Because we are quoting `"John Doe"`, both names are passed _as a single argument_
+and both names end up in `$1`, the "first name":
+
+```bash
+bash scripts/printname.sh "John Doe"
+```
+```bash-out
+echo "First name: John Doe"
+echo "Last name:"
+```
+</details>
+
+To get back to where you were,
+remove the `#` you inserted in the script in step 2 above to reactive the `set` line.
+:::
+
+<br>
+
+### Copying placeholders to variables with descriptive names
+
+While you can use the `$1`-style placeholder variables throughout your script,
+I find it very useful to copy them to more descriptively named variables --- for example:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+first_name=$1
+last_name=$2
+
+echo "This script will print a first and a last name"
+echo "First name: $first_name"
+echo "Last name: $last_name"
+```
+
+Using descriptively named variables in your scripts has several advantages, such as:
+
+- It will make your script easier to understand for others and for your future self.
+- It will make it less likely that you make errors in your script
+  in which you use the wrong variable in the wrong place.
+
+:::{.callout-note}
+## Other variables that are automatically available inside scripts
+
+- **`$0`** contains the script's file name.
+- **`$#`** contains the _number_ of command-line arguments passed to the script.
+:::
+
+<br>
+
+## More on shell variables
+
+### Why use variables
+
+Above, we saw that variables are useful to be able to **pass arguments to a script**,
+so you can easily rerun a script with a different input file / settings / etc.
+Let's take a step back and think about variables and their uses a bit more.
+
+> *"Processing pipelines having numerous settings that should be stored in variables
+(e.g., which directories to store results in, parameter values for commands,
+input files, etc.).*\
+>*Storing these settings in a variable defined at the top of the file makes adjusting
+settings and rerunning your pipelines much easier.*\
+>*Rather than having to change
+numerous hardcoded values in your scripts, using variables to store settings means
+you only have to change one value—the value you’ve assigned to the variable."*  
+&mdash; Buffalo ch. 12
+
+In brief, use variables for things that:
+
+  - You refer to repeatedly and/or
+  - Are subject to change.
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Quoting variables
+
+I have mentioned that it is good practice to quote variables
+(i.e. to use `"$myvar"` instead of `$myvar`).
+So what can happen if you don't do this?
+
+```bash
+# Start by making and moving into a dir to create some messy files
+mkdir sandbox
+cd sandbox
+```
+
+If a variable's **value contains spaces**:
+
+  ```sh
+  # Assign a string with spaces to variable 'today', and print its value:
+  today="Tue, Mar 26"
+  echo $today
+  ```
+  ```bash-out
+  Tue, Mar 26
+  ```
+  
+  ```bash
+  # Try to create a file with a name that includes this variable: 
+  touch README_$today.txt
+  
+  # (Using the -1 option to ls will print each entry on its own line)
+  ls -1
+  ```
+  ```bash-out
+  26.txt
+  Mar
+  README_Tue,
+  ```
+
+Oops! The shell performed "field splitting" to split the value into three
+separate units --- as a result, _three files were created_.
+This can be avoided by quoting the variable:
+  
+```sh
+touch README_"$today".txt
+ls -1
+```
+```bash-out
+README_Tue, Mar 26.txt
+```
+
+Additionally, without quoting, we can't explicitly indicate **where a variable name ends**:
+
+```sh
+# We intend to create a file named 'README_Tue, Mar 26_final.txt'
+touch README_$today_final.txt
+ls -1
+```
+```bash-out
+README_.txt
+```
+
+<details><summary>Do you understand what happened here? _(Click for the solution)_</summary>
+We have assigned a variable called `$today`,
+but the shell will instead look for a variable called `$today_final`.
+This is because we have not explicitly indicated where the variable name ends,
+so the shell will include all characters until it hits a character that cannot
+be part of a shell variable name: in this case a period, `.`.
+</details>
+
+Quoting solves this, too:
+
+```sh
+touch README_"$today"_final.txt
+ls -1
+```
+```bash-out
+README_Tue, Mar 26_final.txt
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: {.callout-tip collapse="true"}
+#### Curly braces notation: `${myvar}` _(Click to expand)_
+
+The `$var` notation to refer to a variable in the shell is actually an abbreviation
+of the full notation, which includes curly braces:
+
+```bash
+echo ${today}
+```
+```bash-out
+Tue, Mar 26
+```
+
+Putting variable names between curly braces will also make it clear where the
+variable name begins and ends, although it does not prevent field splitting:
+
+```sh
+touch README_${today}_final.txt
+
+ls
+```
+```bash-out
+26_final.txt  Mar  README_Tue,
+```
+
+But you can combine curly braces and quoting:
+
+```sh
+touch README_"${today}"_final.txt
+
+ls
+```
+```bash-out
+'README_Tue, Mar 26_final.txt'
+```
+:::
+
+:::{.callout-note collapse="true"}
+## Quoting as "escaping" special meaning & double vs. single quotes _(Click to expand)_
+
+By double-quoting a variable,
+we are essentially escaping (or "turning off")
+the default special meaning of the _space as a separator_,
+and are asking the shell to interpret it as a _literal space_.
+
+Similarly, double quotes will escape other "special characters",
+such as shell wildcards. Compare:
+
+```bash
+# Due to shell expansion, this will echo/list all files in the current working dir
+echo *
+```
+```{.bash-out}
+18.txt Aug README_Thu, README_Thu, Aug 18.txt
+```
+
+```bash
+# This will simply print the literal "*" character 
+echo "*"
+```
+```{.bash-out}
+*
+```
+
+However, double quotes **not** turn off the special meaning of `$`
+(which is to denote a string as a variable):
+
+```bash
+echo "$today"
+```
+```{.bash-out}
+Thu, Aug 18
+```
+
+...but **_single quotes_** will:
+
+```bash
+echo '$today'
+```
+```{.bash-out}
+$today
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Variable names
+
+In the shell, variable names:
+
+- **Can** contain letters, numbers, and underscores
+- **Cannot** contain spaces, periods (`.`), dashes (`-`), or other special symbols^[
+  Compare this with the situation for file names,
+  which ideally do not contain spaces and special characters either,
+  but in which `-` and `.` _are_ recommended.].
+- **Cannot start** with a number
+
+Try to make your variable names descriptive,
+like `$input_file` above, as opposed to say `$x` and `$myvar`.
+
+There are multiple ways of distinguishing words in the absence of spaces,
+such as `$inputFile` and `$input_file`:
+I prefer the latter, which is called "snake case".
+
+::: callout-note
+#### Case and environment variables
+All-uppercase variable names are pretty commonly used ---
+and recall that so-called environment variables are always in uppercase (we've seen `$USER` and `$HOME`).
+Alternatively, you can use lowercase for variables and uppercase for "constants",
+like when you include certain file paths or settings in a script without allowing
+them to be set from outside of the script.
+:::
+
+```bash
+# Move out of the 'sandbox' dir (back to /fs/ess/PAS2700/users/$USER/week04)
+cd ..
+```
+
+<br>
+
+## Conditionals
+
+With conditionals like `if` statements, we can
+**run one or more commands only if some condition is true**.
+Also, we can run a different set of commands if the condition is _not_ true.
+This can be useful in shell scripts because we may, for instance,
+want to process a file differently depending on its file type.
+ 
+### Basic syntax
+
+This is the basic syntax of an `if` statement in Bash
+(note that similarities with `for` loop syntax):
+
+```sh
+if <test>; then
+    # Command(s) to run if the condition is true
+fi
+```
+
+We'll have to add an `else` clause to run alternative command(s) if the condition
+is false:
+
+```sh
+if <test>; then
+    # Command(s) to run if the condition is true
+else
+    # Commands(s) to run if the condition is false
+fi
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### String comparisons
+
+First, an `if` statement that tests the file type of say an input file,
+and runs different code depending on the result:
+
+```sh
+# [Hypothetical example - don't run this]
+# Say we have a variable $filetype that contains a file's type
+
+if [[ "$filetype" == "fastq" ]]; then
+    echo "Processing FASTQ file..."
+    # Commands to process the FASTQ file
+else
+    echo "Unknown filetype!"
+    exit 1
+fi
+```
+
+In the code above, note that:
+
+- The double square brackets `[[ ]]` represent a *test statement*^[
+  You can also use single square brackets `[ ]` but the double brackets have more functionality
+  and I would recommend to always use these.].
+- The spaces bordering the brackets on the inside are necessary:
+  `[["$filetype" == "fastq"]]` would fail!
+- Double equals signs (`==`) are common in programming to _test for equality_ ---
+  this is to contrast it with a single `=`, which is used for variable assignment.
+- When used inside a script, the `exit` command will stop the execution of the script.
+  With `exit 1`, the *exit status* of our script is 1:
+  in bash, an exit status of 0 means success --- any other integer, including 1, means failure.  
+
+<hr style="height:1pt; visibility:hidden;" />
+
+| String comparison            | Evaluates to true if
+|-------|----------------|
+| `str1 == str2`     | Strings `str1` and `str2` are identical^[A single `=` also works but `==` is clearer.]
+| `str1 != str2` &nbsp; &nbsp; &nbsp; &nbsp; | Strings `str1` and `str2` are different &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+| `-z str`          | String `str` is null/empty (useful with variables)
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### File tests
+
+The code below tests whether an input file exists using the file test **`-f`**
+and if it does _not_ (hence the **`!`**), it will stop the execution of the script:
+
+```sh
+# [Hypothetical example - don't run this]
+
+# '-f' is true if the file exists,
+# and '! -f' is true if the file doesn't exist
+if [[ ! -f "$fastq_file" ]]; then
+    echo "Error: Input file $fastq_file not found!"
+    exit 1
+fi
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+| File/dir test | Evaluates to true if |
+|---------|---------------------|
+| `-f file`       | `file` exists and is a regular file (not a dir or link) |
+| `-d dir`        | `dir` exists and is a directory &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; |
+| `-e file/dir`   | `file/dir` exists           |
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Integer (number) comparisons
+
+To avoid unexpected or hard-to-understand errors later on in a shell script,
+we may choose to test at the beginning whether the correct number of arguments
+was passed to the script, and abort the script if this is not the case:
+
+```bash
+# [Hypothetical example - don't run this]
+
+if [[ ! "$#" -eq 2 ]]; then
+    echo "Error: wrong number of arguments"
+    echo "You provided $# arguments, while 2 are required."
+    echo "Usage: printname.sh <first-name> <last-name>"
+    exit 1
+fi
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+| Integer comparisons           | Evaluates to true if
+|-------|----------------|
+| `int1 -eq int2`   | Integers `int1` and `int2` are equal
+| `int1 -ne int2`   | Integers `int1` and `int2` are not equal
+| `int1 -lt int2`   | Integer `int1` is less than `int2` (`-le` for less than or equal to)
+| `int1 -gt int2`   | Integer `int1` is greater than `int2` (`-ge` for greater than or equal to)
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: {.callout-tip collapse="true"}
+#### Another integer comparison example _(Click to expand)_
+Say that we want to run a program with options that depend on our number of samples.
+With the number of samples determined from the number of lines in a hypothetical file `samples.txt`
+and stored in a variable `$n_samples`, we can test if the number is greater than 9
+with `"$n_samples" -gt 9`, where `gt` stands for "greater than":
+
+```sh
+# [Hypothetical example - don't run this]
+
+# Store the number of samples in variable $n_samples:
+n_samples=$(cat samples.txt | wc -l)
+
+# With '-gt 9', the if statement tests whether the number of samples is greater than 9:
+if [[ "$n_samples" -gt 9 ]]; then
+    # Commands to run if nr of samples >9:
+    echo "Processing files with algorithm A"
+else
+    # Commands to run if nr of samples is <=9:
+    echo "Processing files with algorithm B..."
+fi
+```
+:::
+
+::: {.callout-note collapse="true"}
+#### Combining multiple expressions with `&&` and `||` _(Click to expand)_
+To test for multiple conditions at once,
+use the `&&` ("and") and `||` ("or") shell operators --- for example:
+
+- If the number of samples is less than 100 **and** at least 50 (i.e. 50-99):
+
+  ```sh
+  if [[ "$n_samples" -lt 100 && "$n_samples" -ge 50 ]]; then
+      # Commands to run if the number of samples is 50-99
+  fi
+  ```
+  
+- If either one of two FASTQ files don't exist:
+
+  ```sh
+  if [[ ! -f "$fastq_R1" || ! -f "$fastq_R2" ]]; then
+      # Commands to run if either file doesn't exist - probably report error & exit
+  fi
+  ```
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+::: exercise
+#### {{< fa user-edit >}} Exercise: No middle names allowed!
+
+In your `printname.sh` script,
+add the `if` statement from above that tests whether the correct number of arguments
+were passed to the script.
+Then, try running the script consecutively with 1, 2, or 3 arguments. 
+
+<details><summary>Start with this `printname.sh` script we wrote above.</summary>
+```bash
+#!/bin/bash
+set -euo pipefail
+
+first_name=$1
+last_name=$2
+
+echo "This script will print a first and a last name"
+echo "First name: $first_name"
+echo "Last name: $last_name"
+```
+</details>
+
+<details><summary>Click for the solution</summary>
+
+Note that the `if` statement should come before you copy the variables to
+`first_name` and `last_name`,
+otherwise you get the "unbound variable error" before your descriptive custom error,
+when you pass 0 or 1 arguments to the script.
+
+The final script:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+if [[ ! "$#" -eq 2 ]]; then
+    echo "Error: wrong number of arguments"
+    echo "You provided $# arguments, while 2 are required."
+    echo "Usage: printname.sh <first-name> <last-name>"
+    exit 1
+fi
+
+first_name=$1
+last_name=$2
+
+echo "This script will print a first and a last name"
+echo "First name: $first_name"
+echo "Last name: $last_name"
+```
+
+Run it with different numbers of arguments:
+
+```bash
+bash scripts/printname.sh Jelmer
+```
+```bash-out
+Error: wrong number of arguments
+You provided 1 arguments, while 2 are required.
+Usage: printname.sh <first-name> <last-name>
+```
+```bash
+bash scripts/printname.sh Jelmer Poelstra
+```
+```bash-out
+First name: Jelmer
+Last name: Poelstra
+```
+```bash
+bash scripts/printname.sh Jelmer Wijtze Poelstra
+```
+```bash-out
+Error: wrong number of arguments
+You provided 3 arguments, while 2 are required.
+Usage: printname.sh <first-name> <last-name>
+```
+
+</details>
+:::
+
+::: exercise
+#### {{< fa user-edit >}} Exercise: Conditionals II
+
+Open a new script `sandbox.sh` and in it,
+write an `if` statement that tests whether the script `scripts/printname.sh` exists
+and is a regular file, and:
+
+- If it is (`then` block), report the outcome with `echo` (e.g. "The file is found").
+- If it is not (`else` block), also report that outcome with `echo` (e.g. "The file is not found").
+
+Then:
+
+1. Run your `if` statement by pasting the code into the terminal ---
+   it should report that the file is found. 
+2. Introduce a typo in the file name in the `if` statement, and run it again,
+   to check that the file is not indeed not found.
+
+_(Note that your new script isn't meant to be run per se,_
+_but it is much easier to write multi-line statements in a text file than directly_
+_in the terminal.)_
+
+<details><summary>Click for the solution</summary>
+```sh
+# Note: you need single quotes when using exclamation marks with echo!
+if [[ -f scripts/printname.sh ]]; then
+    echo 'Phew! The file is found.'
+else
+    echo 'Oh no! The file is not found!'
+fi
+```
+```bash-out
+Phew! The file is found.
+```
+
+After introducing a typo:
+
+```sh
+if [[ -f scripts/printnames.sh ]]; then
+    echo 'Phew! The file is found.'
+else
+    echo 'Oh no! The file is not found!'
+fi
+```
+```bash-out
+Oh no! The file is not found!
+```
+</details>
+:::
+
+<br>

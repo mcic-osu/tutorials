@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jelmer Poelstra">
+<meta name="dcterms.date" content="2024-08-02">
+
+<title>Using software at OSC – MCIC Bioinformatics Tutorials</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-57476271c5f0467c372e20ff5d25630e.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-93a206ead970ce8646eacc93a2842d74.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">MCIC Bioinformatics Tutorials</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-shell" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Shell</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-shell">    
+        <li>
+    <a class="dropdown-item" href="../shell/01_shell1.html">
+ <span class="dropdown-text">Intro the Unix Shell</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/02_shellfiles.html">
+ <span class="dropdown-text">Managing files in the shell</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/03_scripts.html">
+ <span class="dropdown-text">Writing shell scripts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/04_cli-tools.html">
+ <span class="dropdown-text">Running CLI tools</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/05_bonus.html">
+ <span class="dropdown-text">Advanced shell</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-osc" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">OSC</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-osc">    
+        <li>
+    <a class="dropdown-item" href="../osc/01_osc1.html">
+ <span class="dropdown-text">Intro to OSC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/02_vscode.html">
+ <span class="dropdown-text">VS Code</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/03_osc2.html">
+ <span class="dropdown-text">More about OSC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/05_slurm.html">
+ <span class="dropdown-text">Slurm</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/06_ssh.html">
+ <span class="dropdown-text">SSH</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-git" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Git</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-git">    
+        <li>
+    <a class="dropdown-item" href="../git/02_git1.html">
+ <span class="dropdown-text">Git 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../git/03_git2.html">
+ <span class="dropdown-text">Git 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../git/04_git3.html">
+ <span class="dropdown-text">Git 3</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-r" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">R</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-r">    
+        <li>
+    <a class="dropdown-item" href="../r/r_data-structures.html">
+ <span class="dropdown-text">Data structures</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../r/r_dplyr.html">
+ <span class="dropdown-text">Data wrangling</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reproducibility" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reproducibility</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reproducibility">    
+        <li>
+    <a class="dropdown-item" href="../reprod/project-org.html">
+ <span class="dropdown-text">Project file organization</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reprod/markdown.html">
+ <span class="dropdown-text">Markdown</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-nextflow" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Nextflow</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-nextflow">    
+        <li>
+    <a class="dropdown-item" href="../nf-run/01_pipelines.html">
+ <span class="dropdown-text">Intro to pipelines</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../nf-run/02_nfcore.html">
+ <span class="dropdown-text">Running an nf-core pipeline</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-metabar" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Metabar</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-metabar">    
+        <li>
+    <a class="dropdown-item" href="../metabar/01_qc-trim.html">
+ <span class="dropdown-text">Read QC and trimming</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-rna-seq" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">RNA-Seq</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-rna-seq">    
+        <li>
+    <a class="dropdown-item" href="../rnaseq/01_data.html">
+ <span class="dropdown-text">Data files</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/02_nfc-rnaseq.html">
+ <span class="dropdown-text">The nf-core rnaseq pipeline</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/03_DE.html">
+ <span class="dropdown-text">Differential expression analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/04_fastqc.html">
+ <span class="dropdown-text">Read QC with FastQC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/05_trimgalore.html">
+ <span class="dropdown-text">Trimming reads with TrimGalore</span></a>
+  </li>  
+        <li class="dropdown-header">RNA-Seq</li>
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other">    
+        <li class="dropdown-header">BACTERIAL WGS</li>
+        <li>
+    <a class="dropdown-item" href="../bac/01_preprocess.html">
+ <span class="dropdown-text">Data preprocessing</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../bac/02_assembly.html">
+ <span class="dropdown-text">Genome assembly</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../bac/03_annotation.html">
+ <span class="dropdown-text">Genome annotation</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <div class="dropdown">
+      <a href="" title="" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label=""><i class="bi bi-github"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://github.com/mcic-osu/tutorials">
+            Source Code
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://mcic-osu.github.io/tutorials/issues/new">
+            Report an Issue
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#loading-software-at-osc-with-lmod-modules" id="toc-loading-software-at-osc-with-lmod-modules" class="nav-link" data-scroll-target="#loading-software-at-osc-with-lmod-modules"><span class="header-section-number">1</span> Loading software at OSC with Lmod modules</a>
+  <ul class="collapse">
+  <li><a href="#checking-whether-a-program-is-available" id="toc-checking-whether-a-program-is-available" class="nav-link" data-scroll-target="#checking-whether-a-program-is-available"><span class="header-section-number">1.1</span> Checking whether a program is available</a></li>
+  <li><a href="#loading-and-unloading-software" id="toc-loading-and-unloading-software" class="nav-link" data-scroll-target="#loading-and-unloading-software"><span class="header-section-number">1.2</span> Loading and unloading software</a></li>
+  </ul></li>
+  <li><a href="#when-software-isnt-installed-at-osc" id="toc-when-software-isnt-installed-at-osc" class="nav-link" data-scroll-target="#when-software-isnt-installed-at-osc"><span class="header-section-number">2</span> When software isn’t installed at OSC</a></li>
+  <li><a href="#conda-basics" id="toc-conda-basics" class="nav-link" data-scroll-target="#conda-basics"><span class="header-section-number">3</span> Conda basics</a>
+  <ul class="collapse">
+  <li><a href="#activating-conda-environments" id="toc-activating-conda-environments" class="nav-link" data-scroll-target="#activating-conda-environments"><span class="header-section-number">3.1</span> Activating Conda environments</a></li>
+  <li><a href="#lines-to-add-to-your-shell-script" id="toc-lines-to-add-to-your-shell-script" class="nav-link" data-scroll-target="#lines-to-add-to-your-shell-script"><span class="header-section-number">3.2</span> Lines to add to your shell script</a></li>
+  </ul></li>
+  <li><a href="#creating-your-own-conda-environments" id="toc-creating-your-own-conda-environments" class="nav-link" data-scroll-target="#creating-your-own-conda-environments"><span class="header-section-number">4</span> Creating your own Conda environments</a>
+  <ul class="collapse">
+  <li><a href="#one-time-conda-configuration" id="toc-one-time-conda-configuration" class="nav-link" data-scroll-target="#one-time-conda-configuration"><span class="header-section-number">4.1</span> One-time Conda configuration</a></li>
+  <li><a href="#example-creating-an-environment-for-trimgalore" id="toc-example-creating-an-environment-for-trimgalore" class="nav-link" data-scroll-target="#example-creating-an-environment-for-trimgalore"><span class="header-section-number">4.2</span> Example: Creating an environment for TrimGalore</a></li>
+  <li><a href="#finding-conda-installation-info-online" id="toc-finding-conda-installation-info-online" class="nav-link" data-scroll-target="#finding-conda-installation-info-online"><span class="header-section-number">4.3</span> Finding Conda installation info online</a></li>
+  <li><a href="#building-the-installation-command-from-the-online-info" id="toc-building-the-installation-command-from-the-online-info" class="nav-link" data-scroll-target="#building-the-installation-command-from-the-online-info"><span class="header-section-number">4.4</span> Building the installation command from the online info</a></li>
+  <li><a href="#organizing-your-conda-environments" id="toc-organizing-your-conda-environments" class="nav-link" data-scroll-target="#organizing-your-conda-environments"><span class="header-section-number">4.5</span> Organizing your Conda environments</a></li>
+  </ul></li>
+  <li><a href="#self-study-using-apptainer-containers" id="toc-self-study-using-apptainer-containers" class="nav-link" data-scroll-target="#self-study-using-apptainer-containers"><span class="header-section-number">5</span> Self-study: Using Apptainer containers</a>
+  <ul class="collapse">
+  <li><a href="#finding-container-images-online" id="toc-finding-container-images-online" class="nav-link" data-scroll-target="#finding-container-images-online"><span class="header-section-number">5.1</span> Finding container images online</a></li>
+  <li><a href="#running-a-container-image" id="toc-running-a-container-image" class="nav-link" data-scroll-target="#running-a-container-image"><span class="header-section-number">5.2</span> Running a container image</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Using software at OSC</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Jelmer Poelstra </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 2, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<hr>
+<p><br></p>
+<section id="overview" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="overview">Overview</h3>
+<p>To analyze omics data sets, especially in genomics and transcriptomics, a typical workflow includes using a sequence of specialized bioinformatics software/programs/tools (I will use these terms interchangeably).</p>
+<p>At OSC, there are system-wide installations of a number of bioinformatics programs. We do need to “load” such programs before we can use them<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. We will talk more about this process today.</p>
+<p>However, OSC’s collection of bioinformatics programs is not comprehensive, and their versions are sometimes outdated. We therefore need an additional way to use bioinformatics programs at OSC. Two common ones are the <strong>Conda</strong> software management program, which we’ll talk about today, and <strong>containers</strong>, which are discussed in the self-study material at the bottom of the page.</p>
+<p><br></p>
+</section>
+<section id="loading-software-at-osc-with-lmod-modules" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="loading-software-at-osc-with-lmod-modules"><span class="header-section-number">1</span> Loading software at OSC with Lmod modules</h2>
+<p>OSC administrators manage software with the “Lmod” system of software modules. For us users, this means that even though a lot of software is installed, <strong>most of it can only be used after we explicitly load it.</strong> That may seem like a drag, but on the upside, this practice enables the use of different versions of the same software, and of mutually incompatible software on a single system.</p>
+<p>We can load, unload, and search for available software modules using the <strong><code>module</code></strong> command and its sub-commands.</p>
+<section id="checking-whether-a-program-is-available" class="level3" data-number="1.1">
+<h3 data-number="1.1" class="anchored" data-anchor-id="checking-whether-a-program-is-available"><span class="header-section-number">1.1</span> Checking whether a program is available</h3>
+<p>The OSC website has a <a href="https://www.osc.edu/resources/available_software/software_list">list of installed software</a>. You can also search for available software in the shell using two subtly different <code>module</code> commands:</p>
+<ul>
+<li><code>module spider</code> lists all installed modules.</li>
+<li><code>module avail</code> lists modules that <em>can be directly loaded</em> given the current environment (i.e., taking into account which other software has been loaded).</li>
+</ul>
+<p>Simply running <code>module spider</code> or <code>module avail</code> spits out complete lists of installed/available programs — it is more useful to add a <strong>search term</strong> as an argument. Below, we’ll search for the Conda distribution “miniconda”:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> spider miniconda</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  miniconda3:
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     Versions:
+        miniconda3/4.10.3-py37
+        miniconda3/4.12.0-py38
+        miniconda3/4.12.0-py39
+        miniconda3/23.3.1-py310
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  For detailed information about a specific "miniconda3" module (including how to load the modules) use the module's full name.
+  For example:
+
+     $ module spider miniconda3/4.12.0-py39
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> avail miniconda</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>------------------------------------------------------------------------------------------------------ /apps/lmodfiles/Core -------------------------------------------------------------------------------------------------------
+   miniconda3/4.10.3-py37 (D)    miniconda3/4.12.0-py38    miniconda3/4.12.0-py39    miniconda3/23.3.1-py310
+
+  Where:
+   D:  Default Module</code></pre>
+<p>As stated at the bottom of the output below, the <code>(D)</code> in the <code>module avail</code> output above marks the <strong>default version</strong> of the program: this is the version of the program that will be loaded if we don’t specify a version ourselves (see examples below). The <code>module spider</code> command does not provide this information.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Both of these search commands are case-insensitive, but <code>module load</code> (below) is not
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="loading-and-unloading-software" class="level3" data-number="1.2">
+<h3 data-number="1.2" class="anchored" data-anchor-id="loading-and-unloading-software"><span class="header-section-number">1.2</span> Loading and unloading software</h3>
+<p>All other Lmod software functionality is also accessed using <code>module</code> commands. For instance, to make a program available to you, use the <code>load</code> command:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load a module:</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load miniconda3               <span class="co"># Load the default version</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load miniconda3/23.3.1-py310  <span class="co"># Load a specific version</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+It can be good to specify the version even when you want the default <em>(Click to expand)</em>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>This is especially true inside a shell script — when using the <code>module load</code> command, specifying a version would:</p>
+<ul>
+<li>Ensure that when you run the same script a year later, the same version would be used (assuming it hasn’t been removed) — otherwise, it’s possible a newer version would has been installed in the meantime, which might produce different results.</li>
+<li>Make it easy to see which version you used, which is something you typically want to know and report in your paper.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Modules do not remain loaded across separate shell sessions
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Module loading does <em>not</em> persist across shell sessions. Whenever you get a fresh shell session (including but not limited to after logging into OSC again), you will have to reload any modules you want to use!</p>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+<p>To check which modules are loaded, use <code>module list</code>. Its output also includes <em>automatically</em> loaded modules — for example, after loading <code>miniconda3/23.3.1-py310</code>, it should list <code>miniconda3</code> as the 9<sup>th</sup> entry<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> list</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Currently Loaded Modules:
+  1) xalt/latest               3) intel/19.0.5     5) modules/sp2020     7) git/2.18.0              9) miniconda3/23.3.1-py310
+  2) gcc-compatibility/8.4.0   4) mvapich2/2.3.3   6) project/ondemand   8) app_code_server/4.8.3</code></pre>
+<p>Occasionally, when you run into conflicting (mutually incompatible) modules, it can be useful to unload modules, which you can do with <code>module unload</code> or <code>module purge</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> unload miniconda3    <span class="co"># Unload a specific module</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> purge                <span class="co"># Unload all modules</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr style="height:1pt; visibility:hidden;">
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Always include the <code>module load</code> command in your shell script
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When you run a program that is loaded with Lmod in your shell script, always include the <code>module load</code> command in the script, and it is best to do so way at the top of the script:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load software</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load fastqc/0.11.8</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+<section id="exercise-load-a-blast-module" class="level4 exercise">
+<h4 class="anchored" data-anchor-id="exercise-load-a-blast-module"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> Exercise: Load a BLAST module</h4>
+<p>BLAST is a very widely used alignment tool, often used to identify sequences that are similar to a query sequence. There is not just a web version on NCBI’s website, but also a BLAST command-line tool.</p>
+<ol type="1">
+<li><p>Use <code>module avail</code> to check if BLAST is installed at OSC, and if so, which versions. (Note: you’ll also see results for the related module <code>blast-database</code> — ignore those.)</p></li>
+<li><p>Load the default BLAST version by not specifying a version, and then check which version was loaded and if that matches the <code>module avail</code> output.</p></li>
+<li><p>Load the <em>latest</em> version of BLAST without unloading the earlier version first. What output do you get?</p></li>
+</ol>
+<details>
+<summary>
+Click here for the solutions
+</summary>
+<ol type="1">
+<li><p>Check the BLAST modules:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> avail BLAST</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>---------------------------------------------------------------------------------- /apps/lmodfiles/Core -- --------------------------------------------------------------------------------
+   blast-database/2018-08 (D)    blast-database/2020-04    blast-database/2022-06    blast/2.8.0+         blast/2.11.0+
+   blast-database/2019-09        blast-database/2021-05    blast-database/2023-06    blast/2.10.0+ (D)    blast/2.13.0+
+
+  Where:
+   D:  Default Module</code></pre></li>
+<li><p>Load the default version:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load BLAST</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> list</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Currently Loaded Modules:
+  1) xalt/latest               3) intel/19.0.5     5) modules/sp2020     7) git/2.18.0              9) miniconda3/23.3.1-py310
+  2) gcc-compatibility/8.4.0   4) mvapich2/2.3.3   6) project/ondemand   8) app_code_server/4.8.3  10) blast/2.10.0+</code></pre>
+<p><code>blast/2.10.0+</code> was loaded, which matches what <code>module avail</code> claimed with its <code>(D)</code> marker for the default version.</p></li>
+<li><p>Load the latest version:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load blast/2.13.0+</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>The following have been reloaded with a version change:
+  1) blast/2.10.0+ =&gt; blast/2.13.0+</code></pre>
+<p>Lmod detected that you tried to load a different version of a software that was already loaded, so it <em>changes</em> the version and tells you about it.</p></li>
+</ol>
+</details>
+</section>
+<section id="bonus-exercise-star-and-module-availability" class="level4 exercise">
+<h4 class="anchored" data-anchor-id="bonus-exercise-star-and-module-availability"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> Bonus exercise: STAR and module availability</h4>
+<ol type="1">
+<li><p>Use <code>module spider</code> to check which versions of STAR, an RNA-seq read alignment program, have been installed at OSC. Compare this output with that of <code>module avail</code>.</p></li>
+<li><p>Try to load the most recent version of STAR that <code>module spider</code> listed (this should fail).</p></li>
+<li><p>Follow the instructions in the error message to again try and load OSC’s most recent version of STAR.</p></li>
+<li><p>Search the internet to see what the most recent version of STAR is.</p></li>
+</ol>
+<details>
+<summary>
+Click here for the solutions
+</summary>
+<ol type="1">
+<li><p>Check the versions of STAR — it looks like <code>2.7.9a</code> is installed but we can’t load it for some reason:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> spider star</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>--------------------------------------------------------------------------------------------------------------------------------   ------------------------------------------------------
+  star:
+--------------------------------------------------------------------------------------------------------------------------------   ------------------------------------------------------
+     Versions:
+        star/2.5.2a
+        star/2.7.9a</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> avail star</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>---------------------------------------------------------------------------------- /apps/lmodfiles/Core    ----------------------------------------------------------------------------------
+   star/2.5.2a</code></pre></li>
+<li><p>A first stubborn attempt to load the most recent one:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load star/2.7.9a</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Lmod has detected the following error:  These module(s) exist but cannot be loaded as requested: "star/2.7.9a"
+   Try: "module spider star/2.7.9a" to see how to load the module(s).</code></pre></li>
+<li><p>Follow the instructions in the above error message to try and load it again:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> spider star/2.7.9a</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>--------------------------------------------------------------------------------------------------------------------------------   ------------------------------------------------------
+  star: star/2.7.9a
+--------------------------------------------------------------------------------------------------------------------------------   ------------------------------------------------------
+
+    You will need to load all module(s) on any one of the lines below before the "star/2.7.9a" module is available to load.
+
+      gnu/10.3.0</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load gnu/10.3.0</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Lmod is automatically replacing "intel/19.0.5" with "gnu/10.3.0".
+
+The following have been reloaded with a version change:
+  1) mvapich2/2.3.3 =&gt; mvapich2/2.3.6</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load star/2.7.9a</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The last command prints no output, which is generally good news, and indeed, it seems to have worked:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="ex">STAR</span> <span class="at">--version</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>2.7.9a</code></pre></li>
+<li><p>Most recent version of STAR:</p>
+<p>As of March 2024, it looks like that’s version 2.7.11b (<a href="https://github.com/alexdobin/STAR" class="uri">https://github.com/alexdobin/STAR</a>).</p></li>
+</ol>
+</details>
+</section>
+<p><br></p>
+</section>
+</section>
+<section id="when-software-isnt-installed-at-osc" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="when-software-isnt-installed-at-osc"><span class="header-section-number">2</span> When software isn’t installed at OSC</h2>
+<p>It’s not uncommon that software you need for your project is not installed at OSC, or that you need a more recent version of the software than what is available. In that case, the following two are generally your best options:</p>
+<ul>
+<li><strong>Conda</strong>, which creates software “environments” you can activate much like we did with Lmod modules.</li>
+<li><strong>Containers</strong>, which are self-contained software environments that include operating systems, akin to mini virtual machines. Docker containers are most well-known, but OSC uses Apptainer (formerly known as Singularity).</li>
+</ul>
+<p>Conda and containers are useful not only at OSC, where they bypass issues with dependencies and administrator privileges, but more generally for <strong>reproducible software environments</strong>. They also make it easy to access different versions of the same software, or use mutually incompatible software.</p>
+<p>In this session, you will learn how to use Conda, and the self-study reading at the bottom of the page covers using containers.</p>
+<hr style="height:1pt; visibility:hidden;">
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Other options to install software / get it installed
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><p>Send an <strong>email to <a href="mailto:oschelp@osc.edu">OSC Help</a></strong>. They might be able to help you with your installation, or in case of commonly used software, might be willing to perform a system-wide installation (that is, making it available through Lmod / <code>module</code> commands).</p></li>
+<li><p><strong>“Manually” install the software</strong>, which in the best case involves downloading a directly functioning binary (executable), but more commonly requires you to “compile” (build) the program. This is sometimes straightforward but can also become extremely tricky, especially at OSC where you don’t have “administrator privileges”<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> and will often have difficulties with “dependencies”<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>.</p></li>
+</ul>
+</div>
+</div>
+<p><br></p>
+</section>
+<section id="conda-basics" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="conda-basics"><span class="header-section-number">3</span> Conda basics</h2>
+<p>The Conda software can create so-called <strong>environments</strong> in which you can install one or more software packages.</p>
+<p>As you’ll learn below, as long as a program is available in one of the online Conda repositories (and this is nearly always the case for open-source bioinformatics programs), then installing it is quite straightforward, doesn’t require admin privileges, and is done with a procedure that is nearly identical regardless of the program you are installing.</p>
+<p>A Conda environment is “just” a directory that includes the executable (binary) files for the program(s) in question. I have a collection of Conda environments that anyone can use, and we can list these environments simply with <code>ls</code>:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> /fs/ess/PAS0471/jelmer/conda</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>abricate-1.0.1  clonalframeml        kraken2            picard                        salmon
+agat-0.9.1      codan-1.2            kraken-biom        pilon-1.24                    samtools
+alv             cogclassifier        krona              pkgs                          scoary
+amrfinderplus   cutadapt             liftoff-1.6.3      plasmidfinder-2.1.6           seqkit
+antismash       deeploc              links-2.0.1        plink2                        seqtk
+ariba-2.14.6    deeptmhmm            lissero            porechop                      shoot
+astral-5.7.8    deeptmhmm2           longstitch-1.0.3   prokka                        signalp-6.0
+aswcli          diamond              mafft              pseudofinder                  sistr-1.1.1
+bactopia        dwgsim               maskrc-svg         purge_dups-1.2.6              smap
+bactopia3       eggnogmapper         mbar24             pycoqc-2.5.2                  smap_dev
+bactopia-dev    emboss               medaka-1.7.2       qiime2-2023.7                 smartdenovo-env
+bakta           entap-0.10.8         metaxa-2.2.3       qiime2-amplicon-2024.2        snippy-4.6.0
+base            entrez-direct        methylpy           qualimap-env                  snpeff
+bbmap           evigene              minibusco          quast-5.0.2                   snp-sites-2.5.1
+bcftools        fastp                minimap2-2.24      quickmerge-env                soapdenovo-trans-1.0.4
+bedops          fastqc               mlst               racon-1.5.0                   sortmerna-env
+bedtools        fastq-dl             mlst_check         ragtag-2.1.0                  sourmash
+bioawk          fasttree-2.1.11      mobsuite           rascaf                        spades-3.15.5
+bioconvert      filtlong-env         multiqc            rcorrector-1.0.5              sra-tools
+biopython       flye-2.9.1           mummer4            r-dartr                       star
+bit             fmlrc2-0.1.7         muscle             r-deseq                       subread-2.0.1
+blast           gcta                 nanolyse-1.2.1     recognizer-1.8.3              taxonkit
+bowtie1         geofetch             nanoplot           repeatmasker-4.1.2.p1         tgsgapcloser
+bowtie2         gffread-0.12.7       nanopolish-0.13.2  repeatmodeler-2.0.3           tracy-0.7.1
+bracken         gget                 ncbi-datasets      resfinder                     transabyss-2.0.1
+braker2-env     gubbins              nextdenovo-env     resistomeanalyzer-2018.09.06  transdecoder-5.5.0
+busco           hisat2               nextflow           rgi-5.2.1                     treetime
+busco2          hmmer                nextflow-22.10     r-metabar                     trimgalore
+busco3          interproscan-5.55    nf-core            rnaquast-2.2.1                trimmomatic-0.39
+bwa-0.7.17      iqtree               orna-2.0           roary-3.13                    trinity-2.13.2
+cabana          justorthologs-0.0.2  orthofinder        r-rnaseq                      unicycler
+cactus          kallisto-0.48.0      orthofisher        rsem-1.3.3                    virema
+cgmlst          kat-2.4.2            panaroo            rseqc-env                     virulencefinder
+checkm-1.2.0    knsp-3.1             parsnp             r_tree                        wtdbg-2.5
+clinker         kofamscan            phylofisher        sabre-1.0</code></pre>
+<p>This is organized similarly to the Lmod modules in that there’s generally <strong>one separate environment for one program</strong>, and the environment is named after that program.</p>
+<p>(The naming of these environments is unfortunately not entirely consistent: many environments include the version number of the program, but others do not. For environments without version numbers, I try to have them contain the most recent version of a software<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>.)</p>
+<hr style="height:1pt; visibility:hidden;">
+<section id="activating-conda-environments" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="activating-conda-environments"><span class="header-section-number">3.1</span> Activating Conda environments</h3>
+<p>Before you can activate Conda environments, you always need to load OSC’s Miniconda module first, and we will load the most recent one:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load miniconda3/23.3.1-py310</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>As mentioned above, these environments are (de)activated much like with the Lmod system. But while the term “load” is used for Lmod modules, the term <strong>“activate”</strong> is used for Conda environments — it means the same thing.</p>
+<p>Also like Lmod, there is a main command (<code>conda</code>) and several sub-commands (<code>deactivate</code>, <code>create</code>, <code>install</code>, <code>update</code>). For example, to activate an environment:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate /fs/ess/PAS0471/jelmer/conda/multiqc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>(/fs/ess/PAS0471/jelmer/conda/multiqc) [jelmer@p0085 jelmer]$</code></pre>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Conda environment indicator!
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When you have an active Conda environment, its name is displayed in front of your prompt, as depicted above with <code>(multiqc)</code>.</p>
+<p>Because the MultiQC environment you just loaded is not your own, the full path to the environment is shown (making the prompt rather long…). But when you load your own environment, only the name will be shown, like so:</p>
+<pre class="bash-out-solo"><code>(multiqc) [jelmer@p0085 jelmer]$</code></pre>
+</div>
+</div>
+<p>After you have activated the <em>MultiQC</em> environment, you should be able to use the program. To test this, simply run the <code>multiqc</code> command with the <code>--help</code> option:</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="ex">multiqc</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code> /// MultiQC 🔍 | v1.17
+                                                                                              
+ Usage: multiqc [OPTIONS] [ANALYSIS DIRECTORY]
+ 
+ MultiQC aggregates results from bioinformatics analyses across many samples into a    
+ single report.                                                                        
+[...output truncated...]</code></pre>
+<hr style="height:1pt; visibility:hidden;">
+<p>Unlike Lmod / <code>module load</code>, Conda will by default only keep <strong>a single environment active</strong>. Therefore, when you have one environment activate and then activate another. For example, after activating the TrimGalore environment, the MultiQC environment is no longer active:</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate /fs/ess/PAS0471/jelmer/conda/trimgalore</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="ex">multiqc</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>bash: multiqc: command not found...</code></pre>
+<hr style="height:1pt; visibility:hidden;">
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The <code>--stack</code> option does enable you having multiple Conda environments active <em>(Click to expand)</em>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li><p>Activate the TrimGalore environment, if it isn’t already active:</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate /fs/ess/PAS0471/jelmer/conda/trimgalore</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>“Stack” the MultiQC environment:</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate <span class="at">--stack</span> /fs/ess/PAS0471/jelmer/conda/multiqc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>Check that you can use both programs — output not shown, but both should successfully print help info:</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="ex">multiqc</span> <span class="at">--help</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="ex">trim_galore</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ol>
+</div>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="lines-to-add-to-your-shell-script" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="lines-to-add-to-your-shell-script"><span class="header-section-number">3.2</span> Lines to add to your shell script</h3>
+<p>Like for Lmod modules, you’ll have to load Conda environments in every shell session that you want to use them — they don’t automatically reload.</p>
+<p>Conda environments loaded in your interactive shell environment <em>do</em> “carry over” to the environment in which your script runs (even when you submit them to the Slurm queue with <code>sbatch</code>). However, it is good practice to always <em>include the necessary code to load/activate programs in your shell scripts:</em></p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load software</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load miniconda3/23.3.1-py310</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate /fs/ess/PAS0471/jelmer/conda/multiqc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr style="height:1pt; visibility:hidden;">
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Perils of Conda environments inside scripts
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Problems can occur when you have a Conda environment active in your interactive shell while you submit a script as a batch job that activates a different environment. Therefore, it is generally a good idea <strong>not to have any Conda environments active</strong> <strong>in your interactive shell when submitting batch jobs</strong><a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>. To deactivate the currently active Conda environment, simply type <code>conda deactivate</code> without any arguments:</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> deactivate   </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<p><br></p>
+</section>
+</section>
+<section id="creating-your-own-conda-environments" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="creating-your-own-conda-environments"><span class="header-section-number">4</span> Creating your own Conda environments</h2>
+<section id="one-time-conda-configuration" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="one-time-conda-configuration"><span class="header-section-number">4.1</span> One-time Conda configuration</h3>
+<p>Before you can create our own environments, you first have to do some one-time configuration<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>. The configuration will set the <strong>Conda “channels”</strong> (basically, software repositories) that we want to use when we install programs, including the relative priorities among channels (since one program may be available from multiple channels).</p>
+<p>We can do this configuration with the <code>config</code> sub-command — run the following in your shell:</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> config <span class="at">--add</span> channels defaults     <span class="co"># Added first =&gt; lowest priority</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> config <span class="at">--add</span> channels bioconda</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> config <span class="at">--add</span> channels conda-forge  <span class="co"># Added last =&gt; highest priority</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Let’s check whether the configuration was successfully saved:</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> config <span class="at">--get</span> channels</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>--add channels 'defaults'   # lowest priority
+--add channels 'bioconda'
+--add channels 'conda-forge'   # highest priority</code></pre>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="example-creating-an-environment-for-trimgalore" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="example-creating-an-environment-for-trimgalore"><span class="header-section-number">4.2</span> Example: Creating an environment for TrimGalore</h3>
+<p>We will now create a Conda environment with the program TrimGalore installed, which does not have a system-wide installation at OSC. Here is the command to all at once create a new Conda environment and install TrimGalore into that environment:</p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [Don't run this - we'll modify this a bit below]</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> create <span class="at">-y</span> <span class="at">-n</span> trim-galore <span class="at">-c</span> bioconda trim-galore</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Let’s break that command down:</p>
+<ul>
+<li><strong><code>create</code></strong> is the Conda sub-command to create a new environment.</li>
+<li>When adding <strong><code>-y</code></strong>, Conda will not ask us for confirmation to install.</li>
+<li>Following the <strong><code>-n</code></strong> option, you can specify the <em>name</em> you would like the environment to have: we used <code>trim-galore</code>. You can use whatever name you like for the environment, but a descriptive yet concise name is a good idea. For single-program environments, it makes sense to simply name it after the program.</li>
+<li>The <strong><code>-c</code></strong> option is to specify a “channel” (repository) from which to install, here <code>bioconda</code><a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a>.</li>
+<li>The <strong><code>trim-galore</code></strong> argument at the end of the line simply tells Conda to install the package of that name.</li>
+</ul>
+<hr style="height:1pt; visibility:hidden;">
+<p>By default, Conda will install the <strong>latest available version</strong> of a program. If you create an entirely new environment for a program, like we’re doing here, that default should always apply — but if you’re installing into an environment that already contains programs, it’s <em>possible</em> that due to compatibility issues, it will install a different version.</p>
+<p>If you want to be explicit about the version you want to install, add the version number after <strong><code>=</code></strong> following the package name, and you may then also want to include that version number in the Conda environment’s name — try this:</p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> create <span class="at">-y</span> <span class="at">-n</span> trim-galore-0.6.10 <span class="at">-c</span> bioconda trim-galore=0.6.10</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Collecting package metadata (current_repodata.json): done  
+Solving environment: done
+# [...truncated...]</code></pre>
+<p>There should be a lot of output, with many packages that are being downloaded (these are all “dependencies” of TrimGalore), but if it works, you should see this before you get your prompt back:</p>
+<pre class="bash-out-solo"><code>Downloading and Extracting Packages
+
+Preparing transaction: done
+Verifying transaction: done
+Executing transaction: done                                                                                                                   
+#                        
+# To activate this environment, use                          
+#
+#     $ conda activate trim-galore-0.6.10                          
+#
+# To deactivate an active environment, use
+#
+#     $ conda deactivate</code></pre>
+<p>Now, you should be able to activate the environment (using just its name – see the box below):</p>
+<div class="sourceCode" id="cb51"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate trim-galore-0.6.10  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Let’s test if we can run TrimGalore — note, the command is <code>trim_galore</code>:</p>
+<div class="sourceCode" id="cb52"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="ex">trim_galore</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code> USAGE:
+
+trim_galore [options] &lt;filename(s)&gt;
+
+-h/--help               Print this help message and exits.
+# [...truncated...]</code></pre>
+<hr style="height:1pt; visibility:hidden;">
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Specifying the full path to the environment dir <em>(Click to expand)</em>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>You may have noticed above that we merely gave the environment a <em>name</em> (<code>trim-galore</code> or <code>trim-galore-0.6.10</code>), and did not tell it <em>where</em> to put this environment. Similarly, we were able to activate the environment with just its name. Conda assigns a <strong>personal default directory for its environments</strong>, somewhere in your Home directory.</p>
+<p>You can install environments in a different location with the <code>-p</code> (instead of <code>-n</code>) option — for example:</p>
+<div class="sourceCode" id="cb54"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [Don't run this]</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> create <span class="at">-y</span> <span class="at">-p</span> /fs/scratch/PAS2700/<span class="va">$USER</span>/conda/trim-galore <span class="at">-c</span> bioconda trim-galore</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>And when you want to load someone else’s Conda environments, you’ll always have to specify the full path to environment’s dir, like you did when loading one of my Conda environments above.</p>
+</div>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="finding-conda-installation-info-online" class="level3" data-number="4.3">
+<h3 data-number="4.3" class="anchored" data-anchor-id="finding-conda-installation-info-online"><span class="header-section-number">4.3</span> Finding Conda installation info online</h3>
+<p>Minor variations on the <code>conda create</code> command above can be used to install almost any program for which a Conda package is available, which is the vast majority of open-source bioinformatics programs!</p>
+<p>However, you may wonder how you would know:</p>
+<ul>
+<li>Whether the program is available and what the name of its Conda package is</li>
+<li>Which Conda channel we should use</li>
+<li>Which versions are available</li>
+</ul>
+<p>To find this out, my strategy is to simply Google the program name together with “conda”, e.g.&nbsp;“cutadapt conda” if I wanted to install the Cutadapt program. Let’s see that in action:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/conda_google.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></p>
+</figure>
+</div>
+<p>Click on that first link (in my experience, it is always the first Google hit):</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/conda_website.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></p>
+</figure>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="building-the-installation-command-from-the-online-info" class="level3" data-number="4.4">
+<h3 data-number="4.4" class="anchored" data-anchor-id="building-the-installation-command-from-the-online-info"><span class="header-section-number">4.4</span> Building the installation command from the online info</h3>
+<p>You can take the top of the two example installation commands as a template, here: <code>conda install -c bioconda cutadapt</code>. You may notice the <code>install</code> subcommand, which we haven’t yet seen. This would install Cutadapt into <em>the currently activated Conda environment</em>. Since our strategy here is to create a separate environment for each program, just installing a program into whatever environment is currently active is not a great idea.</p>
+<p>You <em>can</em> use the <code>install</code> command with a new environment, but then you would first have to create an “empty” environment, and <em>then</em> run the install command. However, we saw above that we can do all of this in a single command. To build this create-plus-install command, all we need to do is replace <code>install</code> in the example command on the Conda website by <code>create -y -n &lt;env-name&gt;</code>. Then, our full command (without version specification) will be:</p>
+<div class="sourceCode" id="cb55"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [Don't run this - example command]</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> create <span class="at">-y</span> <span class="at">-n</span> cutadapt <span class="at">-c</span> bioconda cutadapt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>To see which <strong>version</strong> of the software will be installed by default, and to see which older versions are available:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/conda_website_version.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+<p>For almost any other program, you can use the exact same procedure to find the Conda package and install it!</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+More Conda commands to manage your environments <em>(Click to expand)</em>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><p>Remove an environment entirely:</p>
+<div class="sourceCode" id="cb56"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env remove <span class="at">-n</span> cutadapt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>List all your conda environments:</p>
+<div class="sourceCode" id="cb57"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env list</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>List all packages (programs) installed in an environment — due to dependencies, this can be a long list, even if you only actively installed one program:</p>
+<div class="sourceCode" id="cb58"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> list <span class="at">-p</span> /fs/ess/PAS0471/jelmer/conda/multiqc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p>Export a plain-text “YAML” file that contains the instructions to recreate your currently-active environment (useful for reproducibility!)</p>
+<div class="sourceCode" id="cb59"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env export <span class="op">&gt;</span> my_env.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>And you can use the following to create a Conda environment from such a YAML file:</p>
+<div class="sourceCode" id="cb60"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env create <span class="at">-n</span> my_env <span class="at">--force</span> <span class="at">--file</span> my_env.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+</div>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="organizing-your-conda-environments" class="level3" data-number="4.5">
+<h3 data-number="4.5" class="anchored" data-anchor-id="organizing-your-conda-environments"><span class="header-section-number">4.5</span> Organizing your Conda environments</h3>
+<p>There are two reasonable alternative way to organize your Conda environments:</p>
+<ul>
+<li><strong>Have one environment per program</strong> (my preference)
+<ul>
+<li>Easier to keep an overview of what you have installed</li>
+<li>No need to reinstall the same program across different projects</li>
+<li>Less risk of running into problems with your environment due to mutually incompatible software and complicated dependency situations</li>
+</ul></li>
+<li><strong>Have one environment per research project</strong>
+<ul>
+<li>You just need to activate that one environment when you’re working on your project.</li>
+<li>Easier when you need to share your entire project with someone else (or yourself) on a different (super)computer.</li>
+</ul></li>
+</ul>
+<p>Even though it might seem easier, a third alternative, to simply install all programs across all projects in one single environment, is <em>not</em> recommended. This doesn’t benefit reproducibility, and your environment is likely to stop functioning properly sooner or later.</p>
+<p><br></p>
+</section>
+</section>
+<section id="self-study-using-apptainer-containers" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="self-study-using-apptainer-containers"><span class="header-section-number">5</span> Self-study: Using Apptainer containers</h2>
+<p><strong>Containers</strong> are an alternative to Conda to use programs that don’t have system-wide installations at OSC.</p>
+<p>Containers are similar to Virtual Machines and different from Conda environments in that they come with an entire <em>operating system</em>. This makes creating your own container “image” (see box below on terminology) much more involved than creating a Conda environment, and we will not cover that here.</p>
+<p>However, pre-existing container images are available for most bioinformatics programs, and these can be easily found, downloaded, and used.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Container terminology
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Container image</strong>: File (Apptainer) or files (Docker) that contain the container application.</li>
+<li><strong>Container</strong> (sensu stricto): A <em>running</em> container image.</li>
+<li><strong>Definition file</strong> (Apptainer) / <strong>Dockerfile</strong> (Docker): A plain text file that contains the recipe to build a container image.</li>
+</ul>
+</div>
+</div>
+<p>Among container platforms, Apptainer (formerly known as <em>Singularity</em>) and especially Docker are the most widely used ones. At supercomputers like OSC, however, only Apptainer containers can be used. Luckily, the Apptainer program can work with Docker container images: it will convert them on the fly.</p>
+<hr style="height:1pt; visibility:hidden;">
+<section id="finding-container-images-online" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="finding-container-images-online"><span class="header-section-number">5.1</span> Finding container images online</h3>
+<p>There are several online repositories with publicly available container images, but I would recommend BioContainers (<a href="https://biocontainers.pro/registry" class="uri">https://biocontainers.pro/registry</a>) or Quay.io (<a href="https://quay.io/biocontainers" class="uri">https://quay.io/biocontainers</a>).</p>
+<p>For example, let’s look on the BioContainers website for a TrimGalore container image:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/biocontainers_search.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="border:1px solid gray;;width:85.0%"></p>
+</figure>
+</div>
+<div class="legend2">
+<p>The search result on the BioContainers website after entering “trim galore” in the search box.</p>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+<p>Click on the only entry that is shown, <code>trim-galore</code>, which will get you to a page like this:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/biocontainers_match.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="border:1px solid gray;;width:85.0%"></p>
+</figure>
+</div>
+<p>The website also includes Conda installation instructions — to see the container results, scroll down to:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/biocontainers_download.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="border:1px solid gray;;width:85.0%"></p>
+</figure>
+</div>
+<div class="legend2">
+<p>After scrolling down on the results page, you should see a recent available container image.<br>
+Note that the command shown is <code>singularity run</code>, but we will use the more up-to-date <code>apptainer run</code>.</p>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+<p>The version tag that is shown (<code>0.6.9--hdfd78af_0</code> above) pertains to the version of TrimGalore, but the result that is shown here is not will always the container image(s) with the most recent version. To see a list of all available images, click on the <code>Packages and Containers</code> tab towards the top, and then sort by <code>Last Update</code>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/biocontainers_versions.png" class="img-fluid figure-img"></p>
+<figcaption>The logo with the large S depicts Singularity/Apptainer containers.</figcaption>
+</figure>
+</div>
+<p>Whenever you find both a Singularity/Apptainer and a Docker image for your program, <strong>use the Singularity/Apptainer image</strong>. This is because those don’t have to be converted, while Docker images do. But when the version you want is only available as a Docker image, that will work too: as mentioned above, it will be automatically converted to the proper format.</p>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="running-a-container-image" class="level3" data-number="5.2">
+<h3 data-number="5.2" class="anchored" data-anchor-id="running-a-container-image"><span class="header-section-number">5.2</span> Running a container image</h3>
+<p>When you’ve found a container image that you want to use, copy its URL from the BioContainers website. For example, for the most recent TrimGalore version as of March 2024: <code>https://depot.galaxyproject.org/singularity/trim-galore:0.6.10--hdfd78af_0</code>.</p>
+<p>You could also copy the full command — however, we will modify that in two ways, using:</p>
+<ul>
+<li>The more up-to-date <code>apptainer</code> command<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a></li>
+<li>The <code>exec</code> subcommand instead of <code>run</code>, allowing us to enter a custom command to run in the container<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a>.</li>
+</ul>
+<p>As such, our “base” command to run TrimGalore in the container will be as follows:</p>
+<div class="sourceCode" id="cb61"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [Don't run this, we'll need to add a TrimGalore command]</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="ex">apptainer</span> exec https://depot.galaxyproject.org/singularity/trim-galore:0.6.10--hdfd78af_0</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Need to use a Docker container? You can’t use the Docker URL as-is. <em>(Click to expand)</em>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>If you want to use a Docker container, the listed quasi-URL on BioContainers will start with “quay.io”. In your <code>apptainer exec</code> command, you need to preface this URL with <code>docker://</code>. For instance:</p>
+<div class="sourceCode" id="cb62"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="ex">apptainer</span> exec docker://quay.io/biocontainers/trim-galore:0.6.10--hdfd78af_0</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<p>After the code above, we would finish our command by simply entering a TrimGalore command in the exact same way as we would when running TrimGalore outside of the context of a container. For example, to just print the help info like we’ve been doing before, the TrimGalore command is:</p>
+<div class="sourceCode" id="cb63"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="ex">trim_galore</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>And to run that inside the container, our full command will be:</p>
+<div class="sourceCode" id="cb64"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="ex">apptainer</span> exec https://depot.galaxyproject.org/singularity/trim-galore:0.6.10--hdfd78af_0 <span class="dt">\</span></span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>    trim_galore <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>INFO:    Downloading network image
+321.4MiB / 321.4MiB [===================================================================================================================================] 100 % 3.0 MiB/s 0s
+WARNING: Environment variable LD_PRELOAD already has value [], will not forward new value [/apps/xalt/xalt/lib64/libxalt_init.so] from parent process environment
+
+ USAGE:
+
+trim_galore [options] &lt;filename(s)&gt;
+
+-h/--help               Print this help message and exits.
+# [...truncated...]</code></pre>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The Apptainer/Singularity software does not need to be loaded at OSC, it is always automatically loaded.
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+<p>So, all that is different from running a program inside a container instead of a a locally installed program, is that you <strong>prefix your command with <code>apptainer exec &lt;URL&gt;</code>.</strong></p>
+<p>The first time you run this command, the container will be downloaded, which can take a few minutes (by default it will be downloaded to <code>~/.apptainer/cache</code>, but you can change this by setting the <code>$APPTAINER_CACHEDIR</code> environment variable). After that, the downloaded image will be used and the command should be executed about as instantaneously as when running <code>TrimGalore</code> outside of a container.</p>
+<p><em>(You will keep seeing the warning <code>WARNING: Environment variable LD_PRELOAD [...]</code></em> <em>whenever you run a container, but this is nothing to worry about.)</em></p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+When to use a Container versus Conda
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When you need multiple programs in quick succession or in a single command (e.g., you’re piping the output of one program into a second program), it can be more convenient to have those programs installed in a single environment or container. Pre-built multi-program containers are not as easy to find. And since building your own Conda environment is easier than building your own container, this is a situation where you might prefer Conda.</p>
+</div>
+</div>
+<p><br></p>
+
+
+</section>
+</section>
+
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p> And with Git we saw another kind of behavior, where the automatically available version is very old, but we can load a more recent version.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p> This may vary over time and also depends on whether you run this in the VS Code Server terminal — some of the loaded modules are related to that.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>When your personal computer asks you to “authenticate” while you are installing something, you are authenticating yourself as a user with administrator privileges. At OSC, you don’t have such privileges.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Other software upon which the software that you are trying to install depends.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p> It isn’t feasible to keep separate environments around for many different versions of a program, mostly because Conda environments contain a very large number of files, and OSC has file number quotas. This is why I have in many cases chosen the strategy of just updating the version within the same environment.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p> Unless you first deactivate any active environments in your script.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>That is, these settings will be saved somewhere in your OSC home directory, and you never have to set them again unless you need to make changes.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p> Given that you’ve done some config above, this is not always necessary, but it can be good to be explicit.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>Though note that as of March 2024, the <code>singularity</code> command does still work, and it will probably continue to work for a while.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p> The <code>run</code> subcommand would only run some preset default action, which is rarely useful for our purposes.<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/mcic-osu\.github\.io\/tutorials");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>2024-2025, Jelmer Poelstra</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/mcic-osu/tutorials">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jelmer Poelstra">
+<meta name="dcterms.date" content="2024-02-08">
+
+<title>Genome annotation – MCIC Bioinformatics Tutorials</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-57476271c5f0467c372e20ff5d25630e.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-93a206ead970ce8646eacc93a2842d74.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">MCIC Bioinformatics Tutorials</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> <i class="bi bi-house-door" role="img">
+</i> 
+<span class="menu-text"> </span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About this website</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <div class="dropdown">
+      <a href="" title="" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label=""><i class="bi bi-github"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://github.com/mcic-osu/tutorials">
+            Source Code
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://mcic-osu.github.io/tutorials/issues/new">
+            Report an Issue
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#the-gffgtf-format" id="toc-the-gffgtf-format" class="nav-link" data-scroll-target="#the-gffgtf-format"><span class="header-section-number">1</span> The GFF/GTF format</a></li>
+  <li><a href="#annotation-with-prokka" id="toc-annotation-with-prokka" class="nav-link" data-scroll-target="#annotation-with-prokka"><span class="header-section-number">2</span> Annotation with Prokka</a>
+  <ul class="collapse">
+  <li><a href="#running-prokka" id="toc-running-prokka" class="nav-link" data-scroll-target="#running-prokka"><span class="header-section-number">2.1</span> Running Prokka</a></li>
+  <li><a href="#prokka-output" id="toc-prokka-output" class="nav-link" data-scroll-target="#prokka-output"><span class="header-section-number">2.2</span> Prokka output</a></li>
+  <li><a href="#exploring-the-gff-file" id="toc-exploring-the-gff-file" class="nav-link" data-scroll-target="#exploring-the-gff-file"><span class="header-section-number">2.3</span> Exploring the GFF file</a></li>
+  </ul></li>
+  <li><a href="#virulence-gene-identification-with-abricate" id="toc-virulence-gene-identification-with-abricate" class="nav-link" data-scroll-target="#virulence-gene-identification-with-abricate"><span class="header-section-number">3</span> Virulence gene identification with Abricate</a></li>
+  <li><a href="#bonus-plasmid-detection-with-mob-suite" id="toc-bonus-plasmid-detection-with-mob-suite" class="nav-link" data-scroll-target="#bonus-plasmid-detection-with-mob-suite"><span class="header-section-number">4</span> Bonus: Plasmid detection with MOB-suite</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Genome annotation</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Jelmer Poelstra </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 8, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><br></p>
+<section id="introduction" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="introduction">Introduction</h2>
+<section id="setting-up" class="level4 exercise">
+<h4 class="anchored" data-anchor-id="setting-up">{{&lt; fa user-edit &gt;}} <strong>Setting up</strong></h4>
+<p>You should have an active VS Code session with an open terminal. In that terminal, you should be be in your dir <code>/fs/scratch/PAS2250/cabana/$USER/bact/bact</code>.</p>
+</section>
+<p><br></p>
+</section>
+<section id="the-gffgtf-format" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="the-gffgtf-format"><span class="header-section-number">1</span> The GFF/GTF format</h2>
+<p>The GTF and GFF formats are very similar tab-delimited <strong>tabular</strong> <strong>files</strong> that contain <strong>genome annotations</strong>, with:</p>
+<ul>
+<li>One row for each annotated “<strong>genomic feature</strong>” (gene, exon, etc.)</li>
+<li>One column for each piece of information about a feature, like its genomic coordinates</li>
+</ul>
+<p>See the sample below, with an added header line (<em>not normally present</em>) with column names:</p>
+<pre class="bash-out-solo"><code>seqname     source  feature start   end     score  strand  frame    attributes
+NC_000001   RefSeq  gene    11874   14409   .       +       .       gene_id "DDX11L1"; transcript_id ""; db_xref "GeneID:100287102"; db_xref "HGNC:HGNC:37102"; description "DEAD/H-box helicase 11 like 1 (pseudogene)"; gbkey "Gene"; gene "DDX11L1"; gene_biotype "transcribed_pseudogene"; pseudo "true"; 
+NC_000001   RefSeq  exon    11874   12227   .       +       .       gene_id "DDX11L1"; transcript_id "NR_046018.2"; db_xref "GeneID:100287102"; gene "DDX11L1"; product "DEAD/H-box helicase 11 like 1 (pseudogene)"; pseudo "true"; </code></pre>
+<p>Some details on the more important/interesting columns:</p>
+<ul>
+<li><code>seqname</code> — Name of the chromosome, scaffold, or contig</li>
+<li><code>feature</code> — Name of the feature type, e.g.&nbsp;“gene”, “exon”, “intron”, “CDS”</li>
+<li><code>start</code> &amp; <code>end</code> — Start &amp; end position of the feature</li>
+<li><code>strand</code> — Whether the feature is on the <code>+</code> (forward) or <code>-</code> (reverse) strand</li>
+<li><code>attribute</code> — A semicolon-separated list of tag-value pairs with additional information</li>
+</ul>
+<p><br></p>
+</section>
+<section id="annotation-with-prokka" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="annotation-with-prokka"><span class="header-section-number">2</span> Annotation with Prokka</h2>
+<p>We will now annotate our genome assembly with the program Prokka (<a href="https://academic.oup.com/bioinformatics/article/30/14/2068/2390517">Seemann 2014</a>, <a href="https://github.com/tseemann/prokka">documentation</a>).</p>
+<p>Annotation consists of two main steps:</p>
+<ol type="1">
+<li><strong>Structural annotation</strong>: the identification of genes (and other genomic features)</li>
+<li><strong>Functional annotation</strong>: the assigment of gene names and functions to genes based on homology with known genes</li>
+</ol>
+<p>Prokka will perform both of these steps for us, and its most important output files are a proteome (amino acid) FASTA file, and a GFF annotation file.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Bakta
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A more recent bacterial annotation program, Bakta ( <a href="https://pubmed.ncbi.nlm.nih.gov/34739369/">Schwenger et al.&nbsp;2021</a>, <a href="https://github.com/oschwengers/bakta">documentation</a>) , is generally able to functionally annotate more genes. But it also takes much longer to run, so in the interest of time, we will run Prokka. Otherwise, Prokka and Bakta are similar.</p>
+</div>
+</div>
+<hr style="height:1pt; visibility:hidden;">
+<section id="running-prokka" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="running-prokka"><span class="header-section-number">2.1</span> Running Prokka</h3>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+If you didn’t do decontamination with Kraken2, please run this!
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you didn’t perform the decontamination step with Kraken2 on the previous page, you’ll have to run the following to make sure your assembly is in the expected spot:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> results/decontam</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> results/spades/SM04/contigs.fasta results/decontam/SM04.fasta</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><em>(That is, you’re simply copying your original assembly to a new dir.)</em></p>
+</div>
+</div>
+<p>Running Prokka is pretty simple:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> activate /fs/ess/PAS0471/jelmer/conda/prokka</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> <span class="at">-A</span> PAS2250 <span class="at">-t</span> 15 <span class="at">-c</span> 12 <span class="at">-o</span> slurm-prokka.out <span class="at">--wrap</span><span class="op">=</span><span class="st">"</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">  prokka </span><span class="dt">\</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="st">    --outdir results/prokka </span><span class="dt">\</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="st">    --prefix SM04 </span><span class="dt">\</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="st">    --cpus 12 </span><span class="dt">\</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="st">    results/decontam/SM04.fasta</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="prokka-output" class="level3" data-number="2.2">
+<h3 data-number="2.2" class="anchored" data-anchor-id="prokka-output"><span class="header-section-number">2.2</span> Prokka output</h3>
+<p>Once its done after a couple of minutes, the end of your <code>slurm-prokka.out</code> file should look as follows:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span> slurm-prokka.out</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>[14:58:39] results/prokka/SM04.fsa
+[14:58:39] results/prokka/SM04.tbl
+[14:58:39] results/prokka/SM04.gbk
+[14:58:39] results/prokka/SM04.tsv
+[14:58:39] Annotation finished successfully.
+[14:58:39] Walltime used: 2.42 minutes
+[14:58:39] If you use this result please cite the Prokka paper:
+[14:58:39] Seemann T (2014) Prokka: rapid prokaryotic genome annotation. Bioinformatics. 30(14):2068-9.
+[14:58:39] Type 'prokka --citation' for more details.
+[14:58:39] Share and enjoy!</code></pre>
+<p>Let’s take a look at the files in the output dir:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-lh</span> results/prokka</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>total 59M
+-rw-r--r-- 1 jelmer PAS0471 1.8M Feb  6 14:58 SM04.err
+-rw-r--r-- 1 jelmer PAS0471 2.0M Feb  6 14:58 SM04.faa
+-rw-r--r-- 1 jelmer PAS0471 5.4M Feb  6 14:58 SM04.ffn
+-rw-r--r-- 1 jelmer PAS0471 5.8M Feb  6 14:56 SM04.fna
+-rw-r--r-- 1 jelmer PAS0471 5.8M Feb  6 14:58 SM04.fsa
+-rw-r--r-- 1 jelmer PAS0471  12M Feb  6 14:58 SM04.gbk
+-rw-r--r-- 1 jelmer PAS0471 7.1M Feb  6 14:58 SM04.gff
+-rw-r--r-- 1 jelmer PAS0471  62K Feb  6 14:58 SM04.log
+-rw-r--r-- 1 jelmer PAS0471  19M Feb  6 14:58 SM04.sqn
+-rw-r--r-- 1 jelmer PAS0471 960K Feb  6 14:58 SM04.tbl
+-rw-r--r-- 1 jelmer PAS0471 322K Feb  6 14:58 SM04.tsv
+-rw-r--r-- 1 jelmer PAS0471   95 Feb  6 14:58 SM04.txt</code></pre>
+<p>The <code>.faa</code> files contains the proteome:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">less</span> results/prokka/SM04.faa</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>&gt;LHECFIHF_00002 Pectate lyase L
+MRTILLTVLLVVAATAQATDYYVAPNGDDNAAGTKGAPLRTIMRAQQAAKAGDTVYFRGG
+VYTYTAGINRCATRTDTVNAITLNNSGSENKPIRYWAYPGETPVFDFSAMKDDCRVKGFN
+VTGSWLHLKGLEVKGVPQQPENHLNHESWGIWNSGSHNTFEQLNLHHNMGPGLFIQNGGY
+NLVLNTDSHHNYDPYTSNGAGQSADGFGAHIKAGHPGNVFRGCRAWANSDDGFDLINAFS
+PVTIESSWAWQQGYLPGTRTKLEAGNGNGIKAGGYGGKYVPDGVKHTVRNSVAFDNKSAG
+FYANHHTLALDFINNTAFSNGVNYNMAGIAPDGSLIPLGNLSNNIAYKGRLTVNTEGLDM
+AHNSWTLPTPITDADFEDVSDTGWDAPRQPDGSLPVLRSFHLRAGGRLAGMGAFH
+&gt;LHECFIHF_00003 hypothetical protein
+MSQERYGIRRFALLNTAGYSLGLFPLENPLSVYGANNLGKSASINALQFPILARMSDMSF
+GKYSLEQSRRFYFASDTSYILVEVSLPHGPHVIGVVGRGPGGGFGHQFFAYAGELDLGHY
+QKNDTCLRQKELFSNLESQGLKAYELKPDELRRLLVGGHTSIPLDLTLIPLRSTSEQSLK
+[...output truncated...]</code></pre>
+<p>The <code>.gff</code> file is the main annotation file.</p>
+<hr style="height:1pt; visibility:hidden;">
+</section>
+<section id="exploring-the-gff-file" class="level3" data-number="2.3">
+<h3 data-number="2.3" class="anchored" data-anchor-id="exploring-the-gff-file"><span class="header-section-number">2.3</span> Exploring the GFF file</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">less</span> <span class="at">-S</span> results/prokka/SM04.gff</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Once you scroll past the header…</p>
+<pre class="bash-out"><code>##gff-version 3
+##sequence-region NODE_1_length_1267796_cov_33.239498 1 1267796
+##sequence-region NODE_2_length_902255_cov_32.000245 1 902255
+##sequence-region NODE_3_length_697265_cov_34.901625 1 697265
+##sequence-region NODE_4_length_534491_cov_32.088021 1 534491</code></pre>
+<p>…you reach the main annotation table:</p>
+<pre class="bash-out"><code>NODE_1_length_1267796_cov_33.239498 barrnap:0.9 rRNA    272 381 3.3e-13 +   .   ID=LHECFIHF_00001;locus_tag=LHECFIHF_00001;product=5S ribosomal RNA
+NODE_1_length_1267796_cov_33.239498 Prodigal:002006 CDS 518 1765    .   -   0   ID=LHECFIHF_00002;eC_number=4.2.2.2;Name=pelL;gene=pelL;inference=ab initio prediction:Prodigal:002006,similar to AA sequence:UniProtKB:P0C1A7;locus_tag=LHECFIHF_00002;product=Pectate lyase L
+NODE_1_length_1267796_cov_33.239498 Prodigal:002006 CDS 1939    4758    .   -   0   ID=LHECFIHF_00003;inference=ab initio prediction:Prodigal:002006;locus_tag=LHECFIHF_00003;product=hypothetical protein
+NODE_1_length_1267796_cov_33.239498 Prodigal:002006 CDS 4755    5462    .   -   0   ID=LHECFIHF_00004;inference=ab initio prediction:Prodigal:002006;locus_tag=LHECFIHF_00004;product=hypothetical protein
+NODE_1_length_1267796_cov_33.239498 Prodigal:002006 CDS 5452    6729    .   -   0   ID=LHECFIHF_00005;inference=ab initio prediction:Prodigal:002006;locus_tag=LHECFIHF_00005;product=hypothetical protein
+NODE_1_length_1267796_cov_33.239498 Prodigal:002006 CDS 6874    7680    .   +   0   ID=LHECFIHF_00006;inference=ab initio prediction:Prodigal:002006;locus_tag=LHECFIHF_00006;product=hypothetical protein
+NODE_1_length_1267796_cov_33.239498 Prodigal:002006 CDS 7673    8128    .   +   0   ID=LHECFIHF_00007;eC_number=2.3.1.266;Name=rimI;db_xref=COG:COG0456;gene=rimI;inference=ab initio prediction:Prodigal:002006,similar to AA sequence:UniProtKB:P0A944;locus_tag=LHECFIHF_00007;product=[Ribosomal protein S18]-alanine N-acetyltransferase
+NODE_1_length_1267796_cov_33.239498 Prodigal:002006 CDS 8138    8542    .   -   0   ID=LHECFIHF_00008;inference=ab initio prediction:Prodigal:002006;locus_tag=LHECFIHF_00008;product=hypothetical protein
+NODE_1_length_1267796_cov_33.239498 Prodigal:002006 CDS 8709    9347    .   +   0   ID=LHECFIHF_00009;eC_number=4.2.1.1;Name=can;db_xref=COG:COG0288;gene=can;inference=ab initio prediction:Prodigal:002006,similar to AA sequence:UniProtKB:P61517;locus_tag=LHECFIHF_00009;product=Carbonic anhydrase 2
+NODE_1_length_1267796_cov_33.239498 Prodigal:002006 CDS 9405    11069   .   -   0   ID=LHECFIHF_00010;inference=ab initio prediction:Prodigal:002006;locus_tag=LHECFIHF_00010;product=hypothetical protein</code></pre>
+<p>How many genes have been annotated?</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">awk</span> <span class="st">'$3 == "CDS"'</span> results/prokka/SM04.gff <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>5080</code></pre>
+<p>Genes with the name “<strong>hypothetical protein</strong>” were identified by the structural annotation, but were effectively not functionally annotated: we don’t have any information about their function.</p>
+<p>How many “hypothetical proteins” are there?</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-c</span> <span class="st">"hypothetical protein"</span> results/prokka/SM04.gff</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>2071</code></pre>
+<p><br></p>
+</section>
+</section>
+<section id="virulence-gene-identification-with-abricate" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="virulence-gene-identification-with-abricate"><span class="header-section-number">3</span> Virulence gene identification with Abricate</h2>
+<p>We will run the program Abricate to identity virulence genes using the Virulence Factor Database (<code>--db vcfdb</code>).</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> results/abricate</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="ex">abricate</span> <span class="dt">\</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--db</span> vfdb <span class="dt">\</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  results/decontam/SM04.fasta <span class="dt">\</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">&gt;</span> results/abricate/SM04.tab</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>Using nucl database vfdb:  4366 sequences -  2024-Feb-6
+Processing: results/decontam/SM04.fasta
+Found 21 genes in results/decontam/SM04.fasta
+Tip: have a suggestion for abricate? Tell me at https://github.com/tseemann/abricate/issues
+Done.</code></pre>
+<p>Let’s take a look at the output:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">less</span> <span class="at">-S</span> results/abricate/SM04.tab</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details>
+<summary>
+Click to show the expected output
+</summary>
+<p><br></p>
+<pre class="bash-out"><code>#FILE   SEQUENCE    START   END STRAND  GENE    COVERAGE    COVERAGE_MAP    GAPS    %COVERAGE   %IDENTITY   DATABASE    ACCESSION   PRODUCT RESISTANCE
+results/decontam/SM04.fasta NODE_12_length_123484_cov_34.382354 35324   36088   +   crc 1-765/780   =============== 0/0 98.08   82.75   vfdb    NP_254019   (crc) catabolite repression control protein [Type IV pili (VF0082) - Adherence (VFC0001)] [Pseudomonas aeruginosa PAO1] 
+results/decontam/SM04.fasta NODE_1_length_1267796_cov_33.239498 207972  209374  -   algA    1-1403/1446 ========/====== 2/2 96.96   81.77   vfdb    NP_252241   (algA) phosphomannose isomerase / guanosine 5'-diphospho-D-mannose pyrophosphorylase [Alginate (VF0091) - Biofilm (VFC0271)] [Pseudomonas aeruginosa PAO1]  
+results/decontam/SM04.fasta NODE_1_length_1267796_cov_33.239498 211633  212916  -   algI    1-1284/1563 =============.. 0/0 82.15   83.02   vfdb    NP_252238   (algI) alginate o-acetyltransferase AlgI [Alginate (VF0091) - Biofilm (VFC0271)] [Pseudomonas aeruginosa PAO1]  
+results/decontam/SM04.fasta NODE_1_length_1267796_cov_33.239498 221445  222830  -   alg8    100-1485/1485   .============== 0/0 93.33   80.23   vfdb    NP_252231   (alg8) alginate-c5-mannuronan-epimerase AlgG [Alginate (VF0091) - Biofilm (VFC0271)] [Pseudomonas aeruginosa PAO1]  
+results/decontam/SM04.fasta NODE_1_length_1267796_cov_33.239498 746910  747244  +   pilZ    22-356/357  =============== 0/0 93.84   82.69   vfdb    NP_251650   (pilZ) type 4 fimbrial biogenesis protein PilZ [Type IV pili (VF0082) - Adherence (VFC0001)] [Pseudomonas aeruginosa PAO1]  
+results/decontam/SM04.fasta NODE_1_length_1267796_cov_33.239498 1097853 1098324 -   pvdS    43-514/564  .=======/=====. 2/4 83.33   82.91   vfdb    NP_251116   (pvdS) extracytoplasmic-function sigma-70 factor  [Pyoverdine (VF0094) - Nutritional/Metabolic factor (VFC0272)] [Pseudomonas aeruginosa PAO1]  
+results/decontam/SM04.fasta NODE_1_length_1267796_cov_33.239498 1112719 1114079 +   pvdH    7-1367/1410 ========/====== 4/4 96.38   80.78   vfdb    NP_251103   (pvdH) diaminobutyrate-2-oxoglutarate aminotransferase PvdH [Pyoverdine (VF0094) - Nutritional/Metabolic factor (VFC0272)] [Pseudomonas aeruginosa PAO1]    
+results/decontam/SM04.fasta NODE_1_length_1267796_cov_33.239498 1114207 1114409 +   mbtH-like   1-203/219   ==============. 0/0 92.69   83.25   vfdb    NP_251102   (mbtH-like) MbtH-like protein from the pyoverdine cluster [Pyoverdine (VF0094) - Nutritional/Metabolic factor (VFC0272)] [Pseudomonas aeruginosa PAO1]  
+results/decontam/SM04.fasta NODE_3_length_697265_cov_34.901625  20055   20636   -   algU    1-582/582   =============== 0/0 100.00  81.27   vfdb    NP_249453   (algU) alginate biosynthesis protein AlgZ/FimS [Alginate (VF0091) - Biofilm (VFC0271)] [Pseudomonas aeruginosa PAO1]    
+results/decontam/SM04.fasta NODE_3_length_697265_cov_34.901625  236211  237704  +   rpoN    1-1494/1494 ========/====== 6/12    99.60   82.20   vfdb    NP_253152   (rpoN) RNA polymerase factor sigma-54 [Type IV pili (VF0082) - Adherence (VFC0001)] [Pseudomonas aeruginosa PAO1]   
+results/decontam/SM04.fasta NODE_5_length_350317_cov_33.463137  244380  244745  -   pilH    1-366/366   =============== 0/0 100.00  85.79   vfdb    NP_249100   (pilH) twitching motility protein PilH [Type IV pili (VF0082) - Adherence (VFC0001)] [Pseudomonas aeruginosa PAO1]  
+results/decontam/SM04.fasta NODE_5_length_350317_cov_33.463137  244819  245202  -   pilG    1-384/408   =============== 0/0 94.12   82.55   vfdb    NP_249099   (pilG) twitching motility protein PilG [Type IV pili (VF0082) - Adherence (VFC0001)] [Pseudomonas aeruginosa PAO1]  
+results/decontam/SM04.fasta NODE_5_length_350317_cov_33.463137  253182  254216  -   pilT    1-1035/1035 ========/====== 2/2 99.90   83.88   vfdb    NP_249086   (pilT) twitching motility protein PilT [Type IV pili (VF0082) - Adherence (VFC0001)] [Pseudomonas aeruginosa PAO1]  
+results/decontam/SM04.fasta NODE_5_length_350317_cov_33.463137  346430  347476  -   pilM    19-1065/1065    ========/====== 4/4 98.12   80.17   vfdb    NP_253731   (pilM) type IV pilus inner membrane platform protein PilM [Type IV pili (VF0082) - Adherence (VFC0001)] [Pseudomonas aeruginosa PAO1]   
+results/decontam/SM04.fasta NODE_6_length_339735_cov_31.812540  47754   48509   +   flgG    10-762/786  ========/====== 2/3 95.80   80.82   vfdb    NP_249773   (flgG) flagellar basal-body rod protein FlgG [Flagella (VF0273) - Motility (VFC0204)] [Pseudomonas aeruginosa PAO1] 
+results/decontam/SM04.fasta NODE_6_length_339735_cov_31.812540  49404   50454   +   flgI    60-1110/1110    =============== 0/0 94.68   82.21   vfdb    NP_249775   (flgI) flagellar P-ring protein precursor FlgI [Flagella (VF0273) - Motility (VFC0204)] [Pseudomonas aeruginosa PAO1]   
+results/decontam/SM04.fasta NODE_6_length_339735_cov_31.812540  74115   75108   +   fliG    22-1015/1017    =============== 0/0 97.74   83.80   vfdb    NP_249793   (fliG) flagellar motor switch protein G [Flagella (VF0273) - Motility (VFC0204)] [Pseudomonas aeruginosa PAO1]  
+results/decontam/SM04.fasta NODE_6_length_339735_cov_31.812540  82920   83860   +   fliM    1-941/972   ========/====== 2/2 96.71   83.02   vfdb    NP_250134   (fliM) flagellar motor switch protein FliM [Flagella (VF0273) - Motility (VFC0204)] [Pseudomonas aeruginosa PAO1]   
+results/decontam/SM04.fasta NODE_6_length_339735_cov_31.812540  84903   85591   +   fliP    70-758/768  .=======/====== 2/2 89.58   81.59   vfdb    NP_250137   (fliP) flagellar biosynthetic protein FliP [Flagella (VF0273) - Motility (VFC0204)] [Pseudomonas aeruginosa PAO1]   
+results/decontam/SM04.fasta NODE_6_length_339735_cov_31.812540  91625   92433   +   fleN    10-818/843  =============== 0/0 95.97   82.82   vfdb    NP_250145   (fleN) flagellar synthesis regulator FleN [Flagella (VF0273) - Motility (VFC0204)] [Pseudomonas aeruginosa PAO1]    
+results/decontam/SM04.fasta NODE_6_length_339735_cov_31.812540  101666  102120  +   PA1464  26-480/480  =============== 0/0 94.79   84.18   vfdb    NP_250155   (PA1464) purine-binding chemotaxis protein [Flagella (VF0273) - Motility (VFC0204)] [Pseudomonas aeruginosa PAO1]   </code></pre>
+</details>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Additional Abricate databases
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You may also want to run Abricate with other virulence gene databases, such as the <a href="https://academic.oup.com/nar/article/49/D1/D651/5934417">BastionHub</a>, and <a href="https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-S7-S4">T3SEdb</a> databases. Additionally, you can search for antimicrobial resistance genes with Abricate using e.g.&nbsp;the ResFinder and CARD databases.</p>
+</div>
+</div>
+<p><br></p>
+</section>
+<section id="bonus-plasmid-detection-with-mob-suite" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="bonus-plasmid-detection-with-mob-suite"><span class="header-section-number">4</span> Bonus: Plasmid detection with MOB-suite</h2>
+<p>We will run the <code>mob_recon</code> tool from the MOB-suite program (<a href="https://pubmed.ncbi.nlm.nih.gov/30052170/">Robertson et al.&nbsp;2018</a>, <a href="https://github.com/phac-nml/mob-suite">documentation</a>) to identity plasmids in our genomes.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ex">mob_recon</span> <span class="dt">\</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">--infile</span> results/decontam/SM04.fasta <span class="dt">\</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--outdir</span> results/mobsuite</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>2024-02-06 15:35:34,565 mob_suite.mob_recon INFO: MOB-recon version 3.1.4  [in /fs/ess/PAS0471/jelmer/conda/mobsuite/lib/python3.8/site-packages/mob_suite/mob_recon.py:980]
+2024-02-06 15:35:34,567 mob_suite.mob_recon INFO: SUCCESS: Found program blastn at /fs/ess/PAS0471/jelmer/conda/mobsuite/bin/blastn [in /fs/ess/PAS0471/jelmer/conda/mobsuite/lib/python3.8/site-packages/mob_suite/utils.py:592]
+2024-02-06 15:35:34,569 mob_suite.mob_recon INFO: SUCCESS: Found program makeblastdb at /fs/ess/PAS0471/jelmer/conda/mobsuite/bin/makeblastdb [in /fs/ess/PAS0471/jelmer/conda/mobsuite/lib/python3.8/site-packages/mob_suite/utils.py:592]
+2024-02-06 15:35:34,571 mob_suite.mob_recon INFO: SUCCESS: Found program tblastn at /fs/ess/PAS0471/jelmer/conda/mobsuite/bin/tblastn [in /fs/ess/PAS0471/jelmer/conda/mobsuite/lib/python3.8/site-packages/mob_suite/utils.py:592]
+# [...output truncated...]</code></pre>
+<p>Were any plasmids found?</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> results/mobsuites/mobtyper_results.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="bash-out"><code>sample_id   num_contigs size    gc  md5 rep_type(s) rep_type_accession(s)   relaxase_type(s)    relaxase_type_accession(s)  mpf_type    mpf_type_accession(s)   orit_type(s)    orit_accession(s)   predicted_mobility  mash_nearest_neighbor   mash_neighbor_distance  mash_neighbor_identification    primary_cluster_id  secondary_cluster_id    predicted_host_range_overall_rank   predicted_host_range_overall_name   observed_host_range_ncbi_rank   observed_host_range_ncbi_name   reported_host_range_lit_rank    reported_host_range_lit_name    associated_pmid(s)
+SM04:AD116  1   48973   0.5424621730341208  fd0b4e82302b32b63f24c1d18a90d219    rep_cluster_283 001576__KY362368_00001  MOBP    CP007015_00034  MPF_T   NC_007275_00041,NZ_CM001987_00038,NC_007275_00033,NC_019328_00069,NC_007275_00028   MOBP    EU289287    conjugative CP006257    0.0572108   Pseudomonas syringae pv. syringae HS191 AD116   -   genus   Pseudomonas genus   Pseudomonas -   -   -</code></pre>
+<p><br></p>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/mcic-osu\.github\.io\/tutorials");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>2024-2025, Jelmer Poelstra</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/mcic-osu/tutorials">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -1,0 +1,776 @@
+---
+title: "Genome assembly and assembly QC"
+pagetitle: "Genome assembly"
+author: Jelmer Poelstra
+date: 2024-02-08
+execute: 
+  eval: false
+knitr:
+  opts_chunk:
+    out.width: "85%"
+    class-output: bash-out
+editor_options: 
+  chunk_output_type: console
+---
+
+<br>
+
+## Introduction {-}
+
+We will now create a genome assembly from the preprocessed reads with the program **SPAdes**.
+
+_After the assembly_, we will run several assembly QC and filtering steps to:
+
+- Get some basic assembly summary stats with BBtools
+- Run Busco to check for genome completeness
+- Identify and remove contaminant contigs with Kraken2
+
+::: exercise
+#### {{< fa user-edit >}} **Setting up**
+
+You should have an active VS Code session with an open terminal.
+In that terminal, you should be be in your dir
+`/fs/scratch/PAS2250/cabana/$USER/bact/bact`.
+:::
+
+<br>
+
+## The FASTA format
+
+The genome assembly that we will create will be in the FASTA formet.
+FASTA files contain one or more DNA or amino acid sequences,
+with no limits on the number of sequences or the sequence lengths.
+
+The following example FASTA file contains two entries:
+
+``` bash-in-nocolor
+>unique_sequence_ID Optional description
+ATTCATTAAAGCAGTTTATTGGCTTAATGTACATCAGTGAAATCATAAATGCTAAAAA
+>unique_sequence_ID2
+ATTCATTAAAGCAGTTTATTGGCTTAATGTACATCAGTGAAATCATAAATGCTAAATG
+```
+
+Each entry consists of a **header** line and the **sequence** itself. Header lines **start with a `>`** (greater-than sign) and are otherwise "free form", though the idea is that they provide an identifier for the sequence that follows.[^1]
+
+[^1]: Note that because individual sequence entries are commonly spread across multiple lines, FASTA entries do not necessarily cover 2 lines (cf. FASTQ).
+
+::: {.callout-note collapse="true"}
+#### FASTA file name extensions are variable: `.fa`, `.fasta`, `.fna`, `.faa` (*Click to expand*)
+
+-   "Generic" extensions are `.fasta` and `.fa` (e.g: `my_assembly.fasta`)
+-   Also used are extensions that explicitly indicate whether sequences are *nucleotides* (`.fna`) or *amino acids* (`.faa`)
+:::
+
+<br>
+
+## "Batch jobs" with `sbatch`
+
+So far, we having been running programs by directly typing/pasting the commands
+in the terminal.
+Because SPAdes needs more computing resources, we will run it differently.
+
+We will submit it as a so-called "batch" (non-interactive) job using the `sbatch` command.
+This job will then be run on a compute node that we ourselves never move to (!).
+
+To first see a simple example, say that we just wanted to run `echo Hello there $USER`
+as a batch job, where we'll use these options:
+
+- `-A` for the OSC Project we want to use
+- `-t` for the time in minutes that we need
+- `-c` for the number of cores that we need
+- `-o` for the name of the log file (where "Hello there <user>" will be printed)
+- The command that we want to run in the batch job is wrapped in `wrap="<command>"`
+
+```bash
+sbatch -A PAS2250 -t 1 -c 1 -o slurm-hello.out \
+  --wrap="echo Hello there $USER"
+```
+```bash-out
+Submitted batch job 25928455
+# [You will get a different number, each job has a unique ID]
+```
+
+Now, the output of our command (`ls -lh`) is not printed to the screen,
+but will end up in a file in our working directory, whose name starts with `slurm`
+and contains the job ID number:
+
+```bash
+ls
+```
+```bash-out
+data  README.md  results  slurm-hello.out
+```
+
+::: callout-tip
+### The `slurm` file will only show up once the job has started running, which can take up to a minute or so.
+:::
+
+Let's take a look at that "Slurm log file":
+
+```bash
+cat slurm-hello.out
+```
+```bash-out
+Hello there jelmer
+```
+
+<br>
+
+## Assembly with SPAdes
+
+SPAdes is a well-performing and very flexible assembler that can be used to do many
+kinds of assemblies, including metagenomes and transcriptomes.
+It has a special "mode" for bacterial isolate assembly,
+which can be activated with the `--isolate` flag.
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Our SPAdes command
+
+We will run SPAdes with the following options:
+
+- `-1` and `-2` for the R1 and R2 FASTQ files
+- `-o` for the output dir, which should be sample-specific, and should not yet exist
+- `--isolate` to activate the bacterial isolate mode
+- `-k 21,33,55,77,99,127` to assemble with a variety of kmer sizes
+- `--threads 20` and `--memory 80` to use 20 threads and 80 GB of memory
+
+```bash
+# (Don't run this yet)
+spades.py \
+  -1 results/trimgalore/SM04_R1_val_1.fq.gz \
+  -2 results/trimgalore/SM04_R2_val_2.fq.gz \
+  -o results/spades/SM04 \
+  -k 21,33,55,77,99,127 \
+  --isolate \
+  --threads 20 \
+  --memory 80
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Running SPAdes
+
+First, we'll have to switch back to the `cabana` Conda environment,
+since we activated a different Conda environment for TrimGalore earlier.
+
+```bash
+source activate /fs/ess/PAS0471/jelmer/conda/cabana
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+#### Submitting the SPAdes `sbatch` job
+
+Now we're ready to submit our SPAdes job,
+with 30 minutes (`-t 30`) and 20 cores
+(`-c 20`):
+
+```bash
+sbatch -A PAS2250 -t 30 -c 20 -o slurm-spades.out --wrap="
+    spades.py \
+      -1 results/trimgalore/SM04_R1_val_1.fq.gz \
+      -2 results/trimgalore/SM04_R2_val_2.fq.gz \
+      -o results/spades/SM04 \
+      -k 21,33,55,77,99,127 \
+      --isolate \
+      --threads 20 \
+      --memory 80
+"
+```
+
+::: exercise
+
+#### {{< fa user-edit >}} **Exercise**: Monitor the SPAdes run
+
+- Use `less` to check the `slurm-spades.out` file, which will have the SPAdes "log".
+
+- In `less`, press <kbd>G</kbd> (_capital_ G!) to look at the end of the file.
+
+When you first check the `slurm-spades.out` file, SPAdes should still be running.
+You know it will be  done when you see the following line at the end:
+
+```bash-out
+Thank you for using SPAdes!
+```
+
+- To monitor the progress of the SPAdes run, you can use `tail -f slurm-spades.out`,
+  which will "follow" the file and add any new text in real-time!
+  To exit this, press <kbd>Ctrl</kbd>+<kbd>c</kbd>.
+  
+::: callout-note
+#### SPAdes may take 5-10 minutes to complete
+:::
+
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### SPAdes output files
+
+Let's check the files in the output dir:
+
+```bash
+ls -lh results/spades/SM04
+```
+
+<details><summary>Click to show the output</summary>
+
+```bash-out
+total 47M
+-rw-r--r-- 1 jelmer PAS0471 5.8M Feb  4 21:49 assembly_graph_after_simplification.gfa
+-rw-r--r-- 1 jelmer PAS0471  12M Feb  4 21:49 assembly_graph.fastg
+-rw-r--r-- 1 jelmer PAS0471 5.8M Feb  4 21:49 assembly_graph_with_scaffolds.gfa
+-rw-r--r-- 1 jelmer PAS0471 5.9M Feb  4 21:49 before_rr.fasta
+-rw-r--r-- 1 jelmer PAS0471 5.8M Feb  4 21:49 contigs.fasta
+-rw-r--r-- 1 jelmer PAS0471 9.8K Feb  4 21:49 contigs.paths
+-rw-r--r-- 1 jelmer PAS0471   79 Feb  4 21:42 dataset.info
+-rw-r--r-- 1 jelmer PAS0471  278 Feb  4 21:42 input_dataset.yaml
+drwxr-xr-x 4 jelmer PAS0471 4.0K Feb  4 21:49 K127
+drwxr-xr-x 4 jelmer PAS0471 4.0K Feb  4 21:43 K21
+drwxr-xr-x 4 jelmer PAS0471 4.0K Feb  4 21:44 K33
+drwxr-xr-x 4 jelmer PAS0471 4.0K Feb  4 21:45 K55
+drwxr-xr-x 4 jelmer PAS0471 4.0K Feb  4 21:47 K77
+drwxr-xr-x 4 jelmer PAS0471 4.0K Feb  4 21:48 K99
+drwxr-xr-x 2 jelmer PAS0471 4.0K Feb  4 21:49 logs
+drwxr-xr-x 2 jelmer PAS0471 4.0K Feb  4 21:49 misc
+-rw-r--r-- 1 jelmer PAS0471 1.5K Feb  4 21:42 params.txt
+drwxr-xr-x 2 jelmer PAS0471 4.0K Feb  4 21:49 pipeline_state
+-rw-r--r-- 1 jelmer PAS0471 3.4K Feb  4 21:42 run_spades.sh
+-rw-r--r-- 1 jelmer PAS0471 4.9K Feb  4 21:42 run_spades.yaml
+-rw-r--r-- 1 jelmer PAS0471 5.8M Feb  4 21:49 scaffolds.fasta
+-rw-r--r-- 1 jelmer PAS0471 8.9K Feb  4 21:49 scaffolds.paths
+-rw-r--r-- 1 jelmer PAS0471 5.8M Feb  4 21:49 SM04
+-rw-r--r-- 1 jelmer PAS0471 194K Feb  4 21:49 spades.log
+```
+</details>
+
+There are quite some files, as well as subdirs for different k-mer sizes,
+but we're really only interested in the assembly FASTA file, which is `contigs.fasta`.
+Let's take a look at that file:
+
+```bash
+less results/spades/SM04/contigs.fasta
+```
+```bash-out
+>NODE_1_length_1267796_cov_33.239498
+ACCTTGAGTTCCCTAAAGGGCCGTCGAAGACTACGACGTTGATAGGTTGGGTGTGTAAGC
+GCTGTGAGGCGTTGAGCTAACCAATACTAATTGCCCGTGAGGCTTGACCATATAACACCC
+AAGCAATTTGCGTTGAATGAGCAGATTGCGGTGACTGTGAAGATGACACGAACCGAAAGT
+TTGCGTCACGAACGACACCTGAACCAGCTTGCTATCACATACCCGATTTGCTGAAGCGCG
+CCGCAAGGCACGATTCGGTACCCGAATTTCTTGACGACCATAGAGCATTGGAACCACCTG
+ATCCCATCCCGAACTCAGTAGTGAAACGATGTATCGCCGATGGTAGTGTGGGGTTTCCCC
+ATGTGAGAGTAGGTCATCGTCAAGATTAAATTCCAGAAACCCTCATCGCTTACGCGTTGA
+GGGTTTTTGTTTGTCTGGGGTTCCAGAAACCTCTGCATTCTCTATCTGGCTCATCTCATT
+GCAATGCAGCCGCATTGGCGCCAGAGACCCCCAAGGTTTAGTGAAACGCCCCCATCCCTG
+```
+
+In this file, **each contig is one FASTA entry**.
+The contig headers have some metadata, such as its length in base pairs,
+and its depth of coverage (`cov_`; i.e. how many reads, on average, cover each base).
+
+We can see a few more headers by using the **`grep`** command,
+which will print lines matching a search pattern (in our case, the **`>`** from the header),
+as follows:
+
+```bash
+# (Do NOT omit the quotes around the ">"!)
+grep ">" results/spades/SM04/contigs.fasta | head
+```
+```bash-out
+>NODE_1_length_1267796_cov_33.239498
+>NODE_2_length_902255_cov_32.000245
+>NODE_3_length_697265_cov_34.901625
+>NODE_4_length_534491_cov_32.088021
+>NODE_5_length_350317_cov_33.463137
+>NODE_6_length_339735_cov_31.812540
+>NODE_7_length_291220_cov_35.951730
+>NODE_8_length_274792_cov_32.455031
+>NODE_9_length_167931_cov_33.795917
+>NODE_10_length_164349_cov_34.581646
+```
+
+::: callout-tip
+#### If you don't pipe (**`|`**) the `grep` output to `head`, you will see all headers
+:::
+
+If we use `grep`'s `-c` option, it will count the number of matching lines,
+which will give us a count of the number of contigs:
+
+```bash
+grep -c ">" results/spades/SM04/contigs.fasta
+```
+```bash-out
+86
+```
+
+<br>
+
+## Basic assembly stats
+
+We can use the tools `stats.sh` from the [BBTools](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/)
+suite of genomics tools to get some (more) basic statistics for our genome assembly:
+
+```bash
+stats.sh results/spades/SM04/contigs.fasta 
+```
+```bash-out
+A       C       G       T       N       IUPAC   Other   GC      GC_stdev
+0.2048  0.2969  0.2945  0.2038  0.0000  0.0000  0.0000  0.5914  0.0875
+
+Main genome scaffold total:             86
+Main genome contig total:               86
+Main genome scaffold sequence total:    5.968 MB
+Main genome contig sequence total:      5.968 MB        0.000% gap
+Main genome scaffold N/L50:             4/534.491 KB
+Main genome contig N/L50:               4/534.491 KB
+Main genome scaffold N/L90:             14/97.943 KB
+Main genome contig N/L90:               14/97.943 KB
+Max scaffold length:                    1.268 MB
+Max contig length:                      1.268 MB
+Number of scaffolds > 50 KB:            18
+% main genome in scaffolds > 50 KB:     96.64%
+```
+
+<br>
+
+## Assembly completeness check with Busco
+
+We will use the program Busco
+([Manni et al. 2021](https://academic.oup.com/mbe/article/38/10/4647/6329644),
+[documentation](https://busco.ezlab.org/))
+to check how complete our genome assembly is.
+Busco checks for the presence of genes that are expected to be
+_universally present in a single copy_ in a specific taxonomic lineage.
+
+::: callout-note
+#### Other tool options
+Another commonly used program to check assembly completeness and also contamination is CheckM
+([Parks et al. 2015](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4484387/),
+[documentation](https://ecogenomics.github.io/CheckM/)),
+but in the interest of time, we will only run Busco.
+:::
+
+Because Busco will always output a number of files in your working directory,
+we will move into our desired output dir in advance:
+
+```bash
+cd results/busco
+```
+
+We will also have to load a different Conda environment, again:
+
+```bash
+source activate /fs/ess/PAS0471/jelmer/conda/busco
+```
+
+Using the **`--lineage_dataset`** option,
+we have to tell Busco which lineage's reference database it should use:
+there is a [list of lineages on Busco's website](https://busco.ezlab.org/list_of_lineages.html).
+
+::: exercise
+{{< fa user-edit >}} **Exercise:** Busco database
+
+Take a look at the website linked to above. Which lineage dataset should we pick?
+
+<details><summary>Click for the solution</summary>
+There is a database for the order that Pseudomonas is in: `pseudomonadales`.
+
+Alternatively, we could use the database for all bacteria: `bacteria`.
+
+</details>
+:::
+
+Otherwise, we will use the following options:
+
+- `--in` --- input file
+- `--out` --- output ID (not the full filename)
+- `--mode genome` --- our input file is a genome assembly, not a transcriptome assembly or proteome
+
+```bash
+# Run Busco
+busco \
+    --in ../spades/SM04/contigs.fasta \
+    --out SM04 \
+    --lineage_dataset pseudomonadales \
+    --mode genome
+```
+```bash-out
+# (Only showing the bit of outkey results output)
+        ---------------------------------------------------
+        |Results from dataset pseudomonadales_odb10        |
+        ---------------------------------------------------
+        |C:99.6%[S:99.6%,D:0.0%],F:0.1%,M:0.3%,n:782       |
+        |779    Complete BUSCOs (C)                        |
+        |779    Complete and single-copy BUSCOs (S)        |
+        |0      Complete and duplicated BUSCOs (D)         |
+        |1      Fragmented BUSCOs (F)                      |
+        |2      Missing BUSCOs (M)                         |
+        |782    Total BUSCO groups searched                |
+        ---------------------------------------------------
+```
+
+<details><summary>Click to see the full expected Busco output</summary>
+
+``` bash-out
+2024-02-05 17:31:00 INFO:       ***** Start a BUSCO v5.5.0 analysis, current time: 02/05/2024 17:31:00 *****
+2024-02-05 17:31:00 INFO:       Configuring BUSCO with local environment
+2024-02-05 17:31:00 INFO:       Mode is genome
+2024-02-05 17:31:00 INFO:       Downloading information on latest versions of BUSCO data...
+2024-02-05 17:31:03 INFO:       Input file is /fs/scratch/PAS2250/cabana/jelmer_prep/results/spades/SM04/contigs.fasta
+2024-02-05 17:31:03 INFO:       Downloading file 'https://busco-data.ezlab.org/v5/data/lineages/pseudomonadales_odb10.2024-01-08.tar.gz'
+2024-02-05 17:31:06 INFO:       Decompressing file '/fs/scratch/PAS2250/cabana/jelmer_prep/busco_downloads/lineages/pseudomonadales_odb10.tar.gz'
+2024-02-05 17:31:24 INFO:       Running BUSCO using lineage dataset pseudomonadales_odb10 (prokaryota, 2024-01-08)
+2024-02-05 17:31:24 INFO:       Running 1 job(s) on bbtools, starting at 02/05/2024 17:31:24
+2024-02-05 17:31:26 INFO:       [bbtools]       1 of 1 task(s) completed
+2024-02-05 17:31:26 INFO:       ***** Run Prodigal on input to predict and extract genes *****
+2024-02-05 17:31:26 INFO:       Running Prodigal with genetic code 11 in single mode
+2024-02-05 17:31:26 INFO:       Running 1 job(s) on prodigal, starting at 02/05/2024 17:31:26
+2024-02-05 17:31:44 INFO:       [prodigal]      1 of 1 task(s) completed
+2024-02-05 17:31:45 INFO:       Genetic code 11 selected as optimal
+2024-02-05 17:31:45 INFO:       ***** Run HMMER on gene sequences *****
+2024-02-05 17:31:45 INFO:       Running 782 job(s) on hmmsearch, starting at 02/05/2024 17:31:45
+2024-02-05 17:31:55 INFO:       [hmmsearch]     79 of 782 task(s) completed
+2024-02-05 17:32:04 INFO:       [hmmsearch]     157 of 782 task(s) completed
+2024-02-05 17:32:13 INFO:       [hmmsearch]     235 of 782 task(s) completed
+2024-02-05 17:32:21 INFO:       [hmmsearch]     313 of 782 task(s) completed
+2024-02-05 17:32:28 INFO:       [hmmsearch]     392 of 782 task(s) completed
+2024-02-05 17:32:34 INFO:       [hmmsearch]     470 of 782 task(s) completed
+2024-02-05 17:32:42 INFO:       [hmmsearch]     548 of 782 task(s) completed
+2024-02-05 17:32:47 INFO:       [hmmsearch]     626 of 782 task(s) completed
+2024-02-05 17:32:53 INFO:       [hmmsearch]     704 of 782 task(s) completed
+2024-02-05 17:33:01 INFO:       [hmmsearch]     782 of 782 task(s) completed
+2024-02-05 17:33:19 INFO:       Results:        C:99.6%[S:99.6%,D:0.0%],F:0.1%,M:0.3%,n:782        
+
+2024-02-05 17:33:21 INFO:
+
+        ---------------------------------------------------
+        |Results from dataset pseudomonadales_odb10        |
+        ---------------------------------------------------
+        |C:99.6%[S:99.6%,D:0.0%],F:0.1%,M:0.3%,n:782       |
+        |779    Complete BUSCOs (C)                        |
+        |779    Complete and single-copy BUSCOs (S)        |
+        |0      Complete and duplicated BUSCOs (D)         |
+        |1      Fragmented BUSCOs (F)                      |
+        |2      Missing BUSCOs (M)                         |
+        |782    Total BUSCO groups searched                |
+        ---------------------------------------------------
+2024-02-05 17:33:21 INFO:       BUSCO analysis done. Total running time: 138 seconds
+2024-02-05 17:33:21 INFO:       Results written in /fs/scratch/PAS2250/cabana/jelmer_prep/SM04
+2024-02-05 17:33:21 INFO:       For assistance with interpreting the results, please consult the userguide: https://busco.ezlab.org/busco_userguide.html
+
+2024-02-05 17:33:21 INFO:       Visit this page https://gitlab.com/ezlab/busco#how-to-cite-busco to see how to cite BUSCO
+```
+</details>
+
+That is looking pretty good,
+99.6% (n=779) of expected genes are indeed present completely and as a single copy.
+Only 0.1% (n=1) of genes are fragmented and 0.3% (n=2) are missing.
+
+Finally, we should move back to your main project dir,
+and load the main Conda environment
+
+```bash
+cd ../..
+
+source activate /fs/ess/PAS0471/jelmer/conda/cabana
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+## Bonus: Assembly filtering with Kraken2
+
+You'll probably want to filter your assembly, based on:
+
+- Minimum contig size
+- Minimum contig depth of coverage
+- Inferred contamination from other organisms
+
+Here, we will perform the third and most complex of these.
+
+::: {.callout-note collapse="true"}
+#### Filtering on contig size _(Click to expand)_
+200 bp is the minimum contig size when you upload a genome assembly to NCBI.
+But you may want to be more stringent, e.g. using a 300 or 500 bp threshold.
+
+TODO - Add `seqkit` command
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Kraken2
+
+To identify contaminant contigs, we will run the program Kraken2
+([Wood et al. 2019](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1891-0),
+[manual](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown)).
+This is a general purpose lowest-common ancestor (LCA)
+**taxonomic classifier of sequences** (can be reads, contigs, etc).
+
+(It is also possible to run Kraken2 or a similar program on the _reads_ rather
+than on the assembly, but this can be more error-prone due to errors and their shorter
+lengths compared to (most) contigs.)
+
+Kraken requires a reference database.
+Ready-made databases can be downloaded from
+[this site](https://benlangmead.github.io/aws-indexes/) ---
+in this case, I already downloaded one for you, which we can use.
+
+**Check that you are back in your `bact` dir, and have the cabana Conda environment active.**
+
+```bash
+pwd
+```
+```bash-out
+# Should be:
+/fs/scratch/PAS2250/cabana/$USER/bact/bact
+```
+
+We will start by creating an output dir for Kraken:
+
+```bash
+# (If we don't create the output dir, Kraken will not produce output files!)
+mkdir results/kraken
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Running Kraken
+
+We'll run Kraken2 with the following options:
+
+- `--db /fs/scratch/PAS2250/cabana/databases/kraken_std` --- the database for Kraken2
+- `--minimum-hit-groups 3` (Following recommendations from [Lu et al. 2022](https://www.nature.com/articles/s41596-022-00738-y))
+- `--confidence 0.15` (Following recommendations from [Wright et al. 2023](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000949))
+- `--report` and `--output` to indicate where the output files should go
+- `--threads 20` to use 20 threads
+- And finally, the input file (our assembly) is passed as an argument at the end of the command
+
+```bash
+# Run Kraken2 -- like with Spades, we will run it as a batch job
+sbatch -A PAS2250 -t 5 -c 20 -o slurm-kraken.out --wrap="
+  kraken2 \
+    --db /fs/scratch/PAS2250/cabana/databases/kraken_std \
+    --minimum-hit-groups 3 \
+    --confidence 0.15 \
+    --threads 20 \
+    --report results/kraken/SM04_report.txt \
+    --output results/kraken/SM04_main.txt \
+    results/spades/SM04/contigs.fasta
+"
+```
+
+Once its done (this should only take 1-2 minutes),
+the Slurm log file should contain the following:
+
+```bash
+cat slurm-kraken.out
+```
+```bash-out
+Loading database information... done.
+86 sequences (5.97 Mbp) processed in 0.619s (8.3 Kseq/m, 578.49 Mbp/m).
+  84 sequences classified (97.67%)
+  2 sequences unclassified (2.33%)
+```
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Interpreting the Kraken output
+
+Let's take a look at the output files:
+
+```bash
+ls -lh results/kraken
+```
+```bash-out
+-rw-r--r-- 1 jelmer PAS0471 3.0M Feb  5 15:41 SM04_main.txt
+-rw-r--r-- 1 jelmer PAS0471 3.5K Feb  5 15:41 SM04_report.txt
+```
+
+The report file (`report.txt`) file has a summary of taxonomic assignments,
+whereas the main output file (`main.txt`) has one line for each contig with its taxonomic assignment.
+
+We'll first take a look at the report file, which has the following columns:
+
+1. Percentage of fragments covered by the clade rooted at this taxon
+2. Number of fragments covered by the clade rooted at this taxon
+3. Number of fragments assigned directly to this taxon
+4. A rank code, indicating (U)nclassified, (R)oot, (D)omain, (K)ingdom, (P)hylum,
+   (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies. 
+5. NCBI taxonomic ID number
+6. Indented scientific name
+
+```bash
+less -S results/kraken/SM04_report.txt
+```
+
+<details><summary>Click to show the contents of the file</summary>
+
+```bash-out
+  2.33	2	2	U	0	unclassified
+ 97.67	84	0	R	1	root
+ 97.67	84	0	R1	131567	  cellular organisms
+ 73.26	63	0	D	2	    Bacteria
+ 72.09	62	3	P	1224	      Pseudomonadota
+ 68.60	59	2	C	1236	        Gammaproteobacteria
+ 58.14	50	0	O	72274	          Pseudomonadales
+ 58.14	50	1	F	135621	            Pseudomonadaceae
+ 56.98	49	12	G	286	              Pseudomonas
+ 43.02	37	1	G1	136849	                Pseudomonas syringae group
+ 41.86	36	0	G2	251695	                  Pseudomonas syringae group genomosp. 1
+ 41.86	36	36	S	317	                    Pseudomonas syringae
+  8.14	7	0	O	91347	          Enterobacterales
+  8.14	7	2	F	543	            Enterobacteriaceae
+  5.81	5	5	G	590	              Salmonella
+  1.16	1	0	D1	1783272	      Terrabacteria group
+  1.16	1	0	P	201174	        Actinomycetota
+  1.16	1	0	C	1760	          Actinomycetes
+  1.16	1	0	O	85009	            Propionibacteriales
+  1.16	1	0	F	31957	              Propionibacteriaceae
+  1.16	1	0	G	1912216	                Cutibacterium
+  1.16	1	1	S	1747	                  Cutibacterium acnes
+ 24.42	21	0	D	2759	    Eukaryota
+ 24.42	21	0	D1	33154	      Opisthokonta
+ 24.42	21	0	K	33208	        Metazoa
+ 24.42	21	0	K1	6072	          Eumetazoa
+ 24.42	21	0	K2	33213	            Bilateria
+ 24.42	21	0	K3	33511	              Deuterostomia
+ 24.42	21	0	P	7711	                Chordata
+ 24.42	21	0	P1	89593	                  Craniata
+ 24.42	21	0	P2	7742	                    Vertebrata
+ 24.42	21	0	P3	7776	                      Gnathostomata
+ 24.42	21	0	P4	117570	                        Teleostomi
+ 24.42	21	0	P5	117571	                          Euteleostomi
+ 24.42	21	0	P6	8287	                            Sarcopterygii
+ 24.42	21	0	P7	1338369	                              Dipnotetrapodomorpha
+ 24.42	21	0	P8	32523	                                Tetrapoda
+ 24.42	21	0	P9	32524	                                  Amniota
+ 24.42	21	0	C	40674	                                    Mammalia
+ 24.42	21	0	C1	32525	                                      Theria
+ 24.42	21	0	C2	9347	                                        Eutheria
+ 24.42	21	0	C3	1437010	                                          Boreoeutheria
+ 24.42	21	0	C4	314146	                                            Euarchontoglires
+ 24.42	21	0	O	9443	                                              Primates
+ 24.42	21	0	O1	376913	                                                Haplorrhini
+ 24.42	21	0	O2	314293	                                                  Simiiformes
+ 24.42	21	0	O3	9526	                                                    Catarrhini
+ 24.42	21	0	O4	314295	                                                      Hominoidea
+ 24.42	21	0	F	9604	                                                        Hominidae
+ 24.42	21	0	F1	207598	                                                          Homininae
+ 24.42	21	0	G	9605	                                                            Homo
+ 24.42	21	21	S	9606	                                                              Homo sapiens
+```
+</details>
+
+::: exercise
+#### {{< fa user-edit >}} **Exercise**: Contamination?
+
+Try to interpret the Kraken report --- are there any contaminant contigs?
+
+<details><summary>Click for the solution</summary>
+Ouch! While the majority of our contigs have been classified as _Pseudomonas syringae_,
+we also have a few other bacteria (including the human skin bacterium _Cutibacterium acnes_),
+and no fewer than 21 human contigs!
+</details>
+
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+The 5th column of the Kraken report has the NCBI taxonomic IDs,
+and that of human (on the last line) is `9606`.
+
+The `main.txt` output file reports the taxonomic ID in the 3rd column,
+so we can use the following command to print just the lines where the 3rd column is `9606`:
+
+```bash
+awk '$3 == 9606' results/kraken/SM04_main.txt
+```
+
+``` bash-out
+C       NODE_28_length_766_cov_1.003130 9606    766     9606:4 131567:5 9606:1 131567:36 9606:11 131567:1 9606:20 131567:47 9606:16 131567:2 9606:5 131567:1 9606:1 131567:1 9606:6 131567:32 9606:68 131567:18 9606:95 131567:146 9606:12 131567:4 9606:11 131567:96 9606:28 131567:5 9606:11 131567:2 9606:29 131567:2 9606:1 131567:5 9606:10
+C       NODE_33_length_621_cov_0.706478 9606    621     9606:180 0:1 9606:3 0:17 9606:1 0:2 9606:12 0:32 9606:199 131567:5 9606:21 131567:2 1:1 9606:111
+C       NODE_36_length_567_cov_0.784091 9606    567     0:6 9606:527
+C       NODE_37_length_563_cov_0.779817 9606    563     9606:271 0:29 9606:229
+C       NODE_39_length_553_cov_0.809859 9606    553     0:1 9606:7 0:3 9606:261 0:3 9606:1 0:15 9606:3 0:5 9606:220
+C       NODE_40_length_552_cov_0.809412 9606    552     9606:41 131567:1 9606:1 131567:17 9606:10 131567:5 9606:56 131567:5 9606:89 131567:6 9606:63 131567:3 9606:84 131567:1 9606:1 131567:17 9606:10 131567:5 9606:103
+C       NODE_42_length_521_cov_0.746193 9606    521     9606:349 0:9 9606:1 0:21 9606:107
+C       NODE_44_length_510_cov_0.906005 9606    510     9606:476
+C       NODE_45_length_497_cov_0.772973 9606    497     9606:218 0:47 9606:1 0:28 9606:1 0:15 9606:1 0:4 9606:140 0:8
+C       NODE_47_length_480_cov_0.866856 9606    480     9606:446
+C       NODE_48_length_479_cov_0.849432 9606    479     9606:445
+C       NODE_50_length_470_cov_1.011662 9606    470     9606:117 0:1 9606:5 0:1 9606:3 0:24 9606:285
+C       NODE_51_length_470_cov_0.915452 9606    470     9606:436
+C       NODE_52_length_466_cov_1.017699 9606    466     9606:20 0:17 9606:6 0:9 9606:135 0:30 9606:215
+C       NODE_54_length_458_cov_1.000000 9606    458     9606:213 0:4 9606:5 0:15 9606:1 0:5 9606:125 0:20 9606:2 0:5 9606:3 0:5 9606:21
+C       NODE_55_length_455_cov_1.179878 9606    455     9606:2 131567:3 9606:218 131567:3 9606:195
+C       NODE_60_length_444_cov_0.933754 9606    444     9606:410
+C       NODE_61_length_442_cov_0.907937 9606    442     9606:21 131567:1 9606:386
+C       NODE_65_length_438_cov_0.405145 9606    438     0:24 9606:2 0:8 9606:80 131567:2 9606:31 131567:19 9606:10 131567:3 9606:13 131567:7 9606:205
+C       NODE_66_length_433_cov_1.133987 9606    433     9606:399
+C       NODE_67_length_432_cov_0.718033 9606    432     9606:398
+```
+
+::: exercise
+#### {{< fa user-edit >}} **Exercise**: Which contigs are contaminants?
+
+In the output above, the contig IDs are in the second column.
+Do you notice anything about these?
+Does that provide some independent support for the idea that they are contaminants?
+
+<details><summary>Click for the solution</summary>
+All of these contigs are small (<600 bp) and have very low coverage (<1.2x, versus
+the >30x we saw for the contigs IDs that we printed earlier).
+
+Note that Kraken doesn't use this kind of information at all,
+so this provides independent evidence that this is contamination.
+</details>
+
+:::
+
+<hr style="height:1pt; visibility:hidden;" />
+
+### Removing contaminant contigs
+
+We will use the Kraken's companion program KrakenTools
+([paper](https://www.nature.com/articles/s41596-022-00738-y),
+[documentation](https://github.com/jenniferlu717/KrakenTools))
+to remove the contaminant contigs, with options:
+
+- `-k` --- main Kraken output file
+- `-s` --- input sequence file to be filtered
+- `o` --- output sequence file
+- `-t` --- NCBI taxonomic ID (`9606` = human)
+- `--exclude` --- exclude (rather than extract) contigs with the specified taxonomic ID
+
+```bash
+mkdir results/decontam
+extract_kraken_reads.py \
+    -k results/kraken/SM04_main.txt \
+    -s results/spades/SM04/contigs.fasta \
+    -o results/decontam/SM04.fasta \
+    -t 9606 \
+    --exclude
+```
+```bash-out
+PROGRAM START TIME: 02-05-2024 22:16:21
+        1 taxonomy IDs to parse
+>> STEP 1: PARSING KRAKEN FILE FOR READIDS results/kraken/SM04.main.txt
+        0.00 million reads processed
+        65 read IDs saved
+>> STEP 2: READING SEQUENCE FILES AND WRITING READS
+        65 read IDs found (0.00 mill reads processed)
+        65 reads printed to file
+        Generated file: results/decontam/SM04.fasta
+PROGRAM END TIME: 02-05-2024 22:16:21
+```
+
+Let's check that we indeed have 65 contigs left:
+
+```bash
+grep -c ">" results/decontam/SM04.fasta
+```
+```bash-out
+65
+```
+
+<br>

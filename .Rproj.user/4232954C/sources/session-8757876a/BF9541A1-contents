@@ -1,0 +1,53 @@
+---
+title: "Assignment: Create a GitHub account"
+pagetitle: "Assignment: Create a GitHub account"
+author: Jelmer Poelstra
+date: 2022-03-03
+number-sections: false
+toc: false
+---
+
+---------
+
+<br>
+
+### What?
+
+Create a personal GitHub account.
+
+### Why?
+
+GitHub is a website that hosts *Git repositories*, i.e. version-controlled projects.
+In Week 3 of this course, you will be learning how to use Git together with GitHub.
+In addition, you will submit your final project assignments through GitHub.
+
+### How?
+
+*If you already have a GitHub account, [log in](https://github.com/) and start at step 6.*
+
+1. Go to <https://github.com>.
+
+2. Click "Sign Up" in the top right.
+
+3. Follow the prompts to create your account --- some notes:
+  
+   - When choosing your **_username_**, I would recommend to
+     *keep it professional and have it include or resemble your real name*.
+     (This is because you will hopefully continue to use GitHub to share your code,
+     for instance when publishing a paper.)
+  
+   - You can choose whether you want to use your OSU email address
+     or a non-institutional **_email address_**.
+     (And note that you can always associate a second email address with your account.)
+
+5. Check your email and click the link to **_verify your email address_**.
+   
+6. Back on GitHub website, now logged in: in the far top-right of the page,
+   click your randomly assigned avatar, and in the dropdown menu, click "Settings".
+
+7. In the "Emails" tab (left-hand menu), deselect the box "Keep my email addresses private". 
+
+8. In the "Public profile" tab, enter your name.
+
+9. Still in the "Profile tab", upload a Profile picture.
+   This can be a picture of yourself but if you prefer, you can use something else.
