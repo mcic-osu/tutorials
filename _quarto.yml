@@ -55,6 +55,8 @@ website:
             href: nf-run/01_pipelines.qmd
           - text: Running an nf-core pipeline
             href: nf-run/02_nfcore.qmd
+          - text: Running the nf-core ampliseq pipeline
+            href: nf-run/ampliseq.qmd
       - text: Metabar
         menu:
           - text: Read QC and trimming
