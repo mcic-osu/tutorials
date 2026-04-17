@@ -1,0 +1,265 @@
+---
+title: "Running the nf-core ampliseq pipeline"
+date: 2026-04-17
+author:
+  - name: Jelmer Poelstra
+    orcid: 0000-0002-3514-7462
+    email: poelstra.1@osu.edu
+    affiliation: 
+      - name: CFAES Bioinformatics Core, Ohio State University
+        url: https://mcic.osu.edu/bioinformatics
+execute: 
+  eval: true
+  cache: true
+knitr:
+  opts_chunk:
+    out.width: "85%"
+    class-output: styled-output
+number-depth: 3
+project:
+  execute-dir: project
+editor_options: 
+  chunk_output_type: console
+editor: source
+---
+
+--------
+
+<br>
+
+This tutorial shows how to run the [nf-core ampliseq pipeline](https://nf-co.re/ampliseq)
+as a Slurm batch job at OSC using the script `nfc-ampliseq.sh`.
+
+<br>
+
+## What you need to start
+
+You data:
+
+- Paired-end FASTQ files in one folder.
+- Optional metadata TSV with sample IDs in a column named `ID`.
+
+You should also have open a terminal at OSC in your project folder.
+It doesn't matter which cluster (Cardinal, Pitzer, etc.). 
+
+## Get the `mcic-scripts` repo
+
+Run:
+
+```bash
+git clone https://github.com/mcic-osu/mcic-scripts.git
+```
+
+Or, if you already have a copy -- make sure it is up-to-date:
+
+```bash
+cd mcic-scripts
+git pull
+cd ..
+```
+
+Here, you will use the following files from this repo:
+
+- The script that runs the workflow:
+  - `mcic-scripts/metabar/nfc-ampliseq.sh`
+- The parameter template:
+  - `mcic-scripts/metabar/nfc-ampliseq.yml`
+
+## Create top-level config and results directories
+
+From your project directory (current working directory):
+
+```bash
+mkdir -p config results/nfc-ampliseq
+```
+
+Copy the template YAML into `config`:
+
+```bash
+cp mcic-scripts/metabar/nfc-ampliseq.yml config/
+```
+
+## Edit the YAML parameter file
+
+Most of the pipeline settings are controlled by the YAML file rather than command-line arguments.
+This is a common pattern for nf-core pipelines, and it allows you to keep all your settings in one place.
+Above, you copied the template YAML to `config/nfc-ampliseq.yml`.
+Now you need to edit that file to set your dataset-specific parameters.
+
+Open `config/nfc-ampliseq.yml` and set at least these fields:
+
+- `input_folder`: absolute path to your FASTQ directory
+- `extension`: pattern matching your read names (see examples below)
+- `metadata`: absolute path to metadata TSV (or comment out if none)
+- `FW_primer` and `RV_primer`: your primer sequences
+- `illumina_pe_its`:
+  - `false` for 16S
+  - `true` for ITS
+
+### FASTQ filename patterns and examples
+
+The `extension` field uses a glob pattern to match your FASTQ filenames.  
+It needs to distinguish between **forward** (R1) and **reverse** (R2) reads using `{1,2}`.
+
+**How it works:**
+- `{1,2}` means "match either 1 or 2" — used to specify the forward and reverse read pairs.
+- The pattern is relative to `input_folder`.
+- `/*_R{1,2}_001.fastq.gz` matches files like `sample1_R1_001.fastq.gz` and `sample1_R2_001.fastq.gz`.
+
+**Example 1: Typical Illumina naming**
+
+If your FASTQ files are:
+```
+data/
+  sample1_R1_001.fastq.gz
+  sample1_R2_001.fastq.gz
+  sample2_R1_001.fastq.gz
+  sample2_R2_001.fastq.gz
+```
+
+Then set:
+```yaml
+input_folder: '/absolute/path/to/data'
+extension: '/*_R{1,2}_001.fastq.gz'
+```
+
+**Example 2: Different naming convention**
+
+If your files are:
+```
+fastqs/
+  sampleA_1.fastq.gz
+  sampleA_2.fastq.gz
+  sampleB_1.fastq.gz
+  sampleB_2.fastq.gz
+```
+
+Then set:
+```yaml
+input_folder: '/absolute/path/to/fastqs'
+extension: '/*_{1,2}.fastq.gz'
+```
+
+**Tip:** Run `ls <input_folder>/<extension>` to test your pattern before running the pipeline.
+
+Then check key dataset-specific settings:
+
+- For 16S (typical):
+  - `filter_ssu: 'bac'`
+  - `exclude_taxa: 'mitochondria,chloroplast,archaea'`
+  - `dada_ref_taxonomy: 'silva=138'`
+  - `addsh: false`
+- For ITS (typical):
+  - comment out `filter_ssu`
+  - set `illumina_pe_its: true`
+  - set `dada_ref_taxonomy: 'unite-fungi=9.0'`
+  - set `addsh: true`
+
+Quick presets you can paste into your YAML (adjust primers and length settings for your assay):
+
+16S preset:
+
+```yaml
+illumina_pe_its: false
+filter_ssu: 'bac'
+exclude_taxa: 'mitochondria,chloroplast,archaea'
+dada_ref_taxonomy: 'silva=138'
+addsh: false
+```
+
+ITS preset:
+
+```yaml
+illumina_pe_its: true
+# filter_ssu: 'bac'   # Leave commented out for ITS
+dada_ref_taxonomy: 'unite-fungi=9.0'
+addsh: true
+```
+
+Notes:
+
+- `min_len_asv` / `max_len_asv` are often suitable for 16S but may be too strict for ITS.
+- `trunclenf` / `trunclenr` can be left commented out unless you have a clear reason to set them.
+
+## Submit the job with `sbatch`
+
+Run the command below from your project directory:
+
+::: callout-warning
+#### Use the correct project
+Below, replace `PASXXXX` with the OSC Project that you would like to charge
+for the compute hours to run the pipeline.
+Note also that your working directory has **no** bearing on this --
+you can be in the dir for one project, but use another for the compute hours.
+The important thing is that you use an appropriate project.
+:::
+
+```bash
+sbatch PASXXXX\
+  mcic-scripts/metabar/nfc-ampliseq.sh \
+  -p config/nfc-ampliseq.yml \
+  -o results/nfc-ampliseq
+```
+
+## Monitor job progress
+
+Find your jobs:
+
+```bash
+squeue -u "$USER"
+```
+
+Important: Nextflow launches many tasks, and each task may appear as its own Slurm job.
+So in `squeue`, you should expect to see multiple jobs related to one pipeline run.
+
+Watch the main Slurm log from the submission script:
+
+```bash
+tail -f slurm-nfc_ampliseq-<JOBID>.out
+# Press Ctrl-C to stop watching the log, or open it in a text editor to watch it there.
+```
+
+## Re-running and resume behavior
+
+By default, the script uses Nextflow resume mode (`-resume`).
+This is usually what you want after an interrupted run.
+
+To force a fresh start, add `--restart`:
+
+```bash
+sbatch mcic-scripts/metabar/nfc-ampliseq.sh \
+  -p config/nfc-ampliseq.yml \
+  -o results/nfc-ampliseq \
+  --restart
+```
+
+## Optional useful arguments
+
+- `--workflow_version <version>`: choose nf-core/ampliseq version (default in script: `2.17.0`)
+- `--work_dir <dir>`: custom Nextflow work directory
+- `--container_dir <dir>`: custom Singularity cache location
+- `--config <file>`: add one or more extra Nextflow config files
+- `--profile <name>`: config profile (default: `singularity`)
+
+## Where outputs go
+
+- Final results: the directory passed with `-o` (for example `results/nfc-ampliseq`)
+- Logs: `<outdir>/logs`
+- Intermediate work files: scratch work directory (default under `/fs/scratch/<ACCOUNT>/<USER>/nfc-ampliseq`)
+
+## Common beginner mistakes
+
+- Wrong FASTQ pattern in `extension` (no files get picked up).
+- Metadata file exists but first column is not named exactly `ID`.
+- Primer sequences do not match the assay used.
+- ITS dataset run with 16S-style filtering settings.
+
+## Minimal example
+
+```bash
+mkdir -p config results/nfc-ampliseq
+cp mcic-scripts/metabar/nfc-ampliseq.yml config/
+
+# Edit config/nfc-ampliseq.yml first, then:
+sbatch mcic-scripts/metabar/nfc-ampliseq.sh -p config/nfc-ampliseq.yml -o results/nfc-ampliseq
+```

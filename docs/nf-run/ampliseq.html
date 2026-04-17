@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jelmer Poelstra">
-<meta name="dcterms.date" content="2024-08-03">
+<meta name="dcterms.date" content="2026-04-17">
 
-<title>Creating a GitHub account – MCIC Bioinformatics Tutorials</title>
+<title>Running the nf-core ampliseq pipeline – MCIC Bioinformatics Tutorials</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -21,6 +21,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -73,7 +107,7 @@ ul.task-list li input[type="checkbox"] {
 <link rel="stylesheet" href="../styles.css">
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -283,30 +317,60 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#what-you-need-to-start" id="toc-what-you-need-to-start" class="nav-link active" data-scroll-target="#what-you-need-to-start"><span class="header-section-number">1</span> What you need to start</a></li>
+  <li><a href="#get-the-mcic-scripts-repo" id="toc-get-the-mcic-scripts-repo" class="nav-link" data-scroll-target="#get-the-mcic-scripts-repo"><span class="header-section-number">2</span> Get the <code>mcic-scripts</code> repo</a></li>
+  <li><a href="#create-top-level-config-and-results-directories" id="toc-create-top-level-config-and-results-directories" class="nav-link" data-scroll-target="#create-top-level-config-and-results-directories"><span class="header-section-number">3</span> Create top-level config and results directories</a></li>
+  <li><a href="#edit-the-yaml-parameter-file" id="toc-edit-the-yaml-parameter-file" class="nav-link" data-scroll-target="#edit-the-yaml-parameter-file"><span class="header-section-number">4</span> Edit the YAML parameter file</a>
+  <ul class="collapse">
+  <li><a href="#fastq-filename-patterns-and-examples" id="toc-fastq-filename-patterns-and-examples" class="nav-link" data-scroll-target="#fastq-filename-patterns-and-examples"><span class="header-section-number">4.1</span> FASTQ filename patterns and examples</a></li>
+  </ul></li>
+  <li><a href="#submit-the-job-with-sbatch" id="toc-submit-the-job-with-sbatch" class="nav-link" data-scroll-target="#submit-the-job-with-sbatch"><span class="header-section-number">5</span> Submit the job with <code>sbatch</code></a></li>
+  <li><a href="#monitor-job-progress" id="toc-monitor-job-progress" class="nav-link" data-scroll-target="#monitor-job-progress"><span class="header-section-number">6</span> Monitor job progress</a></li>
+  <li><a href="#re-running-and-resume-behavior" id="toc-re-running-and-resume-behavior" class="nav-link" data-scroll-target="#re-running-and-resume-behavior"><span class="header-section-number">7</span> Re-running and resume behavior</a></li>
+  <li><a href="#optional-useful-arguments" id="toc-optional-useful-arguments" class="nav-link" data-scroll-target="#optional-useful-arguments"><span class="header-section-number">8</span> Optional useful arguments</a></li>
+  <li><a href="#where-outputs-go" id="toc-where-outputs-go" class="nav-link" data-scroll-target="#where-outputs-go"><span class="header-section-number">9</span> Where outputs go</a></li>
+  <li><a href="#common-beginner-mistakes" id="toc-common-beginner-mistakes" class="nav-link" data-scroll-target="#common-beginner-mistakes"><span class="header-section-number">10</span> Common beginner mistakes</a></li>
+  <li><a href="#minimal-example" id="toc-minimal-example" class="nav-link" data-scroll-target="#minimal-example"><span class="header-section-number">11</span> Minimal example</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Creating a GitHub account</h1>
+<h1 class="title">Running the nf-core ampliseq pipeline</h1>
 </div>
 
 
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Author</div>
+  <div class="quarto-title-meta-heading">Affiliation</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Jelmer Poelstra <a href="mailto:poelstra.1@osu.edu" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> <a href="https://orcid.org/0000-0002-3514-7462" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            <a href="https://mcic.osu.edu/bioinformatics">
+            CFAES Bioinformatics Core, Ohio State University
+            </a>
+          </p>
+      </div>
+  </div>
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Jelmer Poelstra </p>
-          </div>
-  </div>
-    
+      
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">August 3, 2024</p>
+      <p class="date">April 17, 2026</p>
     </div>
   </div>
   
@@ -320,31 +384,194 @@ ul.task-list li input[type="checkbox"] {
 
 <hr>
 <p><br></p>
-<section id="what" class="level3">
-<h3 class="anchored" data-anchor-id="what">What?</h3>
-<p>Create a personal GitHub account.</p>
-</section>
-<section id="why" class="level3">
-<h3 class="anchored" data-anchor-id="why">Why?</h3>
-<p>GitHub is a website that hosts <em>Git repositories</em>, i.e.&nbsp;version-controlled projects.</p>
-</section>
-<section id="how" class="level3">
-<h3 class="anchored" data-anchor-id="how">How?</h3>
-<p><em>If you already have a GitHub account, <a href="https://github.com/">log in</a> and start at step 6.</em></p>
-<ol type="1">
-<li><p>Go to <a href="https://github.com" class="uri">https://github.com</a>.</p></li>
-<li><p>Click “Sign Up” in the top right.</p></li>
-<li><p>Follow the prompts to create your account — some notes:</p>
+<p>This tutorial shows how to run the <a href="https://nf-co.re/ampliseq">nf-core ampliseq pipeline</a> as a Slurm batch job at OSC using the script <code>nfc-ampliseq.sh</code>.</p>
+<p><br></p>
+<section id="what-you-need-to-start" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="what-you-need-to-start"><span class="header-section-number">1</span> What you need to start</h2>
+<p>You data:</p>
 <ul>
-<li><p>When choosing your <strong><em>username</em></strong>, I would recommend to <em>keep it professional and have it include or resemble your real name</em>. (This is because you will hopefully continue to use GitHub to share your code, for instance when publishing a paper.)</p></li>
-<li><p>You can choose whether you want to use your OSU email address or a non-institutional <strong><em>email address</em></strong>. (And note that you can always associate a second email address with your account.)</p></li>
+<li>Paired-end FASTQ files in one folder.</li>
+<li>Optional metadata TSV with sample IDs in a column named <code>ID</code>.</li>
+</ul>
+<p>You should also have open a terminal at OSC in your project folder. It doesn’t matter which cluster (Cardinal, Pitzer, etc.).</p>
+</section>
+<section id="get-the-mcic-scripts-repo" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="get-the-mcic-scripts-repo"><span class="header-section-number">2</span> Get the <code>mcic-scripts</code> repo</h2>
+<p>Run:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/mcic-osu/mcic-scripts.git</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Or, if you already have a copy – make sure it is up-to-date:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> mcic-scripts</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> pull</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ..</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Here, you will use the following files from this repo:</p>
+<ul>
+<li>The script that runs the workflow:
+<ul>
+<li><code>mcic-scripts/metabar/nfc-ampliseq.sh</code></li>
 </ul></li>
-<li><p>Check your email and click the link to <strong><em>verify your email address</em></strong>.</p></li>
-<li><p>Back on GitHub website, now logged in: in the far top-right of the page, click your randomly assigned avatar, and in the dropdown menu, click “Settings”.</p></li>
-<li><p>In the “Emails” tab (left-hand menu), deselect the box “Keep my email addresses private”.</p></li>
-<li><p>In the “Public profile” tab, enter your name.</p></li>
-<li><p>Still in the “Profile tab”, upload a Profile picture. This can be a picture of yourself but if you prefer, you can use something else.</p></li>
-</ol>
+<li>The parameter template:
+<ul>
+<li><code>mcic-scripts/metabar/nfc-ampliseq.yml</code></li>
+</ul></li>
+</ul>
+</section>
+<section id="create-top-level-config-and-results-directories" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="create-top-level-config-and-results-directories"><span class="header-section-number">3</span> Create top-level config and results directories</h2>
+<p>From your project directory (current working directory):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> config results/nfc-ampliseq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Copy the template YAML into <code>config</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> mcic-scripts/metabar/nfc-ampliseq.yml config/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="edit-the-yaml-parameter-file" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="edit-the-yaml-parameter-file"><span class="header-section-number">4</span> Edit the YAML parameter file</h2>
+<p>Most of the pipeline settings are controlled by the YAML file rather than command-line arguments. This is a common pattern for nf-core pipelines, and it allows you to keep all your settings in one place. Above, you copied the template YAML to <code>config/nfc-ampliseq.yml</code>. Now you need to edit that file to set your dataset-specific parameters.</p>
+<p>Open <code>config/nfc-ampliseq.yml</code> and set at least these fields:</p>
+<ul>
+<li><code>input_folder</code>: absolute path to your FASTQ directory</li>
+<li><code>extension</code>: pattern matching your read names (see examples below)</li>
+<li><code>metadata</code>: absolute path to metadata TSV (or comment out if none)</li>
+<li><code>FW_primer</code> and <code>RV_primer</code>: your primer sequences</li>
+<li><code>illumina_pe_its</code>:
+<ul>
+<li><code>false</code> for 16S</li>
+<li><code>true</code> for ITS</li>
+</ul></li>
+</ul>
+<section id="fastq-filename-patterns-and-examples" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="fastq-filename-patterns-and-examples"><span class="header-section-number">4.1</span> FASTQ filename patterns and examples</h3>
+<p>The <code>extension</code> field uses a glob pattern to match your FASTQ filenames.<br>
+It needs to distinguish between <strong>forward</strong> (R1) and <strong>reverse</strong> (R2) reads using <code>{1,2}</code>.</p>
+<p><strong>How it works:</strong> - <code>{1,2}</code> means “match either 1 or 2” — used to specify the forward and reverse read pairs. - The pattern is relative to <code>input_folder</code>. - <code>/*_R{1,2}_001.fastq.gz</code> matches files like <code>sample1_R1_001.fastq.gz</code> and <code>sample1_R2_001.fastq.gz</code>.</p>
+<p><strong>Example 1: Typical Illumina naming</strong></p>
+<p>If your FASTQ files are:</p>
+<pre><code>data/
+  sample1_R1_001.fastq.gz
+  sample1_R2_001.fastq.gz
+  sample2_R1_001.fastq.gz
+  sample2_R2_001.fastq.gz</code></pre>
+<p>Then set:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">input_folder</span><span class="kw">:</span><span class="at"> </span><span class="st">'/absolute/path/to/data'</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">extension</span><span class="kw">:</span><span class="at"> </span><span class="st">'/*_R{1,2}_001.fastq.gz'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Example 2: Different naming convention</strong></p>
+<p>If your files are:</p>
+<pre><code>fastqs/
+  sampleA_1.fastq.gz
+  sampleA_2.fastq.gz
+  sampleB_1.fastq.gz
+  sampleB_2.fastq.gz</code></pre>
+<p>Then set:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">input_folder</span><span class="kw">:</span><span class="at"> </span><span class="st">'/absolute/path/to/fastqs'</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">extension</span><span class="kw">:</span><span class="at"> </span><span class="st">'/*_{1,2}.fastq.gz'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Tip:</strong> Run <code>ls &lt;input_folder&gt;/&lt;extension&gt;</code> to test your pattern before running the pipeline.</p>
+<p>Then check key dataset-specific settings:</p>
+<ul>
+<li>For 16S (typical):
+<ul>
+<li><code>filter_ssu: 'bac'</code></li>
+<li><code>exclude_taxa: 'mitochondria,chloroplast,archaea'</code></li>
+<li><code>dada_ref_taxonomy: 'silva=138'</code></li>
+<li><code>addsh: false</code></li>
+</ul></li>
+<li>For ITS (typical):
+<ul>
+<li>comment out <code>filter_ssu</code></li>
+<li>set <code>illumina_pe_its: true</code></li>
+<li>set <code>dada_ref_taxonomy: 'unite-fungi=9.0'</code></li>
+<li>set <code>addsh: true</code></li>
+</ul></li>
+</ul>
+<p>Quick presets you can paste into your YAML (adjust primers and length settings for your assay):</p>
+<p>16S preset:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">illumina_pe_its</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter_ssu</span><span class="kw">:</span><span class="at"> </span><span class="st">'bac'</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">exclude_taxa</span><span class="kw">:</span><span class="at"> </span><span class="st">'mitochondria,chloroplast,archaea'</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">dada_ref_taxonomy</span><span class="kw">:</span><span class="at"> </span><span class="st">'silva=138'</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">addsh</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>ITS preset:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">illumina_pe_its</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># filter_ssu: 'bac'   # Leave commented out for ITS</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">dada_ref_taxonomy</span><span class="kw">:</span><span class="at"> </span><span class="st">'unite-fungi=9.0'</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">addsh</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Notes:</p>
+<ul>
+<li><code>min_len_asv</code> / <code>max_len_asv</code> are often suitable for 16S but may be too strict for ITS.</li>
+<li><code>trunclenf</code> / <code>trunclenr</code> can be left commented out unless you have a clear reason to set them.</li>
+</ul>
+</section>
+</section>
+<section id="submit-the-job-with-sbatch" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="submit-the-job-with-sbatch"><span class="header-section-number">5</span> Submit the job with <code>sbatch</code></h2>
+<p>Run the command below from your project directory:</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Use the correct project
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Below, replace <code>PASXXXX</code> with the OSC Project that you would like to charge for the compute hours to run the pipeline. Note also that your working directory has <strong>no</strong> bearing on this – you can be in the dir for one project, but use another for the compute hours. The important thing is that you use an appropriate project.</p>
+</div>
+</div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> PASXXXX<span class="dt">\</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  mcic-scripts/metabar/nfc-ampliseq.sh <span class="dt">\</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-p</span> config/nfc-ampliseq.yml <span class="dt">\</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">-o</span> results/nfc-ampliseq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="monitor-job-progress" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="monitor-job-progress"><span class="header-section-number">6</span> Monitor job progress</h2>
+<p>Find your jobs:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">squeue</span> <span class="at">-u</span> <span class="st">"</span><span class="va">$USER</span><span class="st">"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Important: Nextflow launches many tasks, and each task may appear as its own Slurm job. So in <code>squeue</code>, you should expect to see multiple jobs related to one pipeline run.</p>
+<p>Watch the main Slurm log from the submission script:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span> <span class="at">-f</span> slurm-nfc_ampliseq-<span class="op">&lt;</span>JOBID<span class="op">&gt;</span>.out</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Press Ctrl-C to stop watching the log, or open it in a text editor to watch it there.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="re-running-and-resume-behavior" class="level2" data-number="7">
+<h2 data-number="7" class="anchored" data-anchor-id="re-running-and-resume-behavior"><span class="header-section-number">7</span> Re-running and resume behavior</h2>
+<p>By default, the script uses Nextflow resume mode (<code>-resume</code>). This is usually what you want after an interrupted run.</p>
+<p>To force a fresh start, add <code>--restart</code>:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> mcic-scripts/metabar/nfc-ampliseq.sh <span class="dt">\</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-p</span> config/nfc-ampliseq.yml <span class="dt">\</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-o</span> results/nfc-ampliseq <span class="dt">\</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--restart</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="optional-useful-arguments" class="level2" data-number="8">
+<h2 data-number="8" class="anchored" data-anchor-id="optional-useful-arguments"><span class="header-section-number">8</span> Optional useful arguments</h2>
+<ul>
+<li><code>--workflow_version &lt;version&gt;</code>: choose nf-core/ampliseq version (default in script: <code>2.17.0</code>)</li>
+<li><code>--work_dir &lt;dir&gt;</code>: custom Nextflow work directory</li>
+<li><code>--container_dir &lt;dir&gt;</code>: custom Singularity cache location</li>
+<li><code>--config &lt;file&gt;</code>: add one or more extra Nextflow config files</li>
+<li><code>--profile &lt;name&gt;</code>: config profile (default: <code>singularity</code>)</li>
+</ul>
+</section>
+<section id="where-outputs-go" class="level2" data-number="9">
+<h2 data-number="9" class="anchored" data-anchor-id="where-outputs-go"><span class="header-section-number">9</span> Where outputs go</h2>
+<ul>
+<li>Final results: the directory passed with <code>-o</code> (for example <code>results/nfc-ampliseq</code>)</li>
+<li>Logs: <code>&lt;outdir&gt;/logs</code></li>
+<li>Intermediate work files: scratch work directory (default under <code>/fs/scratch/&lt;ACCOUNT&gt;/&lt;USER&gt;/nfc-ampliseq</code>)</li>
+</ul>
+</section>
+<section id="common-beginner-mistakes" class="level2" data-number="10">
+<h2 data-number="10" class="anchored" data-anchor-id="common-beginner-mistakes"><span class="header-section-number">10</span> Common beginner mistakes</h2>
+<ul>
+<li>Wrong FASTQ pattern in <code>extension</code> (no files get picked up).</li>
+<li>Metadata file exists but first column is not named exactly <code>ID</code>.</li>
+<li>Primer sequences do not match the assay used.</li>
+<li>ITS dataset run with 16S-style filtering settings.</li>
+</ul>
+</section>
+<section id="minimal-example" class="level2" data-number="11">
+<h2 data-number="11" class="anchored" data-anchor-id="minimal-example"><span class="header-section-number">11</span> Minimal example</h2>
+<div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> config results/nfc-ampliseq</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> mcic-scripts/metabar/nfc-ampliseq.yml config/</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Edit config/nfc-ampliseq.yml first, then:</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="ex">sbatch</span> mcic-scripts/metabar/nfc-ampliseq.sh <span class="at">-p</span> config/nfc-ampliseq.yml <span class="at">-o</span> results/nfc-ampliseq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>

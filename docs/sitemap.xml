@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>XXX/about.html</loc>
-    <lastmod>2025-04-15T12:40:33.902Z</lastmod>
-  </url>
-  <url>
-    <loc>XXX/index.html</loc>
-    <lastmod>2025-04-15T12:47:32.803Z</lastmod>
-  </url>
-  <url>
     <loc>https://mcic-osu.github.io/tutorials/git/02_git1.html</loc>
     <lastmod>2025-04-15T17:28:57.783Z</lastmod>
   </url>
@@ -21,64 +13,84 @@
     <lastmod>2025-04-15T20:14:30.900Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/rnaseq/04_fastqc.html</loc>
-    <lastmod>2025-04-15T20:25:50.568Z</lastmod>
-  </url>
-  <url>
-    <loc>https://mcic-osu.github.io/tutorials/rnaseq/03_DE.html</loc>
-    <lastmod>2025-04-15T20:24:44.009Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/nf-run/02_nfcore.html</loc>
+    <lastmod>2025-04-15T20:15:00.596Z</lastmod>
   </url>
   <url>
     <loc>https://mcic-osu.github.io/tutorials/rnaseq/02_nfc-rnaseq.html</loc>
     <lastmod>2025-04-15T20:23:40.262Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/nf-run/02_nfcore.html</loc>
-    <lastmod>2025-04-15T20:15:00.596Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/rnaseq/05_trimgalore.html</loc>
+    <lastmod>2025-04-15T20:28:31.961Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/git/01_github-account.html</loc>
-    <lastmod>2025-04-15T17:25:11.261Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/about.html</loc>
+    <lastmod>2025-04-15T13:23:29.687Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/git/03_git2.html</loc>
-    <lastmod>2025-04-15T19:54:49.576Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/bac/03_annotation.html</loc>
+    <lastmod>2024-02-09T14:06:19.788Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/osc/01_osc1.html</loc>
-    <lastmod>2025-04-15T17:12:06.025Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/bac/01_preprocess.html</loc>
+    <lastmod>2024-02-09T14:12:30.572Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/osc/02_vscode.html</loc>
-    <lastmod>2025-04-15T17:21:56.705Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/MAT_TO_USE/usethis.qmd.x.html</loc>
+    <lastmod>2024-03-03T19:00:14.102Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/index.html</loc>
-    <lastmod>2025-04-15T16:41:10.147Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/MAT_TO_USE/A06_ref-files.qmd.x.html</loc>
+    <lastmod>2023-08-21T16:44:09.201Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/reprod/project-org.html</loc>
-    <lastmod>2025-04-15T19:57:12.493Z</lastmod>
-  </url>
-  <url>
-    <loc>https://mcic-osu.github.io/tutorials/reprod/markdown.html</loc>
-    <lastmod>2025-04-15T19:57:38.543Z</lastmod>
-  </url>
-  <url>
-    <loc>https://mcic-osu.github.io/tutorials/metabar/01_qc-trim.html</loc>
-    <lastmod>2025-04-15T20:16:55.681Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/shell/03_scripts.html</loc>
+    <lastmod>2025-04-15T17:21:11.794Z</lastmod>
   </url>
   <url>
     <loc>https://mcic-osu.github.io/tutorials/shell/01_shell1.html</loc>
     <lastmod>2025-04-15T17:18:18.474Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/shell/02_shellfiles.html</loc>
-    <lastmod>2025-04-15T17:14:09.471Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/metabar/01_qc-trim.html</loc>
+    <lastmod>2025-04-15T20:16:55.681Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/shell/03_scripts.html</loc>
-    <lastmod>2025-04-15T17:21:11.794Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/osc/01_osc1.html</loc>
+    <lastmod>2025-04-15T17:12:06.025Z</lastmod>
+  </url>
+  <url>
+    <loc>https://mcic-osu.github.io/tutorials/osc/05_slurm.html</loc>
+    <lastmod>2025-04-15T17:24:38.809Z</lastmod>
+  </url>
+  <url>
+    <loc>https://mcic-osu.github.io/tutorials/osc/02_vscode.html</loc>
+    <lastmod>2025-04-15T17:21:56.705Z</lastmod>
+  </url>
+  <url>
+    <loc>https://mcic-osu.github.io/tutorials/reprod/markdown.html</loc>
+    <lastmod>2025-04-15T19:57:38.543Z</lastmod>
+  </url>
+  <url>
+    <loc>https://mcic-osu.github.io/tutorials/reprod/project-org.html</loc>
+    <lastmod>2025-04-15T19:57:12.493Z</lastmod>
+  </url>
+  <url>
+    <loc>https://mcic-osu.github.io/tutorials/osc/03_osc2.html</loc>
+    <lastmod>2025-04-15T17:22:22.050Z</lastmod>
+  </url>
+  <url>
+    <loc>https://mcic-osu.github.io/tutorials/osc/06_ssh.html</loc>
+    <lastmod>2024-04-13T16:24:43.151Z</lastmod>
+  </url>
+  <url>
+    <loc>https://mcic-osu.github.io/tutorials/osc/04_software.html</loc>
+    <lastmod>2025-04-15T17:23:06.012Z</lastmod>
+  </url>
+  <url>
+    <loc>https://mcic-osu.github.io/tutorials/shell/02_shellfiles.html</loc>
+    <lastmod>2025-04-15T17:14:09.471Z</lastmod>
   </url>
   <url>
     <loc>https://mcic-osu.github.io/tutorials/shell/04_cli-tools.html</loc>
@@ -89,31 +101,43 @@
     <lastmod>2025-04-15T17:09:20.320Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/osc/03_osc2.html</loc>
-    <lastmod>2025-04-15T17:22:22.050Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/MAT_TO_USE/A05_fastq.qmd.x.html</loc>
+    <lastmod>2024-02-03T15:28:21.570Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/osc/04_software.html</loc>
-    <lastmod>2025-04-15T17:23:06.012Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/MAT_TO_USE/w1_removed.qmd.x.html</loc>
+    <lastmod>2024-02-25T01:15:37.254Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/osc/05_slurm.html</loc>
-    <lastmod>2025-04-15T17:24:38.809Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/bac/02_assembly.html</loc>
+    <lastmod>2025-04-15T20:31:26.632Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/r/r_data-structures.html</loc>
-    <lastmod>2025-04-15T19:55:55.439Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/index.html</loc>
+    <lastmod>2025-04-15T16:41:10.147Z</lastmod>
   </url>
   <url>
     <loc>https://mcic-osu.github.io/tutorials/rnaseq/01_data.html</loc>
     <lastmod>2025-04-15T20:21:34.525Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/rnaseq/05_trimgalore.html</loc>
-    <lastmod>2025-04-15T20:28:31.961Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/rnaseq/03_DE.html</loc>
+    <lastmod>2025-04-15T20:24:44.009Z</lastmod>
   </url>
   <url>
-    <loc>https://mcic-osu.github.io/tutorials/bac/02_assembly.html</loc>
-    <lastmod>2025-04-15T20:31:26.632Z</lastmod>
+    <loc>https://mcic-osu.github.io/tutorials/rnaseq/04_fastqc.html</loc>
+    <lastmod>2025-04-15T20:25:50.568Z</lastmod>
+  </url>
+  <url>
+    <loc>https://mcic-osu.github.io/tutorials/nf-run/ampliseq.html</loc>
+    <lastmod>2026-04-17T13:10:11.778Z</lastmod>
+  </url>
+  <url>
+    <loc>https://mcic-osu.github.io/tutorials/git/01_github-account.html</loc>
+    <lastmod>2025-04-15T17:25:11.261Z</lastmod>
+  </url>
+  <url>
+    <loc>https://mcic-osu.github.io/tutorials/git/03_git2.html</loc>
+    <lastmod>2025-04-15T19:54:49.576Z</lastmod>
   </url>
 </urlset>

@@ -133,5 +133,8 @@
   },
   "metabar/01_qc-trim.qmd": {
     "01_qc-trim.html": "a18af60b"
+  },
+  "nf-run/ampliseq.qmd": {
+    "ampliseq.html": "918114d3"
   }
 }

@@ -75,6 +75,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap-93a206ead970ce8646eacc93a2842d74.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -124,16 +126,172 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
-  <li class="nav-item">
-    <a class="nav-link" href="../index.html"> <i class="bi bi-house-door" role="img">
-</i> 
-<span class="menu-text"> </span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-shell" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Shell</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-shell">    
+        <li>
+    <a class="dropdown-item" href="../shell/01_shell1.html">
+ <span class="dropdown-text">Intro the Unix Shell</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/02_shellfiles.html">
+ <span class="dropdown-text">Managing files in the shell</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/03_scripts.html">
+ <span class="dropdown-text">Writing shell scripts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/04_cli-tools.html">
+ <span class="dropdown-text">Running CLI tools</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../shell/05_bonus.html">
+ <span class="dropdown-text">Advanced shell</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-osc" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">OSC</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-osc">    
+        <li>
+    <a class="dropdown-item" href="../osc/01_osc1.html">
+ <span class="dropdown-text">Intro to OSC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/02_vscode.html">
+ <span class="dropdown-text">VS Code</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/03_osc2.html">
+ <span class="dropdown-text">More about OSC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/05_slurm.html">
+ <span class="dropdown-text">Slurm</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../osc/06_ssh.html">
+ <span class="dropdown-text">SSH</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-git" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Git</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-git">    
+        <li>
+    <a class="dropdown-item" href="../git/02_git1.html">
+ <span class="dropdown-text">Git 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../git/03_git2.html">
+ <span class="dropdown-text">Git 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../git/04_git3.html">
+ <span class="dropdown-text">Git 3</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reproducibility" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reproducibility</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reproducibility">    
+        <li>
+    <a class="dropdown-item" href="../reprod/project-org.html">
+ <span class="dropdown-text">Project file organization</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reprod/markdown.html">
+ <span class="dropdown-text">Markdown</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-nextflow" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Nextflow</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-nextflow">    
+        <li>
+    <a class="dropdown-item" href="../nf-run/01_pipelines.html">
+ <span class="dropdown-text">Intro to pipelines</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../nf-run/02_nfcore.html">
+ <span class="dropdown-text">Running an nf-core pipeline</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-metabar" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Metabar</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-metabar">    
+        <li>
+    <a class="dropdown-item" href="../metabar/01_qc-trim.html">
+ <span class="dropdown-text">Read QC and trimming</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-rna-seq" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">RNA-Seq</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-rna-seq">    
+        <li>
+    <a class="dropdown-item" href="../rnaseq/01_data.html">
+ <span class="dropdown-text">Data files</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/02_nfc-rnaseq.html">
+ <span class="dropdown-text">The nf-core rnaseq pipeline</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/03_DE.html">
+ <span class="dropdown-text">Differential expression analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/04_fastqc.html">
+ <span class="dropdown-text">Read QC with FastQC</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../rnaseq/05_trimgalore.html">
+ <span class="dropdown-text">Trimming reads with TrimGalore</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other">    
+        <li class="dropdown-header">BACTERIAL WGS</li>
+        <li>
+    <a class="dropdown-item" href="../bac/01_preprocess.html">
+ <span class="dropdown-text">Data preprocessing</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../bac/02_assembly.html">
+ <span class="dropdown-text">Genome assembly</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../bac/03_annotation.html">
+ <span class="dropdown-text">Genome annotation</span></a>
+  </li>  
+    </ul>
+  </li>
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
     <a class="nav-link" href="../about.html"> 
-<span class="menu-text">About this website</span></a>
+<span class="menu-text">About</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -249,7 +407,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ol>
 <hr style="height:1pt; visibility:hidden;">
 <section id="setting-up" class="level4 exercise">
-<h4 class="anchored" data-anchor-id="setting-up">{{&lt; fa user-edit &gt;}} <strong>Setting up</strong></h4>
+<h4 class="anchored" data-anchor-id="setting-up"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Setting up</strong></h4>
 <hr style="height:1pt; visibility:hidden;">
 <p><strong>Start a new VS Code session with an open terminal:</strong></p>
 <ol type="1">
@@ -263,7 +421,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Click <code>Launch</code>.</li>
 </ul></li>
 <li><p>On the next page, once the top bar of the box has turned green and says <code>Runnning</code>, click <code>Connect to VS Code</code>.</p></li>
-<li><p>Open a Terminal by clicking &nbsp; {{&lt; fa bars &gt;}} &nbsp; =&gt; <code>Terminal</code> =&gt; <code>New Terminal</code>.</p></li>
+<li><p>Open a Terminal by clicking &nbsp; <i class="fa-solid fa-bars" aria-label="bars"></i> &nbsp; =&gt; <code>Terminal</code> =&gt; <code>New Terminal</code>.</p></li>
 <li><p>In the terminal, move into your <code>bact/bact</code> dir:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> bact/bact <span class="co"># Full path: /fs/scratch/PAS2250/cabana/$USER/bact/bact</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
 <li><p>Optional: open a file to save your commands. In the Explorer (file browser) on the left, you should be able to find the <code>workflow.sh</code> script you created yesterday.</p></li>
@@ -443,7 +601,7 @@ Avoid line-wrapping with <code>less -S</code> <em>(Click to expand)</em>
 </div>
 </section>
 <section id="exercise-explore-the-file-with-less" class="level4 exercise">
-<h4 class="anchored" data-anchor-id="exercise-explore-the-file-with-less">{{&lt; fa user-edit &gt;}} <strong>Exercise</strong>: Explore the file with <code>less</code></h4>
+<h4 class="anchored" data-anchor-id="exercise-explore-the-file-with-less"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Exercise</strong>: Explore the file with <code>less</code></h4>
 <p><code>less</code> doesn’t print stuff to screen but instead opens it in a “pager”. After running the command above, you should be viewing the file inside the <code>less</code> pager.</p>
 <p>You can move around in the file in several ways: by scrolling with your mouse, with up and down arrows, or, if you have them, <kbd>PgUp</kbd> and <kbd>PgDn</kbd> keys (also, <kbd>u</kbd> will move up half a page and <kbd>d</kbd> down half a page).</p>
 <p>If you find yourself scrolling down and down to try and reach the <strong>end of the file</strong>, you can instead press <kbd>G</kbd> to go to the very end right away (and <kbd>g</kbd> to go back to the top).</p>
@@ -508,7 +666,7 @@ Conda and software management
 <div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load miniconda3</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> activate /fs/ess/PAS0471/jelmer/conda/cabana</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <section id="exercise-fastqc-help-and-output-dir" class="level4 exercise">
-<h4 class="anchored" data-anchor-id="exercise-fastqc-help-and-output-dir">{{&lt; fa user-edit &gt;}} <strong>Exercise</strong>: FastQC help and output dir</h4>
+<h4 class="anchored" data-anchor-id="exercise-fastqc-help-and-output-dir"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Exercise</strong>: FastQC help and output dir</h4>
 <p>Again try to print FastQC’s help info, and figure out which option you can use to specify a custom output directory.</p>
 <details>
 <summary>
@@ -546,7 +704,7 @@ Spreading commands across multiple lines with <code>\</code>
 </div>
 <hr style="height:1pt; visibility:hidden;">
 <section id="exercise-fixing-the-fastqc-error" class="level4 exercise">
-<h4 class="anchored" data-anchor-id="exercise-fixing-the-fastqc-error">{{&lt; fa user-edit &gt;}} <strong>Exercise</strong>: Fixing the FastQC error</h4>
+<h4 class="anchored" data-anchor-id="exercise-fixing-the-fastqc-error"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Exercise</strong>: Fixing the FastQC error</h4>
 <p>Now what is going on this time? 😨 Or had you perhaps seen this coming given the help text we saw earlier? At any rate, can you try to fix the problem?</p>
 <details>
 <summary>
@@ -593,7 +751,7 @@ Analysis complete for SM04_R1.fastq.gz</code></pre>
 </ul>
 <hr style="height:1pt; visibility:hidden;">
 <section id="exercise-another-fastqc-run" class="level4 exercise">
-<h4 class="anchored" data-anchor-id="exercise-another-fastqc-run">{{&lt; fa user-edit &gt;}} <strong>Exercise</strong>: Another FastQC run</h4>
+<h4 class="anchored" data-anchor-id="exercise-another-fastqc-run"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Exercise</strong>: Another FastQC run</h4>
 <p>Run FastQC for the corresponding R2 FASTQ file. Would you use the same output dir?</p>
 <details>
 <summary>
@@ -757,7 +915,7 @@ Analysis complete for SM04_2.fastq.gz</code></pre>
 <li>Then, open your computer’s file browser, find the downloaded files, and double-click on one. It should be <strong>opened in your default web browser</strong>.</li>
 </ul>
 <section id="exercise-interpreting-your-fastqc-results" class="level4 exercise">
-<h4 class="anchored" data-anchor-id="exercise-interpreting-your-fastqc-results">{{&lt; fa user-edit &gt;}} <strong>Exercise</strong>: Interpreting your FastQC results</h4>
+<h4 class="anchored" data-anchor-id="exercise-interpreting-your-fastqc-results"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Exercise</strong>: Interpreting your FastQC results</h4>
 <ul>
 <li><p>Open the HTML file for the R1 FASTQ file and go through the modules we discussed above. Can you make sense of it? Does the data look good to you, overall?</p></li>
 <li><p>Now open the HTML file for the <strong>R2</strong> FASTQ file and take a look just at the quality scores. Does it look any worse than the R1?</p></li>
@@ -842,7 +1000,7 @@ drwxr-xr-x 2 jelmer PAS2250 4.0K Feb  4 14:57 multiqc_data
 -rw-r--r-- 1 jelmer PAS2250 1.7M Feb  4 14:57 multiqc_report.html</code></pre>
 <p>Go ahead and find the HTML file in VS Code’s file browser, right-click on it and then download it to your computer, and click on the file in your own computer to open it in your browser (i.e., just like we did with the FastQC output).</p>
 <section id="exercise-explore-the-multiqc-results" class="level4 exercise">
-<h4 class="anchored" data-anchor-id="exercise-explore-the-multiqc-results">{{&lt; fa user-edit &gt;}} <strong>Exercise</strong>: Explore the MultiQC results</h4>
+<h4 class="anchored" data-anchor-id="exercise-explore-the-multiqc-results"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Exercise</strong>: Explore the MultiQC results</h4>
 <p>Check for example whether patterns are consistent across samples, or if there are any outliers.</p>
 </section>
 <p><br></p>
@@ -999,7 +1157,7 @@ Trimming strictness
 <p>After you ran the command above, a lot of logging output should have been printed to screen.</p>
 <p>For example, it reports the adapter that it detected, the final parameters passed to Cutadapt (which does the actual trimming), and results on how much sequence was removed.</p>
 <section id="exercise-check-the-trimgalore-logging-output" class="level4 exercise">
-<h4 class="anchored" data-anchor-id="exercise-check-the-trimgalore-logging-output">{{&lt; fa user-edit &gt;}} <strong>Exercise</strong>: Check the TrimGalore logging output</h4>
+<h4 class="anchored" data-anchor-id="exercise-check-the-trimgalore-logging-output"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Exercise</strong>: Check the TrimGalore logging output</h4>
 <p>Look for <code>=== Summary ===</code> sections (two of them, one for the R1 and one for the R2) to answer the following questions:</p>
 <ul>
 <li>What percentage of the reads had adapter sequences?</li>
@@ -1061,7 +1219,7 @@ Total written (filtered):    233,141,370 bp (84.3%)</code></pre>
 -rw-r--r-- 1 jelmer PAS0471 724K Feb  4 17:01 SM04_R2_val_2_fastqc.html
 -rw-r--r-- 1 jelmer PAS0471 470K Feb  4 17:01 SM04_R2_val_2_fastqc.zip</code></pre>
 <section id="exercise-check-the-trimming-results-with-fastqc" class="level4 exercise">
-<h4 class="anchored" data-anchor-id="exercise-check-the-trimming-results-with-fastqc">{{&lt; fa user-edit &gt;}} <strong>Exercise</strong>: Check the trimming results with FastQC</h4>
+<h4 class="anchored" data-anchor-id="exercise-check-the-trimming-results-with-fastqc"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Exercise</strong>: Check the trimming results with FastQC</h4>
 <ul>
 <li>Check the FastQC output HTML to see if adapters were removed, and if the overall quality looks better.</li>
 </ul>
@@ -1113,7 +1271,7 @@ More about the Unix pipe, <code>|</code> <em>(Click to expand)</em>
 </div>
 <hr style="height:1pt; visibility:hidden;">
 <section id="exercise-the-number-of-reads-in-a-fastq-file" class="level4 exercise">
-<h4 class="anchored" data-anchor-id="exercise-the-number-of-reads-in-a-fastq-file">{{&lt; fa user-edit &gt;}} <strong>Exercise</strong> : The number of reads in a FASTQ file</h4>
+<h4 class="anchored" data-anchor-id="exercise-the-number-of-reads-in-a-fastq-file"><i class="fa-solid fa-user-edit" aria-label="user-edit"></i> <strong>Exercise</strong> : The number of reads in a FASTQ file</h4>
 <ul>
 <li>Given the output of the command above, how many reads are in this FASTQ file?</li>
 </ul>
